@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Webhook</title>
+</head>
+<body>
+    <h1>Teste do Webhook</h1>
+    <button onclick="testarWebhook()">Testar Envio</button>
+    <div id="resultado"></div>
+
+    <script>
+        async function testarWebhook() {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = 'Enviando...';
+
+            const webhookPayload = {
+                pedido: {
+                    sessao_id: "teste123",
+                    data_pedido: new Date().toISOString(),
+                    status: "novo",
+                    valor_total: 299.99
+                },
+                cliente: {
+                    nome: "João Teste",
+                    telefone: "+5511999999999"
+                },
+                entrega: {
+                    cep: "01234-567",
+                    endereco: "Rua Teste",
+                    numero: "123",
+                    complemento: "Apto 1",
+                    bairro: "Centro",
+                    cidade: "São Paulo",
+                    estado: "SP"
+                },
+                pagamento: {
+                    forma_pagamento: "PIX",
+                    valor_total: 299.99
+                },
+                produtos: [{
+                    id: "46240",
+                    nome: "Produto Teste",
+                    descricao: "Descrição do produto",
+                    preco_unitario: 299.99,
+                    quantidade: 1,
+                    subtotal: 299.99
+                }]
+            };
+
+            try {
+                console.log('📤 Enviando payload:', webhookPayload);
+                
+                const response = await fetch('https://integra.devsible.com.br/webhook-test/env_pedido', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(webhookPayload)
+                });
+
+                if (response.ok) {
+                    resultado.innerHTML = '✅ Webhook enviado com sucesso!';
+                    console.log('✅ Sucesso:', await response.text());
+                } else {
+                    resultado.innerHTML = `⚠️ Erro: ${response.status} - ${response.statusText}`;
+                    console.warn('⚠️ Erro:', response.status, await response.text());
+                }
+            } catch (error) {
+                resultado.innerHTML = `❌ Erro: ${error.message}`;
+                console.error('❌ Erro:', error);
+            }
+        }
+    </script>
+</body>
+</html>
