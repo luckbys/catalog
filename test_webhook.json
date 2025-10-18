@@ -1,0 +1,22 @@
+{
+  "cliente_telefone": "11999887766",
+  "cliente_nome": "João Silva",
+  "produtos": [
+    {
+      "id": 1,
+      "descricao": "Smartphone Galaxy S23",
+      "preco": 2999.99,
+      "estoque": 10,
+      "imagem_url": "https://example.com/galaxy-s23.jpg",
+      "categoria": "Eletrônicos"
+    },
+    {
+      "id": 2,
+      "descricao": "Notebook Dell Inspiron",
+      "preco": 3499.99,
+      "estoque": 5,
+      "imagem_url": "https://example.com/dell-inspiron.jpg",
+      "categoria": "Informática"
+    }
+  ]
+}

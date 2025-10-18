@@ -16,7 +16,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 DB_URL = os.getenv("DB_URL", "sqlite:///./backend_data.db")
 CLIENT_BASE_URL = os.getenv("CLIENT_BASE_URL", "http://localhost:5500/catalogo.html")
 SESSION_VALIDITY_HOURS = int(os.getenv("SESSION_VALIDITY_HOURS", "4"))
-ALLOWED_ORIGINS = [os.getenv("ALLOWED_ORIGIN", "http://localhost:5500")]  # ajuste conforme necessidade
+ALLOWED_ORIGINS = ["*"]  # Permite todas as origens - ajuste conforme necessidade de segurança
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
@@ -391,8 +391,85 @@ def status_sessao(sessao_id: str, _: None = Depends(rate_limit_dep)):
 
 @app.post("/api/webhook/n8n")
 def webhook_n8n(data: dict, _: None = Depends(rate_limit_dep)):
-    # Aqui poderíamos validar token/API key e registrar logs
-    return {"received": True, "data_keys": list(data.keys())}
+    """
+    Webhook para receber dados do n8n e criar uma sessão de catálogo.
+    Retorna o link do catálogo para enviar ao cliente.
+    """
+    try:
+        # Validar se os dados necessários estão presentes
+        required_fields = ["cliente_telefone", "cliente_nome", "produtos"]
+        missing_fields = [field for field in required_fields if field not in data]
+        
+        if missing_fields:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Campos obrigatórios faltando: {', '.join(missing_fields)}"
+            )
+        
+        # Criar payload para criar sessão
+        payload = CriarSessaoPayload(
+            cliente_telefone=data["cliente_telefone"],
+            cliente_nome=data["cliente_nome"],
+            produtos=[ProdutoIn(**produto) for produto in data["produtos"]],
+            quantidade_produtos=data.get("quantidade_produtos", len(data["produtos"])),
+            timestamp=data.get("timestamp", datetime.utcnow().isoformat())
+        )
+        
+        # Criar sessão usando a lógica existente
+        db = SessionLocal()
+        try:
+            sessao_id = gerar_sessao_id()
+            expira_em = datetime.utcnow() + timedelta(hours=SESSION_VALIDITY_HOURS)
+            
+            # Criar sessão no banco
+            nova_sessao = Sessao(
+                sessao_id=sessao_id,
+                cliente_telefone=payload.cliente_telefone,
+                cliente_nome=payload.cliente_nome,
+                expira_em=expira_em
+            )
+            db.add(nova_sessao)
+            db.flush()  # Para obter o ID
+            
+            # Adicionar produtos à sessão
+            for produto in payload.produtos:
+                produto_sessao = ProdutoSessao(
+                    sessao_uuid=nova_sessao.id,
+                    produto_id=produto.id,
+                    descricao=produto.descricao,
+                    preco=produto.preco,
+                    estoque=produto.estoque,
+                    imagem_url=produto.imagem_url,
+                    categoria=produto.categoria
+                )
+                db.add(produto_sessao)
+            
+            db.commit()
+            
+            # Gerar link do catálogo
+            catalogo_url = f"{CLIENT_BASE_URL}?sessao_id={sessao_id}"
+            
+            return {
+                "success": True,
+                "sessao_id": sessao_id,
+                "catalogo_url": catalogo_url,
+                "cliente_nome": payload.cliente_nome,
+                "cliente_telefone": payload.cliente_telefone,
+                "quantidade_produtos": len(payload.produtos),
+                "expira_em": expira_em.isoformat(),
+                "message": f"Catálogo criado para {payload.cliente_nome}. Link: {catalogo_url}"
+            }
+            
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro ao criar sessão: {str(e)}")
+        finally:
+            db.close()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao processar dados: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
