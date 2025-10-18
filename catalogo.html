@@ -433,7 +433,7 @@
                 productsData.push({
                     id: String(p.id),
                     name: p.descricao,
-                    description: p.categoria ? p.categoria : p.descricao,
+                    description: p.apresentacao || p.categoria || p.descricao,
                     price: Number(p.preco),
                     imageUrl: p.imagem_url || 'https://placehold.co/300x300/e0f2fe/0284c7?text=Produto'
                 });
