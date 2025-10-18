@@ -72,7 +72,7 @@ class ProdutoIn(BaseModel):
     categoria: Optional[str] = None
 
 class CriarSessaoPayload(BaseModel):
-    cliente_telefone: str = Field(..., min_length=10, max_length=15)
+    cliente_telefone: str = Field(..., min_length=10, max_length=50)  # Aumentado para aceitar formato WhatsApp
     cliente_nome: str
     produtos: List[ProdutoIn]
     quantidade_produtos: int
