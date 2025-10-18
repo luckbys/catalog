@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛍️ Catálogo de Produtos - Demonstração</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-shopping-bag mr-3"></i>
+                        Catálogo de Produtos
+                    </h1>
+                    <p class="text-blue-100 mt-2">Sistema de demonstração - Versão 1.0</p>
+                </div>
+                <div class="text-right">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                        <p class="text-sm">Status da API</p>
+                        <div id="apiStatus" class="flex items-center mt-1">
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+                            <span class="text-sm">Verificando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Demo Actions -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-rocket mr-3 text-blue-500"></i>
+                Demonstração do Sistema
+            </h2>
+            <p class="text-gray-600 mb-6">
+                Este é um sistema completo de catálogo de produtos com sessões temporárias. 
+                Clique no botão abaixo para criar uma sessão de demonstração e testar todas as funcionalidades.
+            </p>
+            
+            <div class="flex flex-wrap gap-4">
+                <button id="createDemoBtn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Criar Sessão de Demonstração
+                </button>
+                
+                <button id="viewProductsBtn" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors flex items-center">
+                    <i class="fas fa-eye mr-2"></i>
+                    Ver Produtos Disponíveis
+                </button>
+                
+                <button id="refreshBtn" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors flex items-center">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Atualizar Status
+                </button>
+            </div>
+        </div>
+
+        <!-- Session Info -->
+        <div id="sessionInfo" class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6 mb-8 hidden">
+            <h3 class="text-xl font-bold text-green-800 mb-3 flex items-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                Sessão Criada com Sucesso!
+            </h3>
+            <div id="sessionDetails" class="space-y-2 text-gray-700"></div>
+            <div class="mt-4">
+                <a id="catalogLink" href="#" target="_blank" class="inline-flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                    <i class="fas fa-external-link-alt mr-2"></i>
+                    Abrir Catálogo
+                </a>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="productsSection" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-boxes mr-3 text-purple-500"></i>
+                Produtos Disponíveis
+            </h2>
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center py-12 hidden">
+            <div class="inline-flex items-center">
+                <i class="fas fa-spinner fa-spin text-3xl text-blue-500 mr-3"></i>
+                <span class="text-xl text-gray-600">Carregando...</span>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-6 hidden">
+            <h3 class="text-xl font-bold text-red-800 mb-2 flex items-center">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Erro
+            </h3>
+            <p id="errorText" class="text-red-700"></p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-300">
+                <i class="fas fa-code mr-2"></i>
+                Sistema de Catálogo de Produtos - Desenvolvido com FastAPI + HTML/CSS/JS
+            </p>
+            <p class="text-gray-400 text-sm mt-2">
+                Deploy pronto para produção com Docker 🐳
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Configuração da API
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8000' 
+            : 'https://api.seu-dominio.com';
+
+        // Elementos DOM
+        const createDemoBtn = document.getElementById('createDemoBtn');
+        const viewProductsBtn = document.getElementById('viewProductsBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const sessionInfo = document.getElementById('sessionInfo');
+        const sessionDetails = document.getElementById('sessionDetails');
+        const catalogLink = document.getElementById('catalogLink');
+        const productsSection = document.getElementById('productsSection');
+        const productsGrid = document.getElementById('productsGrid');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const apiStatus = document.getElementById('apiStatus');
+
+        // Funções utilitárias
+        function showLoading() {
+            loading.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+        }
+
+        function hideLoading() {
+            loading.classList.add('hidden');
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            hideLoading();
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        // Verificar status da API
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    apiStatus.innerHTML = `
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        <span class="text-sm">Online</span>
+                    `;
+                } else {
+                    throw new Error('API não respondeu');
+                }
+            } catch (error) {
+                apiStatus.innerHTML = `
+                    <div class="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Offline</span>
+                `;
+            }
+        }
+
+        // Criar sessão de demonstração
+        async function createDemoSession() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/api/demo/criar-sessao`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                // Mostrar informações da sessão
+                sessionDetails.innerHTML = `
+                    <p><strong>ID da Sessão:</strong> <code class="bg-gray-100 px-2 py-1 rounded">${data.sessao_id}</code></p>
+                    <p><strong>Produtos:</strong> ${data.produtos_count} itens</p>
+                    <p><strong>Expira em:</strong> ${new Date(data.expira_em).toLocaleString('pt-BR')}</p>
+                    <p><strong>URL:</strong> <code class="bg-gray-100 px-2 py-1 rounded text-xs">${data.url_catalogo}</code></p>
+                `;
+                
+                catalogLink.href = data.url_catalogo;
+                sessionInfo.classList.remove('hidden');
+                
+                hideLoading();
+            } catch (error) {
+                showError(`Erro ao criar sessão: ${error.message}`);
+            }
+        }
+
+        // Carregar produtos
+        async function loadProducts() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/api/produtos`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                // Renderizar produtos
+                productsGrid.innerHTML = data.produtos.map(produto => `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                        <img src="${produto.imagem_url}" alt="${produto.descricao}" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">${produto.descricao}</h3>
+                            <p class="text-gray-600 text-sm mb-3">${produto.categoria}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-blue-600">${formatCurrency(produto.preco)}</span>
+                                <span class="text-sm text-gray-500">Estoque: ${produto.estoque}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                productsSection.classList.remove('hidden');
+                hideLoading();
+            } catch (error) {
+                showError(`Erro ao carregar produtos: ${error.message}`);
+            }
+        }
+
+        // Event listeners
+        createDemoBtn.addEventListener('click', createDemoSession);
+        viewProductsBtn.addEventListener('click', loadProducts);
+        refreshBtn.addEventListener('click', checkApiStatus);
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            checkApiStatus();
+        });
+    </script>
+</body>
+</html>

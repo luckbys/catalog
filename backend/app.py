@@ -130,6 +130,120 @@ async def security_headers(request: Request, call_next):
 def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
+@app.get("/api/produtos")
+def listar_produtos_demo():
+    """Endpoint para demonstração - lista produtos de exemplo"""
+    produtos_demo = [
+        {
+            "id": 1,
+            "descricao": "Smartphone Galaxy S24",
+            "preco": 2499.99,
+            "estoque": 15,
+            "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+            "categoria": "Eletrônicos"
+        },
+        {
+            "id": 2,
+            "descricao": "Notebook Dell Inspiron",
+            "preco": 3299.99,
+            "estoque": 8,
+            "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
+            "categoria": "Informática"
+        },
+        {
+            "id": 3,
+            "descricao": "Fone Bluetooth Sony",
+            "preco": 299.99,
+            "estoque": 25,
+            "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+            "categoria": "Áudio"
+        },
+        {
+            "id": 4,
+            "descricao": "Smart TV 55\" 4K",
+            "preco": 1899.99,
+            "estoque": 12,
+            "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400",
+            "categoria": "TV & Vídeo"
+        },
+        {
+            "id": 5,
+            "descricao": "Câmera Canon EOS",
+            "preco": 4599.99,
+            "estoque": 5,
+            "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
+            "categoria": "Fotografia"
+        },
+        {
+            "id": 6,
+            "descricao": "Tablet iPad Air",
+            "preco": 3799.99,
+            "estoque": 10,
+            "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
+            "categoria": "Tablets"
+        }
+    ]
+    return {"produtos": produtos_demo}
+
+@app.post("/api/demo/criar-sessao")
+def criar_sessao_demo():
+    """Cria uma sessão de demonstração com produtos pré-definidos"""
+    try:
+        db = SessionLocal()
+        
+        # Gera ID único para a sessão
+        novo_sessao_id = gerar_sessao_id()
+        expira_em = datetime.utcnow() + timedelta(hours=SESSION_VALIDITY_HOURS)
+        
+        # Cria nova sessão
+        nova_sessao = Sessao(
+            sessao_id=novo_sessao_id,
+            cliente_telefone="11999999999",
+            cliente_nome="Cliente Demonstração",
+            expira_em=expira_em
+        )
+        db.add(nova_sessao)
+        db.flush()  # Para obter o ID
+        
+        # Produtos de demonstração
+        produtos_demo = [
+            {"id": 1, "descricao": "Smartphone Galaxy S24", "preco": 2499.99, "estoque": 15, "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400", "categoria": "Eletrônicos"},
+            {"id": 2, "descricao": "Notebook Dell Inspiron", "preco": 3299.99, "estoque": 8, "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400", "categoria": "Informática"},
+            {"id": 3, "descricao": "Fone Bluetooth Sony", "preco": 299.99, "estoque": 25, "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", "categoria": "Áudio"},
+            {"id": 4, "descricao": "Smart TV 55\" 4K", "preco": 1899.99, "estoque": 12, "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400", "categoria": "TV & Vídeo"},
+            {"id": 5, "descricao": "Câmera Canon EOS", "preco": 4599.99, "estoque": 5, "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400", "categoria": "Fotografia"},
+            {"id": 6, "descricao": "Tablet iPad Air", "preco": 3799.99, "estoque": 10, "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400", "categoria": "Tablets"}
+        ]
+        
+        # Adiciona produtos à sessão
+        for produto in produtos_demo:
+            produto_sessao = ProdutoSessao(
+                sessao_uuid=nova_sessao.id,
+                produto_id=produto["id"],
+                descricao=produto["descricao"],
+                preco=produto["preco"],
+                estoque=produto["estoque"],
+                imagem_url=produto["imagem_url"],
+                categoria=produto["categoria"]
+            )
+            db.add(produto_sessao)
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "sessao_id": novo_sessao_id,
+            "url_catalogo": f"{CLIENT_BASE_URL}?sessao_id={novo_sessao_id}",
+            "expira_em": expira_em.isoformat(),
+            "produtos_count": len(produtos_demo)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao criar sessão: {str(e)}")
+    finally:
+        db.close()
+
 @app.post("/api/produtos/criar-sessao")
 def criar_sessao(payload: CriarSessaoPayload, _: None = Depends(rate_limit_dep)):
     db = SessionLocal()
