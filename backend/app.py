@@ -406,12 +406,26 @@ def webhook_n8n(data: dict, _: None = Depends(rate_limit_dep)):
                 detail=f"Campos obrigatórios faltando: {', '.join(missing_fields)}"
             )
         
+        # Processar produtos do n8n com valores padrão
+        produtos_processados = []
+        for produto in data["produtos"]:
+            # Mapear campos do n8n para o formato esperado
+            produto_processado = {
+                "id": int(produto.get("id", 0)),
+                "descricao": str(produto.get("descricao", "Produto sem descrição")),
+                "preco": float(produto.get("valor", produto.get("preco", 0.0))),  # n8n usa "valor"
+                "estoque": int(produto.get("qtd", produto.get("estoque", 1))),  # n8n usa "qtd"
+                "imagem_url": produto.get("img") if produto.get("img") else produto.get("imagem_url"),
+                "categoria": produto.get("categoria") if produto.get("categoria") else None
+            }
+            produtos_processados.append(ProdutoIn(**produto_processado))
+        
         # Criar payload para criar sessão
         payload = CriarSessaoPayload(
             cliente_telefone=data["cliente_telefone"],
             cliente_nome=data["cliente_nome"],
-            produtos=[ProdutoIn(**produto) for produto in data["produtos"]],
-            quantidade_produtos=data.get("quantidade_produtos", len(data["produtos"])),
+            produtos=produtos_processados,
+            quantidade_produtos=data.get("quantidade_produtos", len(produtos_processados)),
             timestamp=data.get("timestamp", datetime.utcnow().isoformat())
         )
         

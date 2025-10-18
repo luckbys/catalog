@@ -1,0 +1,18 @@
+{
+  "cliente_telefone": "5512976021836",
+  "cliente_nome": "Lucas Henrique",
+  "produtos": [
+    {
+      "id": "46240",
+      "descricao": "LASATREX",
+      "apresentacao": "500 MG C/ 10 CAP",
+      "qtd": "10",
+      "img": null,
+      "cat_cod": "991",
+      "tbusca": "Código: 991 | Produto: LASATREX 500 MG C/ 10 CAP | Laboratório: LASA INDUSTRIA FARMACEUTICA | Tipo: SIMILAR | Estoque: 10 unidades | Código Barras: 7896286481265",
+      "valor": "0.01"
+    }
+  ],
+  "timestamp": "2025-10-18T21:00:58.263Z",
+  "sessao_id": "5512976021836@s.whatsapp.net"
+}
