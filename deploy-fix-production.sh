@@ -1,54 +1,37 @@
 #!/bin/bash
 
-# Script para corrigir deploy em produção
-# Problema: catalogo.html retornando 404 em produção
+echo "🚀 Iniciando deploy da correção para produção..."
 
-echo "🔧 Corrigindo deploy em produção..."
+# Parar containers existentes
+echo "⏹️ Parando containers..."
+docker-compose -f docker-compose.prod.yml down
 
-# 1. Parar containers existentes
-echo "📦 Parando containers..."
-docker-compose -f docker-compose.simple.yml down
+# Rebuild dos containers
+echo "🔨 Fazendo rebuild dos containers..."
+docker-compose -f docker-compose.prod.yml build --no-cache
 
-# 2. Rebuild com cache limpo
-echo "🏗️ Fazendo rebuild dos containers..."
-docker-compose -f docker-compose.simple.yml build --no-cache
+# Iniciar containers
+echo "▶️ Iniciando containers..."
+docker-compose -f docker-compose.prod.yml up -d
 
-# 3. Verificar se arquivos estáticos existem
-echo "📁 Verificando arquivos estáticos..."
-if [ ! -f "catalogo.html" ]; then
-    echo "❌ ERRO: catalogo.html não encontrado!"
-    exit 1
-fi
-
-if [ ! -f "demo.html" ]; then
-    echo "❌ ERRO: demo.html não encontrado!"
-    exit 1
-fi
-
-echo "✅ Arquivos estáticos encontrados"
-
-# 4. Iniciar containers
-echo "🚀 Iniciando containers..."
-docker-compose -f docker-compose.simple.yml up -d
-
-# 5. Aguardar containers iniciarem
+# Aguardar containers iniciarem
 echo "⏳ Aguardando containers iniciarem..."
 sleep 10
 
-# 6. Verificar status dos containers
-echo "📊 Status dos containers:"
-docker-compose -f docker-compose.simple.yml ps
+# Verificar se containers estão rodando
+echo "🔍 Verificando status dos containers..."
+docker-compose -f docker-compose.prod.yml ps
 
-# 7. Testar endpoints
+# Testar endpoints
 echo "🧪 Testando endpoints..."
+echo "Testando API health..."
+curl -s https://chatbot-catalog.zv7gpn.easypanel.host/health
 
-# Testar API
-echo "Testing API health..."
-curl -f http://localhost:8000/health || echo "❌ API health check falhou"
+echo -e "\nTestando catalogo.html via FastAPI..."
+curl -s -I https://chatbot-catalog.zv7gpn.easypanel.host/catalogo.html
 
-# Testar nginx
-echo "Testing nginx..."
-curl -f http://localhost/catalogo.html || echo "❌ Nginx catalogo.html falhou"
+echo -e "\nTestando demo.html via FastAPI..."
+curl -s -I https://chatbot-catalog.zv7gpn.easypanel.host/demo.html
 
-echo "✅ Deploy corrigido! Verifique os logs se houver problemas:"
-echo "docker-compose -f docker-compose.simple.yml logs -f"
+echo -e "\n✅ Deploy concluído! Agora o catalogo.html é servido diretamente pelo FastAPI."
+echo "🔗 Teste o link: https://chatbot-catalog.zv7gpn.easypanel.host/catalogo.html?sessao_id=TESTE"

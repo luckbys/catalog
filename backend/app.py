@@ -6,6 +6,8 @@ from typing import List, Optional, Dict
 
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import (
     create_engine, Column, Integer, String, DateTime, Numeric, ForeignKey
@@ -115,6 +117,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Servir arquivos estáticos
+@app.get("/catalogo.html")
+async def serve_catalogo():
+    """Serve o arquivo catalogo.html"""
+    return FileResponse("catalogo.html", media_type="text/html")
+
+@app.get("/demo.html")
+async def serve_demo():
+    """Serve o arquivo demo.html"""
+    return FileResponse("demo.html", media_type="text/html")
+
+@app.get("/favicon.ico")
+async def serve_favicon():
+    """Serve o favicon"""
+    return FileResponse("favicon.ico", media_type="image/x-icon")
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
