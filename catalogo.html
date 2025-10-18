@@ -217,7 +217,7 @@
     // Configuração da API - ajuste para produção
     const API_BASE = window.location.hostname === 'localhost' 
         ? 'http://localhost:8000' 
-        : 'https://api.seu-dominio.com'; // Substitua pelo seu domínio da API
+        : window.location.origin; // Usa o mesmo domínio com proxy reverso
 
     function formatCurrency(value) {
         return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

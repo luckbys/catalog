@@ -136,7 +136,7 @@
         // Configuração da API
         const API_BASE = window.location.hostname === 'localhost' 
             ? 'http://localhost:8000' 
-            : 'https://api.seu-dominio.com';
+            : window.location.origin; // Usa o mesmo domínio com proxy reverso
 
         // Elementos DOM
         const createDemoBtn = document.getElementById('createDemoBtn');

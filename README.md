@@ -75,6 +75,113 @@ Acesse: http://localhost:3000
 
 ## 🌐 Deploy em Produção
 
+### Configuração Rápida
+
+1. **Clone o repositório na sua VPS:**
+```bash
+git clone <seu-repositorio>
+cd catalog
+```
+
+2. **Configure as variáveis de ambiente:**
+```bash
+cp .env.example .env
+# Edite o .env com suas configurações
+```
+
+3. **Para produção com SSL:**
+```bash
+# Crie o diretório SSL
+mkdir ssl
+
+# Configure seus certificados SSL
+# Coloque cert.pem e key.pem no diretório ssl/
+
+# Execute em produção
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+4. **Para produção sem SSL (HTTP apenas):**
+```bash
+# Use o docker-compose padrão
+docker-compose up -d --build
+```
+
+### Troubleshooting
+
+Se o sistema não estiver funcionando em produção, execute o script de diagnóstico:
+
+```bash
+chmod +x deploy-troubleshoot.sh
+./deploy-troubleshoot.sh
+```
+
+Este script irá verificar:
+- ✅ Instalação do Docker
+- ✅ Status dos containers
+- ✅ Conectividade das APIs
+- ✅ Configuração de portas
+- ✅ Logs de erro
+- ✅ Certificados SSL
+
+### Principais Diferenças entre Desenvolvimento e Produção
+
+| Aspecto | Desenvolvimento | Produção |
+|---------|----------------|----------|
+| **Arquivo Docker Compose** | `docker-compose.yml` | `docker-compose.prod.yml` |
+| **Nginx Config** | `nginx.conf` | `nginx.prod.conf` |
+| **Porta Frontend** | 3000 | 80/443 |
+| **SSL** | Não | Sim (recomendado) |
+| **API_BASE** | `http://localhost:8000` | `window.location.origin` |
+| **Proxy Reverso** | Não | Sim |
+
+### Configuração de Domínio
+
+1. **Configure seu DNS** para apontar para o IP da VPS
+2. **Configure SSL** (recomendado com Let's Encrypt):
+
+```bash
+# Instalar certbot
+sudo apt update
+sudo apt install certbot
+
+# Obter certificado
+sudo certbot certonly --standalone -d seu-dominio.com
+
+# Copiar certificados
+sudo cp /etc/letsencrypt/live/seu-dominio.com/fullchain.pem ssl/cert.pem
+sudo cp /etc/letsencrypt/live/seu-dominio.com/privkey.pem ssl/key.pem
+
+# Ajustar permissões
+sudo chown $USER:$USER ssl/*.pem
+```
+
+3. **Reiniciar os containers:**
+```bash
+docker-compose -f docker-compose.prod.yml restart
+```
+
+### Monitoramento
+
+Para monitorar os logs em tempo real:
+```bash
+# Todos os serviços
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Apenas backend
+docker-compose -f docker-compose.prod.yml logs -f backend
+
+# Apenas frontend
+docker-compose -f docker-compose.prod.yml logs -f frontend
+```
+
+### URLs de Acesso
+
+- **Página Principal (Demo):** `https://seu-dominio.com/`
+- **Catálogo:** `https://seu-dominio.com/catalogo.html?sessao_id=ID_DA_SESSAO`
+- **API Health Check:** `https://seu-dominio.com/health`
+- **API Produtos:** `https://seu-dominio.com/api/produtos`
+
 ### 1. Preparação do Servidor
 
 ```bash
