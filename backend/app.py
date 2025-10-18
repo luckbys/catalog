@@ -481,15 +481,32 @@ def webhook_n8n(data: dict, _: None = Depends(rate_limit_dep)):
             # Gerar link do catálogo
             catalogo_url = f"{CLIENT_BASE_URL}?sessao_id={sessao_id}"
             
+            # Formatear mensagem para WhatsApp
+            quantidade_produtos = len(payload.produtos)
+            mensagem_formatada = f"""🛍️ *Catálogo de Produtos*
+
+Olá {payload.cliente_nome}! 
+
+Encontrei *{quantidade_produtos} produto{'s' if quantidade_produtos != 1 else ''}* disponível{'is' if quantidade_produtos != 1 else ''} para você! 
+
+🔗 *Clique no link abaixo para ver todos os produtos:*
+{catalogo_url}
+
+📱 Clique no link acima para ver todos os produtos encontrados!
+
+⏰ Este catálogo expira em 4 horas."""
+            
             return {
                 "success": True,
-                "sessao_id": sessao_id,
-                "catalogo_url": catalogo_url,
-                "cliente_nome": payload.cliente_nome,
-                "cliente_telefone": payload.cliente_telefone,
-                "quantidade_produtos": len(payload.produtos),
-                "expira_em": expira_em.isoformat(),
-                "message": f"Catálogo criado para {payload.cliente_nome}. Link: {catalogo_url}"
+                "message": mensagem_formatada,
+                "data": {
+                    "sessao_id": sessao_id,
+                    "catalogo_url": catalogo_url,
+                    "cliente_nome": payload.cliente_nome,
+                    "cliente_telefone": payload.cliente_telefone,
+                    "quantidade_produtos": quantidade_produtos,
+                    "expira_em": expira_em.isoformat()
+                }
             }
             
         except Exception as e:
