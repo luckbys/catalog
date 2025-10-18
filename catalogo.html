@@ -119,6 +119,45 @@
                         <input type="text" id="customerState" class="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:shadow-outline bg-slate-100" readonly required>
                     </div>
                 </div>
+                
+                <!-- Forma de Pagamento -->
+                <div class="mb-6">
+                    <label class="block text-slate-700 text-sm font-bold mb-3">Forma de Pagamento</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="paymentMethod" value="dinheiro" class="mr-3 text-blue-600" required>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-green-600"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                <span class="font-medium">Dinheiro</span>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="paymentMethod" value="pix" class="mr-3 text-blue-600" required>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-blue-600"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="m9 9 5 5v-5h-5"></path></svg>
+                                <span class="font-medium">PIX</span>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="paymentMethod" value="cartao_credito" class="mr-3 text-blue-600" required>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-purple-600"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                <span class="font-medium">Cartão de Crédito</span>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="paymentMethod" value="cartao_debito" class="mr-3 text-blue-600" required>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-orange-600"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                <span class="font-medium">Cartão de Débito</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
                 <div class="flex items-center justify-end gap-4">
                     <button type="button" id="cancelDeliveryBtn" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
                         Cancelar
@@ -374,6 +413,13 @@
 
         message += `*Total do Pedido: ${formatCurrency(total)}*\n\n`;
         
+        // Adiciona forma de pagamento à mensagem
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        if (selectedPaymentMethod) {
+            const paymentMethodText = selectedPaymentMethod.nextElementSibling.textContent.trim();
+            message += `*Forma de Pagamento:* ${paymentMethodText}\n\n`;
+        }
+        
         // Adiciona dados de entrega à mensagem
         message += `*-- Dados de Entrega --*\n`;
         message += `*Nome:* ${deliveryDetails.name}\n`;
@@ -443,26 +489,104 @@
         }
     }
 
-    async function postSelection() {
+    async function postSelection(deliveryDetails = null) {
         if (!sessionId) return;
+        
+        // Preparar dados dos produtos selecionados
         const produtos_selecionados = Object.values(cart).map(item => ({
             produto_id: Number(item.id.replace(/\D/g, '')) || Number(item.id),
             quantidade: item.quantity
         }));
+
+        // Obter forma de pagamento selecionada
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        const formaPagamento = selectedPaymentMethod ? selectedPaymentMethod.value : null;
+
         try {
+            // 1. Registrar seleção no backend (mantém funcionalidade existente)
             const res = await fetch(`${API_BASE}/api/produtos/${sessionId}/selecionar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     produtos_selecionados,
-                    cliente_telefone: sessionPhone || undefined
+                    cliente_telefone: sessionPhone || undefined,
+                    forma_pagamento: formaPagamento
                 })
             });
             if (!res.ok) {
                 console.warn('Falha ao registrar seleção no backend');
             }
+
+            // 2. Enviar dados completos para webhook do n8n (se tiver dados de entrega)
+            if (deliveryDetails) {
+                await sendWebhookToN8n(deliveryDetails, formaPagamento);
+            }
         } catch (e) {
             console.warn('Erro ao registrar seleção no backend', e);
+        }
+    }
+
+    async function sendWebhookToN8n(deliveryDetails, formaPagamento) {
+        try {
+            // Calcular total do pedido
+            let total = 0;
+            const produtos = Object.values(cart).map(item => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                return {
+                    id: item.id,
+                    nome: item.name,
+                    descricao: item.description,
+                    preco_unitario: item.price,
+                    quantidade: item.quantity,
+                    subtotal: subtotal
+                };
+            });
+
+            // Estruturar payload JSON completo
+            const webhookPayload = {
+                pedido: {
+                    sessao_id: sessionId,
+                    data_pedido: new Date().toISOString(),
+                    status: "novo",
+                    valor_total: total
+                },
+                cliente: {
+                    nome: deliveryDetails.name,
+                    telefone: sessionPhone || null
+                },
+                entrega: {
+                    cep: deliveryDetails.cep,
+                    endereco: deliveryDetails.street,
+                    numero: deliveryDetails.number,
+                    complemento: deliveryDetails.complement || null,
+                    bairro: deliveryDetails.neighborhood,
+                    cidade: deliveryDetails.city,
+                    estado: deliveryDetails.state
+                },
+                pagamento: {
+                    forma_pagamento: formaPagamento,
+                    valor_total: total
+                },
+                produtos: produtos
+            };
+
+            // Enviar para webhook do n8n
+            const webhookResponse = await fetch('https://integra.devsible.com.br/webhook-test/env_pedido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(webhookPayload)
+            });
+
+            if (webhookResponse.ok) {
+                console.log('✅ Pedido enviado com sucesso para n8n');
+            } else {
+                console.warn('⚠️ Falha ao enviar pedido para n8n:', webhookResponse.status);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao enviar webhook para n8n:', error);
         }
     }
 
@@ -518,8 +642,15 @@
             return;
         }
 
+        // Validação da forma de pagamento
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!selectedPaymentMethod) {
+            alert('Por favor, selecione uma forma de pagamento.');
+            return;
+        }
+
         if (deliveryDetails.name && deliveryDetails.street && deliveryDetails.number) {
-            await postSelection();
+            await postSelection(deliveryDetails);
             sendWhatsAppMessage(deliveryDetails);
             closeDeliveryModal();
             deliveryForm.reset();

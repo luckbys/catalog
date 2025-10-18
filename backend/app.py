@@ -61,6 +61,7 @@ class SelecaoItem(Base):
     quantidade = Column(Integer, nullable=False)
     valor_unitario = Column(Numeric(10, 2), nullable=False)
     valor_total = Column(Numeric(10, 2), nullable=False)
+    forma_pagamento = Column(String, nullable=True)  # Novo campo para forma de pagamento
     criado_em = Column(DateTime, default=datetime.utcnow)
 
 Base.metadata.create_all(bind=engine)
@@ -89,6 +90,7 @@ class SelecionarItemIn(BaseModel):
 class SelecionarPayload(BaseModel):
     produtos_selecionados: List[SelecionarItemIn]
     cliente_telefone: Optional[str] = None
+    forma_pagamento: Optional[str] = None  # Novo campo para forma de pagamento
 
 # -------------------- Utils --------------------
 def gerar_sessao_id(length: int = 10) -> str:
@@ -392,13 +394,15 @@ def selecionar_produtos(sessao_id: str, payload: SelecionarPayload, _: None = De
                 quantidade=item.quantidade,
                 valor_unitario=unit,
                 valor_total=subtotal,
+                forma_pagamento=payload.forma_pagamento,  # Incluindo forma de pagamento
             ))
         db.commit()
         return {
             "success": True,
             "selecao_id": selecao_id,
             "valor_total": float(total),
-            "produtos_selecionados": [i.dict() for i in payload.produtos_selecionados],
+            "produtos_selecionados": [{"produto_id": i.produto_id, "quantidade": i.quantidade} for i in payload.produtos_selecionados],
+            "forma_pagamento": payload.forma_pagamento,  # Retornando forma de pagamento na resposta
         }
     finally:
         db.close()
