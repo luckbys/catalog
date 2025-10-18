@@ -75,7 +75,31 @@ Acesse: http://localhost:3000
 
 ## 🌐 Deploy em Produção
 
-### Configuração Rápida
+### ⚠️ CORREÇÃO PARA ERRO 404
+
+Se você está vendo erros 404 nas páginas, use a **configuração simplificada**:
+
+```bash
+# 1. Execute o script de correção
+chmod +x deploy-fix.sh
+./deploy-fix.sh
+```
+
+**OU manualmente:**
+
+```bash
+# 1. Pare containers existentes
+docker-compose down
+
+# 2. Use a configuração correta
+docker-compose -f docker-compose.simple.yml up -d --build
+
+# 3. Verifique se funcionou
+curl http://localhost/
+curl http://localhost/catalogo.html
+```
+
+### 📋 Configuração Rápida
 
 1. **Clone o repositório na sua VPS:**
 ```bash
@@ -86,10 +110,15 @@ cd catalog
 2. **Configure as variáveis de ambiente:**
 ```bash
 cp .env.example .env
-# Edite o .env com suas configurações
+# Edite o .env com suas configurações (use HTTP, não HTTPS)
 ```
 
-3. **Para produção com SSL:**
+3. **Para deploy simples (RECOMENDADO):**
+```bash
+docker-compose -f docker-compose.simple.yml up -d --build
+```
+
+4. **Para deploy com SSL avançado:**
 ```bash
 # Crie o diretório SSL
 mkdir ssl
@@ -101,13 +130,7 @@ mkdir ssl
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
-4. **Para produção sem SSL (HTTP apenas):**
-```bash
-# Use o docker-compose padrão
-docker-compose up -d --build
-```
-
-### Troubleshooting
+### 🔧 Troubleshooting
 
 Se o sistema não estiver funcionando em produção, execute o script de diagnóstico:
 
@@ -124,61 +147,96 @@ Este script irá verificar:
 - ✅ Logs de erro
 - ✅ Certificados SSL
 
-### Principais Diferenças entre Desenvolvimento e Produção
+**Problemas comuns:**
+- ❌ **Erro 404**: Use `docker-compose.simple.yml` em vez de `docker-compose.yml`
+- ❌ **CORS**: Configure `ALLOWED_ORIGIN` no `.env`
+- ❌ **API não responde**: Verifique se backend está na porta 8000
 
-| Aspecto | Desenvolvimento | Produção |
-|---------|----------------|----------|
-| **Arquivo Docker Compose** | `docker-compose.yml` | `docker-compose.prod.yml` |
-| **Nginx Config** | `nginx.conf` | `nginx.prod.conf` |
-| **Porta Frontend** | 3000 | 80/443 |
-| **SSL** | Não | Sim (recomendado) |
-| **API_BASE** | `http://localhost:8000` | `window.location.origin` |
-| **Proxy Reverso** | Não | Sim |
+### 📊 Principais Diferenças entre Configurações
 
-### Configuração de Domínio
+| Aspecto | Desenvolvimento | Produção Simples | Produção SSL |
+|---------|----------------|------------------|-------------|
+| **Arquivo Docker Compose** | `docker-compose.yml` | `docker-compose.simple.yml` | `docker-compose.prod.yml` |
+| **Nginx Config** | `nginx.conf` | `nginx.simple.conf` | `nginx.prod.conf` |
+| **Porta Frontend** | 3000 | 80 | 80/443 |
+| **SSL** | Não | Não | Sim |
+| **API_BASE** | `http://localhost:8000` | `window.location.origin` | `window.location.origin` |
+| **Proxy Reverso** | Não | Sim | Sim |
+| **Volumes** | Não | Sim | Sim |
+
+### 🌐 Configuração de Domínio
 
 1. **Configure seu DNS** para apontar para o IP da VPS
-2. **Configure SSL** (recomendado com Let's Encrypt):
+2. **Atualize o .env**:
+```env
+CLIENT_BASE_URL=http://seu-dominio.com
+ALLOWED_ORIGIN=http://seu-dominio.com
+```
+
+3. **Para SSL (opcional)**:
 
 ```bash
 # Instalar certbot
 sudo apt update
-sudo apt install certbot
+sudo apt install certbot python3-certbot-nginx
 
 # Obter certificado
-sudo certbot certonly --standalone -d seu-dominio.com
+sudo certbot --nginx -d seu-dominio.com
 
-# Copiar certificados
+# Copiar certificados (se usando docker-compose.prod.yml)
 sudo cp /etc/letsencrypt/live/seu-dominio.com/fullchain.pem ssl/cert.pem
 sudo cp /etc/letsencrypt/live/seu-dominio.com/privkey.pem ssl/key.pem
 
 # Ajustar permissões
 sudo chown $USER:$USER ssl/*.pem
+
+# Atualizar .env para HTTPS
+CLIENT_BASE_URL=https://seu-dominio.com
+ALLOWED_ORIGIN=https://seu-dominio.com
 ```
 
-3. **Reiniciar os containers:**
+4. **Reiniciar os containers:**
 ```bash
+# Para configuração simples
+docker-compose -f docker-compose.simple.yml restart
+
+# Para configuração SSL
 docker-compose -f docker-compose.prod.yml restart
 ```
 
-### Monitoramento
+### 📈 Monitoramento
 
 Para monitorar os logs em tempo real:
 ```bash
-# Todos os serviços
+# Configuração simples - Todos os serviços
+docker-compose -f docker-compose.simple.yml logs -f
+
+# Configuração SSL - Todos os serviços
 docker-compose -f docker-compose.prod.yml logs -f
 
 # Apenas backend
-docker-compose -f docker-compose.prod.yml logs -f backend
+docker-compose -f docker-compose.simple.yml logs -f backend
 
 # Apenas frontend
-docker-compose -f docker-compose.prod.yml logs -f frontend
+docker-compose -f docker-compose.simple.yml logs -f frontend
+
+# Status dos containers
+docker-compose -f docker-compose.simple.yml ps
+
+# Parar tudo
+docker-compose -f docker-compose.simple.yml down
 ```
 
-### URLs de Acesso
+### 🔗 URLs de Acesso
 
+- **Página Principal (Demo):** `http://seu-dominio.com/` ou `http://localhost/`
+- **Catálogo:** `http://seu-dominio.com/catalogo.html?sessao_id=ID_DA_SESSAO` ou `http://localhost/catalogo.html`
+- **API Health Check:** `http://seu-dominio.com/health` ou `http://localhost:8000/health`
+- **API Produtos:** `http://seu-dominio.com/api/produtos` ou `http://localhost:8000/api/produtos`
+
+**Para SSL (se configurado):**
 - **Página Principal (Demo):** `https://seu-dominio.com/`
-- **Catálogo:** `https://seu-dominio.com/catalogo.html?sessao_id=ID_DA_SESSAO`
+- **Catálogo:** `https://seu-dominio.com/catalogo.html`
 - **API Health Check:** `https://seu-dominio.com/health`
 - **API Produtos:** `https://seu-dominio.com/api/produtos`
 
