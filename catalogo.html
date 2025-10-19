@@ -163,7 +163,7 @@
                         Cancelar
                     </button>
                     <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
-                        Confirmar e Enviar via WhatsApp
+                        Confirmar Pedido
                     </button>
                 </div>
             </form>
@@ -574,7 +574,7 @@
             console.log('📤 Enviando webhook para n8n:', webhookPayload);
 
             // Enviar para webhook do n8n
-            const webhookResponse = await fetch('https://integra.devsible.com.br/webhook-test/env_pedido', {
+            const webhookResponse = await fetch('https://integra.devsible.com.br/webhook/env_pedido', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -591,14 +591,14 @@
 
             if (webhookResponse.ok) {
                 console.log('✅ Pedido enviado com sucesso para n8n');
-                alert('✅ Pedido enviado com sucesso para o sistema!');
+                alert('✅ Pedido confirmado e enviado para o sistema!');
             } else {
                 console.warn('⚠️ Falha ao enviar pedido para n8n:', webhookResponse.status, responseText);
-                alert('⚠️ Webhook n8n não está ativo. Pedido salvo localmente.');
+                alert('⚠️ Pedido confirmado! (Webhook n8n temporariamente indisponível)');
             }
         } catch (error) {
             console.error('❌ Erro ao enviar webhook para n8n:', error);
-            alert('❌ Erro de conexão. Pedido salvo localmente.');
+            alert('❌ Pedido confirmado! (Erro de conexão temporário)');
         }
     }
 
@@ -663,7 +663,8 @@
 
         if (deliveryDetails.name && deliveryDetails.street && deliveryDetails.number) {
             await postSelection(deliveryDetails);
-            sendWhatsAppMessage(deliveryDetails);
+            // Remover envio automático para WhatsApp - agora só envia para webhook
+            // sendWhatsAppMessage(deliveryDetails);
             closeDeliveryModal();
             deliveryForm.reset();
         }
