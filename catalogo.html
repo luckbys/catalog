@@ -2,12 +2,30 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Hakim Farma - Sua Farmácia Online</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Performance optimizations -->
+    <meta name="theme-color" content="#10b981">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
+    
+    <!-- Tailwind CSS with async loading -->
+    <script>
+        // Load Tailwind CSS asynchronously
+        const tailwindScript = document.createElement('script');
+        tailwindScript.src = 'https://cdn.tailwindcss.com';
+        tailwindScript.async = true;
+        document.head.appendChild(tailwindScript);
+    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         html {
             scroll-behavior: smooth;
@@ -15,7 +33,56 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            line-height: 1.6;
         }
+        
+        /* Typography Scale for Mobile */
+        h1, .text-4xl {
+            font-size: 2.25rem;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+        
+        h2, .text-3xl {
+            font-size: 1.875rem;
+            line-height: 1.3;
+            font-weight: 600;
+        }
+        
+        h3, .text-2xl {
+            font-size: 1.5rem;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+        
+        h4, .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+        
+        h5, .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        
+        p, .text-base {
+            font-size: 1rem;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+        
         .product-card, .cart {
             transition: all 0.3s ease-in-out;
         }
@@ -67,6 +134,26 @@
             transform: scale(1.05);
         }
         
+        .mobile-menu-toggle {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-toggle:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: scale(1.05);
+        }
+        
+        /* Mobile Menu Styles */
+        .mobile-menu-open {
+            transform: translateX(0) !important;
+        }
+        
+        .mobile-overlay-show {
+            display: block !important;
+            opacity: 1 !important;
+        }
+        
         /* Estilos do Carrossel de Banners */
         .banner-carousel-section {
             position: relative;
@@ -88,32 +175,43 @@
             transform: translateX(-100%);
         }
         
-        .carousel-dot.active {
-            background: rgba(255, 255, 255, 0.9) !important;
-            transform: scale(1.2);
-        }
-        
-        .banner-slide button {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .banner-slide button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .banner-slide button:hover::before {
-            left: 100%;
-        }
-        
         @media (max-width: 768px) {
+            /* Mobile Typography Adjustments */
+            h1, .text-4xl {
+                font-size: 1.875rem;
+                line-height: 1.2;
+            }
+            
+            h2, .text-3xl {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+            
+            h3, .text-2xl {
+                font-size: 1.25rem;
+                line-height: 1.4;
+            }
+            
+            h4, .text-xl {
+                font-size: 1.125rem;
+                line-height: 1.4;
+            }
+            
+            h5, .text-lg {
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+            
+            p, .text-base {
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+            
+            .text-sm {
+                font-size: 0.8rem;
+            }
+            
+            /* Banner specific typography */
             .banner-slide {
                 padding: 1.5rem !important;
             }
@@ -128,9 +226,216 @@
                 margin-bottom: 1rem !important;
             }
             
-            .banner-slide button {
-                padding: 0.75rem 1.5rem !important;
-                font-size: 0.9rem !important;
+            /* Mobile Typography */
+            body {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            /* Mobile spacing and layout */
+            .container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            
+            /* Touch-friendly buttons */
+            button, .touch-manipulation {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Mobile product cards */
+            .product-card {
+                margin-bottom: 0.75rem;
+            }
+            
+            .product-card img {
+                height: 10rem;
+            }
+            
+            /* Mobile header adjustments */
+            .header-gradient {
+                padding: 0.75rem 0;
+            }
+            
+            /* Mobile search bar */
+            .search-bar-enhanced {
+                font-size: 0.875rem;
+            }
+            
+            /* Mobile cart drawer */
+            #cartDrawer {
+                width: 100vw;
+                max-width: none;
+            }
+            
+            /* Line clamp utility for mobile */
+            .line-clamp-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
+        
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            .banner-carousel-section {
+                padding: 0.5rem 0;
+            }
+            
+            #bannerCarousel {
+                height: 11rem;
+            }
+            
+            .product-card {
+                border-radius: 0.5rem;
+            }
+            
+            .product-card img {
+                height: 9rem;
+            }
+            
+            /* Smaller text on very small screens */
+            .text-xl {
+                font-size: 1.125rem;
+            }
+            
+            .text-lg {
+                font-size: 1rem;
+            }
+            
+            .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .product-card img {
+                height: 12rem;
+            }
+            
+            #bannerCarousel {
+                height: 18rem;
+            }
+        }
+            
+            /* Touch-friendly buttons */
+            button, .btn, a[role="button"] {
+                min-height: 44px;
+                min-width: 44px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Touch-friendly inputs */
+            input, select, textarea {
+                min-height: 44px;
+                font-size: 16px; /* Prevent zoom on iOS */
+                touch-action: manipulation;
+            }
+            
+            /* Touch-friendly product cards */
+            .product-card {
+                cursor: pointer;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            
+            .product-card:active {
+                transform: scale(0.98);
+            }
+            
+            /* Touch-friendly carousel controls */
+            .carousel-prev, .carousel-next {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 12px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Touch-friendly mobile menu items */
+            .mobile-menu-item {
+                min-height: 48px;
+                padding: 12px 16px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Improved scrolling for mobile */
+            .mobile-menu-sidebar {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+            
+            /* Touch-friendly cart buttons */
+            .cart-btn, .quantity-btn {
+                min-height: 44px;
+                min-width: 44px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Mobile spacing */
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            /* Mobile header adjustments */
+            .header-gradient {
+                padding-bottom: 0;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            /* Extra small screens typography */
+            h1, .text-4xl {
+                font-size: 1.5rem;
+                line-height: 1.2;
+            }
+            
+            h2, .text-3xl {
+                font-size: 1.25rem;
+                line-height: 1.3;
+            }
+            
+            h3, .text-2xl {
+                font-size: 1.125rem;
+                line-height: 1.4;
+            }
+            
+            h4, .text-xl {
+                font-size: 1rem;
+                line-height: 1.4;
+            }
+            
+            p, .text-base {
+                font-size: 0.875rem;
+                line-height: 1.6;
+            }
+            
+            /* Banner specific adjustments */
+            .banner-slide h3 {
+                font-size: 1.5rem !important;
+            }
+            
+            .banner-slide p {
+                font-size: 0.875rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Very small screens */
+            .banner-slide {
+                padding: 1rem !important;
+            }
+            
+            .banner-slide h3 {
+                font-size: 1.25rem !important;
             }
         }
         
@@ -164,6 +469,10 @@
         .slide-in-left {
             animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
+        /* Utility: hide scrollbar for scrollable chips */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -171,19 +480,19 @@
     <!-- Header Marketplace -->
     <header class="header-gradient sticky top-0 z-50">
         <div class="container mx-auto px-4 lg:px-6">
-            <!-- Top Bar -->
-            <div class="flex items-center justify-between py-4 border-b border-slate-200/60">
+            <!-- Mobile Header -->
+            <div class="flex items-center justify-between py-3 md:py-4">
                 <!-- Logo -->
-                <div class="flex items-center space-x-4">
-                    <img src="/public/logo.png" alt="Hakim Farma" class="h-12 w-auto logo-glow">
-                    <div>
-                        <h1 class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Hakim Farma</h1>
-                        <p class="text-sm text-slate-600 font-medium">Sua farmácia de confiança</p>
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <img src="./public/logo.png" alt="Hakim Farma" class="h-10 md:h-16 w-auto logo-glow">
+                    <div class="hidden sm:block">
+                        <h1 class="text-lg md:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Hakim Farma</h1>
+                        <p class="text-xs md:text-sm text-slate-600 font-medium">Sua farmácia de confiança</p>
                     </div>
                 </div>
 
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-3xl mx-8 hidden md:block">
+                <!-- Desktop Search Bar -->
+                <div class="flex-1 max-w-3xl mx-8 hidden lg:block">
                     <div class="relative">
                         <input 
                             id="searchInput" 
@@ -200,19 +509,19 @@
                     </div>
                 </div>
 
-                <!-- Cart and Actions -->
-                <div class="flex items-center space-x-3">
+                <!-- Actions -->
+                <div class="flex items-center space-x-2 md:space-x-3">
                     <!-- Mobile Search Toggle -->
-                    <button id="mobileSearchToggle" class="md:hidden p-3 mobile-search-toggle rounded-xl text-slate-600 hover:text-green-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button id="mobileSearchToggle" class="lg:hidden p-2 md:p-3 mobile-search-toggle rounded-xl text-slate-600 hover:text-green-600 transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
                         </svg>
                     </button>
 
                     <!-- Cart Button -->
-                    <button id="cartBtn" class="relative flex items-center space-x-3 cart-button-enhanced text-white px-6 py-3 rounded-xl font-semibold">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button id="cartBtn" class="relative flex items-center space-x-2 md:space-x-3 cart-button-enhanced text-white px-3 py-2 md:px-6 md:py-3 rounded-xl font-semibold text-sm md:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" class="md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <path d="M16 10a4 4 0 0 1-8 0"></path>
@@ -224,13 +533,13 @@
             </div>
 
             <!-- Mobile Search Bar -->
-            <div id="mobileSearchBar" class="md:hidden py-4 border-b border-slate-200/60 hidden">
+            <div id="mobileSearchBar" class="lg:hidden py-4 border-b border-slate-200/60 hidden">
                 <div class="relative">
                     <input 
                         id="mobileSearchInput" 
                         type="text" 
                         placeholder="🔍 Busque por medicamentos, produtos..." 
-                        class="w-full search-enhanced rounded-xl py-4 px-6 pr-14 text-slate-700 placeholder-slate-500 focus:outline-none"
+                        class="w-full search-enhanced rounded-xl py-4 px-6 pr-14 text-slate-700 placeholder-slate-500 focus:outline-none text-base"
                     />
                     <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-green-50">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -242,23 +551,25 @@
             </div>
 
             <!-- Navigation/Breadcrumb -->
-            <div class="py-4">
+            <div class="py-3 md:py-4">
                 <div class="breadcrumb-enhanced">
-                    <div class="flex items-center space-x-3 text-sm">
-                        <div class="flex items-center space-x-2 text-green-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                <polyline points="9,22 9,12 15,12 15,22"></polyline>
-                            </svg>
-                            <span class="font-semibold">Catálogo de Produtos</span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2 md:space-x-3 text-xs md:text-sm">
+                            <div class="flex items-center space-x-1 md:space-x-2 text-green-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                                </svg>
+                                <span class="font-semibold">Catálogo</span>
+                            </div>
+                            <div class="hidden sm:flex items-center space-x-2 text-slate-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="2"></circle>
+                                </svg>
+                                <span class="font-medium">Medicamentos e Produtos</span>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-2 text-slate-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 24 24" fill="currentColor">
-                                <circle cx="12" cy="12" r="2"></circle>
-                            </svg>
-                            <span class="font-medium">Medicamentos e Produtos de Saúde</span>
-                        </div>
-                        <div class="ml-auto flex items-center space-x-2 text-xs text-slate-500">
+                        <div class="hidden md:flex items-center space-x-2 text-xs text-slate-500">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 2v20m8-10H4"></path>
                             </svg>
@@ -271,31 +582,28 @@
     </header>
 
     <!-- Carrossel de Banners de Promoções -->
-    <section class="banner-carousel-section bg-gradient-to-r from-slate-50 to-white py-6">
-        <div class="container mx-auto px-4 lg:px-6">
-            <div class="relative overflow-hidden rounded-2xl shadow-2xl">
+    <section class="banner-carousel-section bg-gradient-to-r from-slate-50 to-white py-4 md:py-6">
+        <div class="container mx-auto px-3 md:px-4 lg:px-6">
+            <div class="relative overflow-hidden rounded-xl md:rounded-2xl shadow-xl md:shadow-2xl">
                 <!-- Carrossel Container -->
-                <div id="bannerCarousel" class="relative h-64 md:h-80 lg:h-96">
+                <div id="bannerCarousel" class="relative h-48 sm:h-56 md:h-80 lg:h-96 touch-pan-y">
                     <!-- Banner 1 - Desconto Medicamentos -->
-                    <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 flex items-center justify-between p-8 md:p-12">
-                        <div class="text-white max-w-lg">
-                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-                                <span class="text-sm font-semibold">🏷️ SUPER OFERTA</span>
+                    <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white max-w-full sm:max-w-lg flex-1">
+                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4">
+                                <span class="text-xs sm:text-sm font-semibold">🏷️ SUPER OFERTA</span>
                             </div>
-                            <h3 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                                Até <span class="text-yellow-300">50% OFF</span><br>
-                                em Medicamentos
+                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 leading-tight">
+                                Até <span class="text-yellow-300">50% OFF</span><br class="hidden sm:block">
+                                <span class="sm:hidden"> </span>em Medicamentos
                             </h3>
-                            <p class="text-lg mb-6 text-green-100">
-                                Aproveite descontos incríveis em uma seleção especial de medicamentos essenciais
+                            <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-6 text-green-100 leading-relaxed">
+                                Aproveite descontos incríveis em medicamentos essenciais
                             </p>
-                            <button class="bg-white text-green-600 font-bold py-3 px-8 rounded-xl hover:bg-green-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                                Ver Ofertas 🚀
-                            </button>
                         </div>
-                        <div class="hidden md:block">
-                            <div class="w-48 h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <div class="hidden lg:block flex-shrink-0 ml-4">
+                            <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
                                     <path d="M4.5 16.5c-1.5 1.5-1.5 4.5 0 6s4.5 1.5 6 0c.5-.5 1.5-1 2.5-1s2 .5 2.5 1c1.5 1.5 4.5 1.5 6 0s1.5-4.5 0-6c-.5-.5-1-1.5-1-2.5s.5-2 1-2.5c1.5-1.5 1.5-4.5 0-6s-4.5-1.5-6 0c-.5.5-1.5 1-2.5 1s-2-.5-2.5-1c-1.5-1.5-4.5-1.5-6 0s-1.5 4.5 0 6c.5.5 1 1.5 1 2.5s-.5 2-1 2.5z"></path>
                                     <path d="M9 12l2 2 4-4"></path>
                                 </svg>
@@ -304,25 +612,22 @@
                     </div>
 
                     <!-- Banner 2 - Vitaminas -->
-                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 flex items-center justify-between p-8 md:p-12">
-                        <div class="text-white max-w-lg">
-                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-                                <span class="text-sm font-semibold">💊 VITAMINAS</span>
+                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white max-w-full sm:max-w-lg flex-1">
+                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4">
+                                <span class="text-xs sm:text-sm font-semibold">💊 VITAMINAS</span>
                             </div>
-                            <h3 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                                <span class="text-yellow-300">Vitaminas</span><br>
-                                e Suplementos
+                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 leading-tight">
+                                <span class="text-yellow-300">Vitaminas</span><br class="hidden sm:block">
+                                <span class="sm:hidden"> </span>e Suplementos
                             </h3>
-                            <p class="text-lg mb-6 text-purple-100">
-                                Cuide da sua saúde com nossa linha completa de vitaminas e suplementos
+                            <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-6 text-purple-100 leading-relaxed">
+                                Cuide da sua saúde com vitaminas e suplementos
                             </p>
-                            <button class="bg-white text-purple-600 font-bold py-3 px-8 rounded-xl hover:bg-purple-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                                Explorar 💪
-                            </button>
                         </div>
-                        <div class="hidden md:block">
-                            <div class="w-48 h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <div class="hidden lg:block flex-shrink-0 ml-4">
+                            <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                     <circle cx="9" cy="9" r="2"></circle>
                                     <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
@@ -332,25 +637,22 @@
                     </div>
 
                     <!-- Banner 3 - Entrega Grátis -->
-                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 flex items-center justify-between p-8 md:p-12">
-                        <div class="text-white max-w-lg">
-                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-                                <span class="text-sm font-semibold">🚚 FRETE GRÁTIS</span>
+                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white max-w-full sm:max-w-lg flex-1">
+                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4">
+                                <span class="text-xs sm:text-sm font-semibold">🚚 FRETE GRÁTIS</span>
                             </div>
-                            <h3 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                                <span class="text-yellow-300">Entrega Grátis</span><br>
-                                em Compras Acima de R$ 99
+                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 leading-tight">
+                                <span class="text-yellow-300">Entrega Grátis</span><br class="hidden sm:block">
+                                <span class="sm:hidden"> </span>em Compras Acima de R$ 99
                             </h3>
-                            <p class="text-lg mb-6 text-blue-100">
-                                Receba seus medicamentos no conforto da sua casa sem pagar frete
+                            <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-6 text-blue-100 leading-relaxed">
+                                Receba seus medicamentos sem pagar frete
                             </p>
-                            <button class="bg-white text-blue-600 font-bold py-3 px-8 rounded-xl hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                                Comprar Agora 📦
-                            </button>
                         </div>
-                        <div class="hidden md:block">
-                            <div class="w-48 h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <div class="hidden lg:block flex-shrink-0 ml-4">
+                            <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
                                     <rect x="1" y="3" width="15" height="13"></rect>
                                     <polygon points="16,8 20,8 23,11 23,16 16,16 16,8"></polygon>
                                     <circle cx="5.5" cy="18.5" r="2.5"></circle>
@@ -360,40 +662,21 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Navegação do Carrossel -->
-                <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
-                    <button class="carousel-dot active w-3 h-3 rounded-full bg-white/80 hover:bg-white transition-all duration-300" data-slide="0"></button>
-                    <button class="carousel-dot w-3 h-3 rounded-full bg-white/40 hover:bg-white/80 transition-all duration-300" data-slide="1"></button>
-                    <button class="carousel-dot w-3 h-3 rounded-full bg-white/40 hover:bg-white/80 transition-all duration-300" data-slide="2"></button>
-                </div>
-
-                <!-- Botões de Navegação -->
-                <button id="prevBanner" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15,18 9,12 15,6"></polyline>
-                    </svg>
-                </button>
-                <button id="nextBanner" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9,18 15,12 9,6"></polyline>
-                    </svg>
-                </button>
             </div>
         </div>
     </section>
 
     <div class="container mx-auto p-4 md:p-8">
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
             <!-- Coluna de Produtos -->
             <div class="lg:col-span-3">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-semibold text-slate-800">Produtos Disponíveis</h2>
-                    <div class="flex items-center space-x-2 text-sm text-slate-600">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3 sm:gap-0">
+                    <h2 class="text-xl md:text-2xl font-semibold text-slate-800">Produtos Disponíveis</h2>
+                    <div class="flex items-center space-x-2 text-xs sm:text-sm text-slate-600">
                         <span id="productCount">0 produtos encontrados</span>
                     </div>
                 </div>
-                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                     <!-- Os produtos serão inseridos aqui pelo JavaScript -->
                 </div>
             </div>
@@ -404,11 +687,11 @@
     <div id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <div class="flex justify-between items-center p-4 border-b">
             <h2 class="text-2xl font-semibold flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                 Seu Pedido
             </h2>
             <button id="closeCartBtn" class="p-2 rounded-full hover:bg-slate-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
         <div id="cartItems" class="flex-grow overflow-y-auto p-4">
@@ -528,7 +811,7 @@
 
     <!-- Floating Action Button (FAB) to open cart -->
     <button id="openCartFab" aria-label="Abrir carrinho" class="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center z-50 transition-transform duration-200 hover:scale-110">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
         <span id="cartItemCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform scale-0 transition-transform duration-200">0</span>
     </button>
     
@@ -644,15 +927,27 @@
             return tName.includes(query) || tDesc.includes(query);
         });
         productListContainer.innerHTML = filtered.map(product => `
-            <div class="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 flex flex-col">
-                <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover" loading="lazy">
-                <div class="p-4 flex flex-col flex-grow">
-                    <h3 class="text-lg font-bold">${product.name}</h3>
-                    <p class="text-slate-600 text-sm mt-1 flex-grow">${product.description}</p>
-                    <div class="flex justify-between items-center mt-4">
-                        <span class="text-xl font-bold text-blue-600">${formatCurrency(product.price)}</span>
-                        <button class="add-to-cart-btn bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors" data-id="${product.id}" aria-label="Adicionar ${product.name} ao carrinho">
-                            Adicionar
+            <div class="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 flex flex-col transition-all duration-300">
+                <div class="relative">
+                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-40 sm:h-48 object-cover" loading="lazy">
+                    <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
+                        <span class="text-xs font-semibold text-slate-700">Disponível</span>
+                    </div>
+                </div>
+                <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight">${product.name}</h3>
+                    <p class="text-slate-600 text-xs sm:text-sm mt-1 sm:mt-2 flex-grow leading-relaxed line-clamp-2">${product.description}</p>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-3 sm:mt-4 gap-2 sm:gap-0">
+                        <span class="text-lg sm:text-xl font-bold text-green-600">${formatCurrency(product.price)}</span>
+                        <button class="add-to-cart-btn bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2.5 px-4 sm:px-6 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 touch-manipulation text-sm sm:text-base w-full sm:w-auto" data-id="${product.id}" aria-label="Adicionar ${product.name} ao carrinho">
+                            <span class="flex items-center justify-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                <span>Adicionar</span>
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -1138,7 +1433,6 @@
         // --- FUNCIONALIDADE DO CARROSSEL DE BANNERS ---
         let currentSlide = 0;
         const slides = document.querySelectorAll('.banner-slide');
-        const dots = document.querySelectorAll('.carousel-dot');
         const totalSlides = slides.length;
         let autoSlideInterval;
         
@@ -1152,11 +1446,6 @@
                 } else if (i < index) {
                     slide.classList.add('prev');
                 }
-            });
-            
-            // Atualiza dots
-            dots.forEach((dot, i) => {
-                dot.classList.toggle('active', i === index);
             });
             
             currentSlide = index;
@@ -1204,15 +1493,6 @@
                 startAutoSlide(); // Reinicia o auto-play
             });
         }
-        
-        // Event listeners para dots
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                stopAutoSlide();
-                showSlide(index);
-                startAutoSlide(); // Reinicia o auto-play
-            });
-        });
         
         // Pausar auto-play quando mouse estiver sobre o carrossel
         const carousel = document.getElementById('bannerCarousel');
@@ -1315,6 +1595,80 @@
             smoothScrollTo(productsSection, 2500); // 2.5 segundos de duração da animação
             
         }, 3000); // 3 segundos de delay
+        
+        // --- FUNCIONALIDADE DO SEARCH MOBILE ---
+        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+        const mobileSearchBar = document.getElementById('mobileSearchBar');
+        const mobileSearchInput = document.getElementById('mobileSearchInput');
+        const desktopSearchInput = document.getElementById('searchInput');
+        
+        if (mobileSearchToggle && mobileSearchBar) {
+            mobileSearchToggle.addEventListener('click', () => {
+                mobileSearchBar.classList.toggle('hidden');
+                if (!mobileSearchBar.classList.contains('hidden')) {
+                    setTimeout(() => mobileSearchInput.focus(), 100);
+                }
+            });
+        }
+        
+        // Sincronizar campos de busca
+        if (mobileSearchInput && desktopSearchInput) {
+            mobileSearchInput.addEventListener('input', (e) => {
+                desktopSearchInput.value = e.target.value;
+                // Trigger search functionality
+                if (window.filterProducts) {
+                    window.filterProducts();
+                }
+            });
+            
+            desktopSearchInput.addEventListener('input', (e) => {
+                mobileSearchInput.value = e.target.value;
+            });
+        }
+        
+        // Performance optimizations
+        // Lazy load images
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy');
+                    imageObserver.unobserve(img);
+                }
+            });
+        });
+        
+        lazyImages.forEach(img => imageObserver.observe(img));
+        
+        // Debounce scroll events for better performance
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            scrollTimeout = setTimeout(() => {
+                // Handle scroll events here if needed
+            }, 16); // ~60fps
+        }, { passive: true });
+        
+        // Optimize touch events
+        document.addEventListener('touchstart', () => {}, { passive: true });
+        document.addEventListener('touchmove', () => {}, { passive: true });
+        
+        // Preload critical resources on interaction
+        let interactionStarted = false;
+        const startInteraction = () => {
+            if (!interactionStarted) {
+                interactionStarted = true;
+                // Preload additional resources here if needed
+            }
+        };
+        
+        document.addEventListener('touchstart', startInteraction, { once: true, passive: true });
+        document.addEventListener('mousedown', startInteraction, { once: true, passive: true });
+        
     });
     </script>
 </body>
