@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monte seu Pedido - Farmácia</title>
+    <title>Hakim Farma - Sua Farmácia Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
@@ -14,7 +14,7 @@
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* bg-slate-50 */
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
         .product-card, .cart {
             transition: all 0.3s ease-in-out;
@@ -22,23 +22,376 @@
         #deliveryModal.flex {
             display: flex;
         }
+        .header-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .logo-glow {
+            filter: drop-shadow(0 2px 8px rgba(34, 197, 94, 0.2));
+        }
+        .search-enhanced {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+        .search-enhanced:focus {
+            border-color: #10b981;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15), 0 0 0 3px rgba(16, 185, 129, 0.1);
+            transform: translateY(-1px);
+        }
+        .cart-button-enhanced {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .cart-button-enhanced:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        .breadcrumb-enhanced {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        .mobile-search-toggle {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            transition: all 0.3s ease;
+        }
+        .mobile-search-toggle:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: scale(1.05);
+        }
+        
+        /* Estilos do Carrossel de Banners */
+        .banner-carousel-section {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .banner-slide {
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .banner-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .banner-slide.prev {
+            transform: translateX(-100%);
+        }
+        
+        .carousel-dot.active {
+            background: rgba(255, 255, 255, 0.9) !important;
+            transform: scale(1.2);
+        }
+        
+        .banner-slide button {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .banner-slide button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .banner-slide button:hover::before {
+            left: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .banner-slide {
+                padding: 1.5rem !important;
+            }
+            
+            .banner-slide h3 {
+                font-size: 1.75rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .banner-slide p {
+                font-size: 0.95rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .banner-slide button {
+                padding: 0.75rem 1.5rem !important;
+                font-size: 0.9rem !important;
+            }
+        }
+        
+        /* Animações suaves para transições */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="text-slate-800">
 
-    <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-blue-600">Sua Farmácia de Confiança</h1>
-            <p class="text-lg text-slate-600 mt-2">Selecione os produtos abaixo para montar o seu pedido.</p>
-        </header>
+    <!-- Header Marketplace -->
+    <header class="header-gradient sticky top-0 z-50">
+        <div class="container mx-auto px-4 lg:px-6">
+            <!-- Top Bar -->
+            <div class="flex items-center justify-between py-4 border-b border-slate-200/60">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <img src="/public/logo.png" alt="Hakim Farma" class="h-12 w-auto logo-glow">
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Hakim Farma</h1>
+                        <p class="text-sm text-slate-600 font-medium">Sua farmácia de confiança</p>
+                    </div>
+                </div>
 
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-3xl mx-8 hidden md:block">
+                    <div class="relative">
+                        <input 
+                            id="searchInput" 
+                            type="text" 
+                            placeholder="🔍 Busque por medicamentos, produtos de saúde, vitaminas..." 
+                            class="w-full search-enhanced rounded-xl py-4 px-6 pr-14 text-slate-700 placeholder-slate-500 focus:outline-none"
+                        />
+                        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-green-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cart and Actions -->
+                <div class="flex items-center space-x-3">
+                    <!-- Mobile Search Toggle -->
+                    <button id="mobileSearchToggle" class="md:hidden p-3 mobile-search-toggle rounded-xl text-slate-600 hover:text-green-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Cart Button -->
+                    <button id="cartBtn" class="relative flex items-center space-x-3 cart-button-enhanced text-white px-6 py-3 rounded-xl font-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cartCount" class="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Search Bar -->
+            <div id="mobileSearchBar" class="md:hidden py-4 border-b border-slate-200/60 hidden">
+                <div class="relative">
+                    <input 
+                        id="mobileSearchInput" 
+                        type="text" 
+                        placeholder="🔍 Busque por medicamentos, produtos..." 
+                        class="w-full search-enhanced rounded-xl py-4 px-6 pr-14 text-slate-700 placeholder-slate-500 focus:outline-none"
+                    />
+                    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-green-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation/Breadcrumb -->
+            <div class="py-4">
+                <div class="breadcrumb-enhanced">
+                    <div class="flex items-center space-x-3 text-sm">
+                        <div class="flex items-center space-x-2 text-green-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                            </svg>
+                            <span class="font-semibold">Catálogo de Produtos</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-slate-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                            <span class="font-medium">Medicamentos e Produtos de Saúde</span>
+                        </div>
+                        <div class="ml-auto flex items-center space-x-2 text-xs text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2v20m8-10H4"></path>
+                            </svg>
+                            <span>Entrega rápida e segura</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Carrossel de Banners de Promoções -->
+    <section class="banner-carousel-section bg-gradient-to-r from-slate-50 to-white py-6">
+        <div class="container mx-auto px-4 lg:px-6">
+            <div class="relative overflow-hidden rounded-2xl shadow-2xl">
+                <!-- Carrossel Container -->
+                <div id="bannerCarousel" class="relative h-64 md:h-80 lg:h-96">
+                    <!-- Banner 1 - Desconto Medicamentos -->
+                    <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 flex items-center justify-between p-8 md:p-12">
+                        <div class="text-white max-w-lg">
+                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+                                <span class="text-sm font-semibold">🏷️ SUPER OFERTA</span>
+                            </div>
+                            <h3 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                                Até <span class="text-yellow-300">50% OFF</span><br>
+                                em Medicamentos
+                            </h3>
+                            <p class="text-lg mb-6 text-green-100">
+                                Aproveite descontos incríveis em uma seleção especial de medicamentos essenciais
+                            </p>
+                            <button class="bg-white text-green-600 font-bold py-3 px-8 rounded-xl hover:bg-green-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Ver Ofertas 🚀
+                            </button>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="w-48 h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                                    <path d="M4.5 16.5c-1.5 1.5-1.5 4.5 0 6s4.5 1.5 6 0c.5-.5 1.5-1 2.5-1s2 .5 2.5 1c1.5 1.5 4.5 1.5 6 0s1.5-4.5 0-6c-.5-.5-1-1.5-1-2.5s.5-2 1-2.5c1.5-1.5 1.5-4.5 0-6s-4.5-1.5-6 0c-.5.5-1.5 1-2.5 1s-2-.5-2.5-1c-1.5-1.5-4.5-1.5-6 0s-1.5 4.5 0 6c.5.5 1 1.5 1 2.5s-.5 2-1 2.5z"></path>
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banner 2 - Vitaminas -->
+                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 flex items-center justify-between p-8 md:p-12">
+                        <div class="text-white max-w-lg">
+                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+                                <span class="text-sm font-semibold">💊 VITAMINAS</span>
+                            </div>
+                            <h3 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                                <span class="text-yellow-300">Vitaminas</span><br>
+                                e Suplementos
+                            </h3>
+                            <p class="text-lg mb-6 text-purple-100">
+                                Cuide da sua saúde com nossa linha completa de vitaminas e suplementos
+                            </p>
+                            <button class="bg-white text-purple-600 font-bold py-3 px-8 rounded-xl hover:bg-purple-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Explorar 💪
+                            </button>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="w-48 h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="9" cy="9" r="2"></circle>
+                                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banner 3 - Entrega Grátis -->
+                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 flex items-center justify-between p-8 md:p-12">
+                        <div class="text-white max-w-lg">
+                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+                                <span class="text-sm font-semibold">🚚 FRETE GRÁTIS</span>
+                            </div>
+                            <h3 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                                <span class="text-yellow-300">Entrega Grátis</span><br>
+                                em Compras Acima de R$ 99
+                            </h3>
+                            <p class="text-lg mb-6 text-blue-100">
+                                Receba seus medicamentos no conforto da sua casa sem pagar frete
+                            </p>
+                            <button class="bg-white text-blue-600 font-bold py-3 px-8 rounded-xl hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Comprar Agora 📦
+                            </button>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="w-48 h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16,8 20,8 23,11 23,16 16,16 16,8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navegação do Carrossel -->
+                <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
+                    <button class="carousel-dot active w-3 h-3 rounded-full bg-white/80 hover:bg-white transition-all duration-300" data-slide="0"></button>
+                    <button class="carousel-dot w-3 h-3 rounded-full bg-white/40 hover:bg-white/80 transition-all duration-300" data-slide="1"></button>
+                    <button class="carousel-dot w-3 h-3 rounded-full bg-white/40 hover:bg-white/80 transition-all duration-300" data-slide="2"></button>
+                </div>
+
+                <!-- Botões de Navegação -->
+                <button id="prevBanner" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                </button>
+                <button id="nextBanner" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9,18 15,12 9,6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="container mx-auto p-4 md:p-8">
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Coluna de Produtos -->
             <div class="lg:col-span-3">
-                <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Produtos Disponíveis</h2>
-                <div class="mb-4">
-                    <label for="searchInput" class="sr-only">Buscar produtos</label>
-                    <input id="searchInput" type="text" placeholder="Buscar produtos..." class="w-full md:w-96 border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-semibold text-slate-800">Produtos Disponíveis</h2>
+                    <div class="flex items-center space-x-2 text-sm text-slate-600">
+                        <span id="productCount">0 produtos encontrados</span>
+                    </div>
                 </div>
                 <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <!-- Os produtos serão inseridos aqui pelo JavaScript -->
@@ -243,8 +596,10 @@
     const cartDrawer = document.getElementById('cartDrawer');
     const cartOverlay = document.getElementById('cartOverlay');
     const openCartFab = document.getElementById('openCartFab');
+    const cartBtn = document.getElementById('cartBtn');
     const closeCartBtn = document.getElementById('closeCartBtn');
     const cartItemCount = document.getElementById('cartItemCount');
+    const cartCount = document.getElementById('cartCount');
     const deliveryModal = document.getElementById('deliveryModal');
     const deliveryForm = document.getElementById('deliveryForm');
     const cancelDeliveryBtn = document.getElementById('cancelDeliveryBtn');
@@ -272,7 +627,17 @@
 
     function renderProducts() {
         if (!productListContainer) return;
-        const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+        const searchInput = document.getElementById('searchInput');
+        const headerSearchInput = document.getElementById('headerSearchInput');
+        
+        // Pegar valor de busca de qualquer um dos campos
+        let query = '';
+        if (searchInput && searchInput.value) {
+            query = searchInput.value.toLowerCase().trim();
+        } else if (headerSearchInput && headerSearchInput.value) {
+            query = headerSearchInput.value.toLowerCase().trim();
+        }
+        
         const filtered = productsData.filter(p => {
             const tName = p.name.toLowerCase();
             const tDesc = p.description.toLowerCase();
@@ -393,6 +758,11 @@
                 cartItemCount.textContent = '0';
                 cartItemCount.classList.add('scale-0');
             }
+        }
+
+        // Atualizar contador do header
+        if (cartCount) {
+            cartCount.textContent = String(totalItems);
         }
     }
     
@@ -574,7 +944,7 @@
             console.log('📤 Enviando webhook para n8n:', webhookPayload);
 
             // Enviar para webhook do n8n
-            const webhookResponse = await fetch('https://integra.devsible.com.br/webhook-test/env_pedido', {
+            const webhookResponse = await fetch('https://integra.devsible.com.br/webhook/env_pedido', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -710,6 +1080,7 @@
     });
 
     openCartFab.addEventListener('click', toggleCart);
+    cartBtn.addEventListener('click', toggleCart);
     closeCartBtn.addEventListener('click', toggleCart);
     cartOverlay.addEventListener('click', toggleCart);
     
@@ -739,10 +1110,211 @@
         renderCart();
 
         const searchInputEl = document.getElementById('searchInput');
+        const headerSearchInputEl = document.getElementById('headerSearchInput');
+        
+        // Sincronizar campos de busca
+        function syncSearchFields(sourceField, targetField) {
+            if (sourceField && targetField) {
+                targetField.value = sourceField.value;
+            }
+        }
+        
         if (searchInputEl) {
-            const handleSearch = debounce(renderProducts, 200);
+            const handleSearch = debounce(() => {
+                syncSearchFields(searchInputEl, headerSearchInputEl);
+                renderProducts();
+            }, 200);
             searchInputEl.addEventListener('input', handleSearch);
         }
+        
+        if (headerSearchInputEl) {
+            const handleHeaderSearch = debounce(() => {
+                syncSearchFields(headerSearchInputEl, searchInputEl);
+                renderProducts();
+            }, 200);
+            headerSearchInputEl.addEventListener('input', handleHeaderSearch);
+        }
+        
+        // --- FUNCIONALIDADE DO CARROSSEL DE BANNERS ---
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.banner-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+        const totalSlides = slides.length;
+        let autoSlideInterval;
+        
+        // Função para mostrar slide específico
+        function showSlide(index) {
+            // Remove classes ativas de todos os slides
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active', 'prev');
+                if (i === index) {
+                    slide.classList.add('active');
+                } else if (i < index) {
+                    slide.classList.add('prev');
+                }
+            });
+            
+            // Atualiza dots
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            currentSlide = index;
+        }
+        
+        // Função para próximo slide
+        function nextSlide() {
+            const next = (currentSlide + 1) % totalSlides;
+            showSlide(next);
+        }
+        
+        // Função para slide anterior
+        function prevSlide() {
+            const prev = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(prev);
+        }
+        
+        // Auto-play do carrossel
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(nextSlide, 5000); // Muda a cada 5 segundos
+        }
+        
+        function stopAutoSlide() {
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+            }
+        }
+        
+        // Event listeners para navegação
+        const nextBtn = document.getElementById('nextBanner');
+        const prevBtn = document.getElementById('prevBanner');
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                stopAutoSlide();
+                nextSlide();
+                startAutoSlide(); // Reinicia o auto-play
+            });
+        }
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                stopAutoSlide();
+                prevSlide();
+                startAutoSlide(); // Reinicia o auto-play
+            });
+        }
+        
+        // Event listeners para dots
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                stopAutoSlide();
+                showSlide(index);
+                startAutoSlide(); // Reinicia o auto-play
+            });
+        });
+        
+        // Pausar auto-play quando mouse estiver sobre o carrossel
+        const carousel = document.getElementById('bannerCarousel');
+        if (carousel) {
+            carousel.addEventListener('mouseenter', stopAutoSlide);
+            carousel.addEventListener('mouseleave', startAutoSlide);
+        }
+        
+        // Suporte para navegação por teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                stopAutoSlide();
+                prevSlide();
+                startAutoSlide();
+            } else if (e.key === 'ArrowRight') {
+                stopAutoSlide();
+                nextSlide();
+                startAutoSlide();
+            }
+        });
+        
+        // Suporte para touch/swipe em dispositivos móveis
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        if (carousel) {
+            carousel.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            carousel.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+        }
+        
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                stopAutoSlide();
+                if (diff > 0) {
+                    nextSlide(); // Swipe left - próximo slide
+                } else {
+                    prevSlide(); // Swipe right - slide anterior
+                }
+                startAutoSlide();
+            }
+        }
+        
+        // Inicializar carrossel
+        if (slides.length > 0) {
+            showSlide(0);
+            startAutoSlide();
+        }
+        
+        // --- SCROLL AUTOMÁTICO PARA PRODUTOS APÓS 3 SEGUNDOS ---
+        setTimeout(() => {
+            // Função de scroll suave personalizada com easing
+            function smoothScrollTo(targetElement, duration = 2000) {
+                const startPosition = window.pageYOffset;
+                const targetPosition = targetElement ? 
+                    targetElement.getBoundingClientRect().top + window.pageYOffset - 100 : // 100px de offset do topo
+                    window.innerHeight * 0.8;
+                
+                const distance = targetPosition - startPosition;
+                let startTime = null;
+                
+                // Função de easing suave (ease-in-out)
+                function easeInOutCubic(t) {
+                    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                }
+                
+                function animation(currentTime) {
+                    if (startTime === null) startTime = currentTime;
+                    const timeElapsed = currentTime - startTime;
+                    const progress = Math.min(timeElapsed / duration, 1);
+                    
+                    const easedProgress = easeInOutCubic(progress);
+                    const currentPosition = startPosition + (distance * easedProgress);
+                    
+                    window.scrollTo(0, currentPosition);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animation);
+                    }
+                }
+                
+                requestAnimationFrame(animation);
+            }
+            
+            // Encontrar a seção de produtos
+            const productsSection = document.querySelector('main') || 
+                                  document.querySelector('.grid') || 
+                                  document.querySelector('#products') ||
+                                  document.querySelector('[class*="product"]');
+            
+            // Aplicar scroll suave personalizado
+            smoothScrollTo(productsSection, 2500); // 2.5 segundos de duração da animação
+            
+        }, 3000); // 3 segundos de delay
     });
     </script>
 </body>
