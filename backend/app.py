@@ -122,6 +122,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Montar arquivos estáticos
+app.mount("/public", StaticFiles(directory="public"), name="public")
+
 # Servir arquivos estáticos
 @app.get("/catalogo.html")
 async def serve_catalogo():
