@@ -9,20 +9,13 @@
     <meta name="theme-color" content="#10b981">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
     
     <!-- Preload critical resources -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
     
-    <!-- Tailwind CSS with async loading -->
-    <script>
-        // Load Tailwind CSS asynchronously
-        const tailwindScript = document.createElement('script');
-        tailwindScript.src = 'https://cdn.tailwindcss.com';
-        tailwindScript.async = true;
-        document.head.appendChild(tailwindScript);
-    </script>
+    <!-- Tailwind CSS - Local Build -->
+    <link rel="stylesheet" href="./public/styles.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
@@ -775,7 +768,7 @@
 <body class="text-slate-800">
 
     <!-- Header Marketplace -->
-    <header class="header-gradient sticky top-0 z-50">
+    <header class="header-gradient sticky top-0 z-50 transition-transform duration-300 ease-in-out header-visible" id="mainHeader">
         <div class="container mx-auto px-4 lg:px-6">
             <!-- Mobile Header -->
             <div class="flex items-center justify-between py-3 md:py-4">
@@ -1106,6 +1099,13 @@
     <!-- Overlay for Drawer -->
     <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[99] hidden transition-opacity duration-300"></div>
 
+    <!-- Scroll to Top FAB -->
+    <button id="scrollToTopFab" class="scroll-to-top-fab" title="Voltar ao topo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 14L12 9L17 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
     <!-- Modal de Confirmação -->
     <div id="toast" class="fixed bottom-5 right-5 bg-blue-500 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-[101]">
         <p>Item adicionado ao carrinho!</p>
@@ -1177,8 +1177,12 @@
     const cancelDeliveryBtn = document.getElementById('cancelDeliveryBtn');
     const cepInput = document.getElementById('customerCep');
     const cepLoading = document.getElementById('cep-loading');
+    const mainHeader = document.getElementById('mainHeader');
+    const scrollToTopFab = document.getElementById('scrollToTopFab');
     let sessionId = null;
     let sessionPhone = null;
+    let lastScrollY = 0;
+    let isScrollingDown = false;
     
     // Configuração da API - ajuste para produção
     const API_BASE = window.location.hostname === 'localhost' 
@@ -1665,6 +1669,54 @@
         if (event.key === 'Escape' && !deliveryModal.classList.contains('hidden')) {
             closeDeliveryModal();
         }
+    });
+
+    // Header hide/show and scroll to top functionality
+    function handleScroll() {
+        const currentScrollY = window.scrollY;
+        
+        // Header hide/show logic
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            // Scrolling down
+            if (!isScrollingDown) {
+                isScrollingDown = true;
+                mainHeader.classList.remove('header-visible');
+                mainHeader.classList.add('header-hidden');
+            }
+        } else if (currentScrollY < lastScrollY) {
+            // Scrolling up
+            if (isScrollingDown) {
+                isScrollingDown = false;
+                mainHeader.classList.remove('header-hidden');
+                mainHeader.classList.add('header-visible');
+            }
+        }
+        
+        // Scroll to top FAB visibility
+        if (currentScrollY > 300) {
+            scrollToTopFab.classList.add('visible');
+        } else {
+            scrollToTopFab.classList.remove('visible');
+        }
+        
+        lastScrollY = currentScrollY;
+    }
+
+    // Throttle scroll events for better performance
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        scrollTimeout = setTimeout(handleScroll, 10);
+    });
+
+    // Scroll to top FAB click handler
+    scrollToTopFab.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
