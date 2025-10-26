@@ -244,7 +244,8 @@
                 // Renderizar produtos
                 productsGrid.innerHTML = data.produtos.map(produto => `
                     <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
-                        <img src="${produto.imagem_url}" alt="${produto.descricao}" class="w-full h-48 object-cover">
+                        <img src="${produto.imagem_url || 'http://localhost:8000/public/ppadrão.png'}" alt="${produto.descricao}" class="w-full h-48 object-cover"
+                                 onerror="this.onerror=null; this.src='http://localhost:8000/public/ppadrão.png';">
                         <div class="p-6">
                             <h3 class="text-lg font-bold text-gray-800 mb-2">${produto.descricao}</h3>
                             <p class="text-gray-600 text-sm mb-3">${produto.categoria}</p>
