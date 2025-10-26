@@ -27,9 +27,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -1109,12 +1106,6 @@
     <!-- Overlay for Drawer -->
     <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[99] hidden transition-opacity duration-300"></div>
 
-    <!-- Floating Action Button (FAB) to open cart -->
-    <button id="openCartFab" aria-label="Abrir carrinho" class="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center z-50 transition-transform duration-200 hover:scale-110">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-        <span id="cartItemCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform scale-0 transition-transform duration-200">0</span>
-    </button>
-    
     <!-- Modal de Confirmação -->
     <div id="toast" class="fixed bottom-5 right-5 bg-blue-500 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-[101]">
         <p>Item adicionado ao carrinho!</p>
@@ -1178,10 +1169,8 @@
     const toastElement = document.getElementById('toast');
     const cartDrawer = document.getElementById('cartDrawer');
     const cartOverlay = document.getElementById('cartOverlay');
-    const openCartFab = document.getElementById('openCartFab');
     const cartBtn = document.getElementById('cartBtn');
     const closeCartBtn = document.getElementById('closeCartBtn');
-    const cartItemCount = document.getElementById('cartItemCount');
     const cartCount = document.getElementById('cartCount');
     const deliveryModal = document.getElementById('deliveryModal');
     const deliveryForm = document.getElementById('deliveryForm');
@@ -1345,16 +1334,6 @@
         });
 
         cartTotalElement.textContent = formatCurrency(total);
-
-        if (cartItemCount) {
-            if (totalItems > 0) {
-                cartItemCount.textContent = String(totalItems);
-                cartItemCount.classList.remove('scale-0');
-            } else {
-                cartItemCount.textContent = '0';
-                cartItemCount.classList.add('scale-0');
-            }
-        }
 
         // Atualizar contador do header
         if (cartCount) {
@@ -1675,7 +1654,6 @@
         }
     });
 
-    openCartFab.addEventListener('click', toggleCart);
     cartBtn.addEventListener('click', toggleCart);
     closeCartBtn.addEventListener('click', toggleCart);
     cartOverlay.addEventListener('click', toggleCart);
@@ -1851,51 +1829,6 @@
             startAutoSlide();
         }
         
-        // --- SCROLL AUTOMÁTICO PARA PRODUTOS APÓS 3 SEGUNDOS ---
-        setTimeout(() => {
-            // Função de scroll suave personalizada com easing
-            function smoothScrollTo(targetElement, duration = 2000) {
-                const startPosition = window.pageYOffset;
-                const targetPosition = targetElement ? 
-                    targetElement.getBoundingClientRect().top + window.pageYOffset - 100 : // 100px de offset do topo
-                    window.innerHeight * 0.8;
-                
-                const distance = targetPosition - startPosition;
-                let startTime = null;
-                
-                // Função de easing suave (ease-in-out)
-                function easeInOutCubic(t) {
-                    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-                }
-                
-                function animation(currentTime) {
-                    if (startTime === null) startTime = currentTime;
-                    const timeElapsed = currentTime - startTime;
-                    const progress = Math.min(timeElapsed / duration, 1);
-                    
-                    const easedProgress = easeInOutCubic(progress);
-                    const currentPosition = startPosition + (distance * easedProgress);
-                    
-                    window.scrollTo(0, currentPosition);
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animation);
-                    }
-                }
-                
-                requestAnimationFrame(animation);
-            }
-            
-            // Encontrar a seção de produtos
-            const productsSection = document.querySelector('main') || 
-                                  document.querySelector('.grid') || 
-                                  document.querySelector('#products') ||
-                                  document.querySelector('[class*="product"]');
-            
-            // Aplicar scroll suave personalizado
-            smoothScrollTo(productsSection, 2500); // 2.5 segundos de duração da animação
-            
-        }, 3000); // 3 segundos de delay
         
         // --- FUNCIONALIDADE DO SEARCH MOBILE ---
         const mobileSearchToggle = document.getElementById('mobileSearchToggle');
