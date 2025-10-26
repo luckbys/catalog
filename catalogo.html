@@ -1107,8 +1107,8 @@
     </button>
 
     <!-- Modal de Confirmação -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-blue-500 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-[101]">
-        <p>Item adicionado ao carrinho!</p>
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-[101]">
+        <p class="text-center font-medium">Item adicionado ao carrinho!</p>
     </div>
 
     <script>
@@ -1554,9 +1554,15 @@
     // --- Listeners de Eventos ---
 
     productListContainer.addEventListener('click', (event) => {
-        if (event.target.classList.contains('add-to-cart-btn')) {
-            const productId = event.target.getAttribute('data-id');
-            addToCart(productId);
+        // Verifica se o clique foi no botão ou em seus elementos filhos
+        const button = event.target.closest('.add-to-cart-btn');
+        if (button) {
+            event.preventDefault();
+            event.stopPropagation();
+            const productId = button.getAttribute('data-id');
+            if (productId) {
+                addToCart(productId);
+            }
         }
     });
     
