@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste do Sistema de Pedidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Teste do Sistema de Pedidos</h1>
+        
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="customerName">Nome do Cliente:</label>
+                <input type="text" id="customerName" value="João Silva" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerPhone">Telefone:</label>
+                <input type="tel" id="customerPhone" value="5511999887766" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerAddress">Endereço:</label>
+                <input type="text" id="customerAddress" value="Rua das Flores, 123" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerCity">Cidade:</label>
+                <input type="text" id="customerCity" value="São Paulo" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerState">Estado:</label>
+                <input type="text" id="customerState" value="SP" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="paymentMethod">Forma de Pagamento:</label>
+                <select id="paymentMethod" required>
+                    <option value="pix">PIX</option>
+                    <option value="cartao">Cartão</option>
+                    <option value="dinheiro">Dinheiro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="deliveryFee">Taxa de Entrega:</label>
+                <input type="number" id="deliveryFee" value="5.00" step="0.01" required>
+            </div>
+            
+            <button type="submit">🚀 Enviar Pedido</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '⏳ Processando pedido...';
+            
+            // Dados do pedido de teste
+            const orderData = {
+                cliente: {
+                    nome: document.getElementById('customerName').value,
+                    telefone: document.getElementById('customerPhone').value
+                },
+                entrega: {
+                    endereco: document.getElementById('customerAddress').value,
+                    numero: "123",
+                    bairro: "Centro",
+                    cidade: document.getElementById('customerCity').value,
+                    estado: document.getElementById('customerState').value,
+                    cep: "01234-567",
+                    complemento: ""
+                },
+                pagamento: {
+                    forma_pagamento: document.getElementById('paymentMethod').value,
+                    valor_total: 25.50 + parseFloat(document.getElementById('deliveryFee').value)
+                },
+                produtos: [
+                    {
+                        codigo: "PROD001",
+                        nome: "Produto Teste 1",
+                        preco_unitario: 15.50,
+                        quantidade: 1,
+                        subtotal: 15.50
+                    },
+                    {
+                        codigo: "PROD002", 
+                        nome: "Produto Teste 2",
+                        preco_unitario: 10.00,
+                        quantidade: 1,
+                        subtotal: 10.00
+                    }
+                ]
+            };
+            
+            try {
+                console.log('Enviando pedido:', orderData);
+                
+                const response = await fetch('http://localhost:8000/api/process-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                console.log('Resposta:', result);
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Pedido processado com sucesso!</h3>
+                        <p><strong>ID do Pedido:</strong> ${result.order_id || 'N/A'}</p>
+                        <p><strong>Status:</strong> ${result.status || 'Processado'}</p>
+                        <p><strong>Mensagem:</strong> ${result.message || 'Pedido criado e mensagem enviada'}</p>
+                        <details>
+                            <summary>Ver detalhes completos</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    throw new Error(result.detail || 'Erro desconhecido');
+                }
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Erro ao processar pedido</h3>
+                    <p><strong>Erro:</strong> ${error.message}</p>
+                    <p>Verifique o console do navegador para mais detalhes.</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

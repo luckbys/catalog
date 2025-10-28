@@ -1485,6 +1485,7 @@
                 return {
                     id: item.id,
                     nome: item.name,
+                    codigo: item.code || "",
                     descricao: item.description,
                     preco_unitario: item.price,
                     quantidade: item.quantity,
@@ -1492,23 +1493,17 @@
                 };
             });
 
-            // Estruturar payload JSON completo
+            // Estruturar payload JSON completo para o novo sistema
             const webhookPayload = {
-                pedido: {
-                    sessao_id: sessionId,
-                    data_pedido: new Date().toISOString(),
-                    status: "novo",
-                    valor_total: total
-                },
                 cliente: {
                     nome: deliveryDetails.name,
-                    telefone: sessionPhone || null
+                    telefone: sessionPhone || ""
                 },
                 entrega: {
                     cep: deliveryDetails.cep,
                     endereco: deliveryDetails.street,
                     numero: deliveryDetails.number,
-                    complemento: deliveryDetails.complement || null,
+                    complemento: deliveryDetails.complement || "",
                     bairro: deliveryDetails.neighborhood,
                     cidade: deliveryDetails.city,
                     estado: deliveryDetails.state
@@ -1520,33 +1515,67 @@
                 produtos: produtos
             };
 
-            console.log('📤 Enviando webhook para n8n:', webhookPayload);
+            console.log('📤 Enviando pedido para sistema independente:', webhookPayload);
 
-            // Enviar para webhook do n8n
+            // Tentar primeiro o sistema independente (novo)
+            try {
+                const independentResponse = await fetch('http://localhost:8000/api/process-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(webhookPayload)
+                });
+
+                const independentResult = await independentResponse.json();
+                console.log('📥 Resposta do sistema independente:', independentResult);
+
+                if (independentResponse.ok && independentResult.status === 'success') {
+                    console.log('✅ Pedido processado com sucesso pelo sistema independente');
+                    alert(`✅ Pedido #${independentResult.order_id} confirmado e processado com sucesso!${independentResult.whatsapp_sent ? ' WhatsApp enviado!' : ''}`);
+                    return;
+                }
+            } catch (independentError) {
+                console.warn('⚠️ Sistema independente indisponível, tentando n8n como fallback:', independentError);
+            }
+
+            // Fallback para n8n (sistema antigo)
+            const legacyPayload = {
+                pedido: {
+                    sessao_id: sessionId,
+                    data_pedido: new Date().toISOString(),
+                    status: "novo",
+                    valor_total: total
+                },
+                ...webhookPayload
+            };
+
+            console.log('📤 Fallback: Enviando webhook para n8n:', legacyPayload);
+
             const webhookResponse = await fetch('https://integra.devsible.com.br/webhook-test/env_pedido', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(webhookPayload)
+                body: JSON.stringify(legacyPayload)
             });
 
             const responseText = await webhookResponse.text();
-            console.log('📥 Resposta do webhook:', {
+            console.log('📥 Resposta do webhook n8n:', {
                 status: webhookResponse.status,
                 statusText: webhookResponse.statusText,
                 response: responseText
             });
 
             if (webhookResponse.ok) {
-                console.log('✅ Pedido enviado com sucesso para n8n');
+                console.log('✅ Pedido enviado com sucesso para n8n (fallback)');
                 alert('✅ Pedido confirmado e enviado para o sistema!');
             } else {
                 console.warn('⚠️ Falha ao enviar pedido para n8n:', webhookResponse.status, responseText);
-                alert('⚠️ Pedido confirmado! (Webhook n8n temporariamente indisponível)');
+                alert('⚠️ Pedido confirmado! (Sistema temporariamente indisponível)');
             }
         } catch (error) {
-            console.error('❌ Erro ao enviar webhook para n8n:', error);
+            console.error('❌ Erro ao processar pedido:', error);
             alert('❌ Pedido confirmado! (Erro de conexão temporário)');
         }
     }

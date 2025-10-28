@@ -3,6 +3,10 @@ import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List, Optional, Dict
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -122,24 +126,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Montar arquivos estáticos
-app.mount("/public", StaticFiles(directory="public"), name="public")
+# Montar arquivos estáticos (ajustar caminho para o diretório pai)
+app.mount("/public", StaticFiles(directory="../public"), name="public")
 
 # Servir arquivos estáticos
+@app.get("/test_order.html")
+async def serve_test_order():
+    return FileResponse("test_order.html")
+
 @app.get("/catalogo.html")
 async def serve_catalogo():
     """Serve o arquivo catalogo.html"""
-    return FileResponse("catalogo.html", media_type="text/html")
+    return FileResponse("../catalogo.html", media_type="text/html")
 
 @app.get("/demo.html")
 async def serve_demo():
     """Serve o arquivo demo.html"""
-    return FileResponse("demo.html", media_type="text/html")
+    return FileResponse("../demo.html", media_type="text/html")
 
 @app.get("/favicon.ico")
 async def serve_favicon():
-    """Serve o favicon"""
-    return FileResponse("favicon.ico", media_type="image/x-icon")
+    """Serve o favicon.ico"""
+    return FileResponse("../favicon.ico", media_type="image/x-icon")
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
@@ -428,117 +436,128 @@ def status_sessao(sessao_id: str, _: None = Depends(rate_limit_dep)):
 @app.post("/api/webhook/n8n")
 def webhook_n8n(data: dict, _: None = Depends(rate_limit_dep)):
     """
-    Webhook para receber dados do n8n e criar uma sessão de catálogo.
-    Retorna o link do catálogo para enviar ao cliente.
+    Webhook para receber dados do n8n e processar pedidos
     """
     try:
-        # Validar se os dados necessários estão presentes
-        required_fields = ["cliente_telefone", "cliente_nome", "produtos"]
-        missing_fields = [field for field in required_fields if field not in data]
+        # Log dos dados recebidos
+        print(f"[WEBHOOK N8N] Dados recebidos: {data}")
         
-        if missing_fields:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Campos obrigatórios faltando: {', '.join(missing_fields)}"
-            )
+        # Validação básica dos dados
+        if not data:
+            raise HTTPException(status_code=400, detail="Dados não fornecidos")
         
-        # Processar produtos do n8n com valores padrão
+        # Extrair informações do cliente
+        cliente_info = data.get("cliente", {})
+        if not cliente_info:
+            raise HTTPException(status_code=400, detail="Informações do cliente não fornecidas")
+        
+        cliente_nome = cliente_info.get("nome", "")
+        cliente_telefone = cliente_info.get("telefone", "")
+        
+        if not cliente_nome or not cliente_telefone:
+            raise HTTPException(status_code=400, detail="Nome e telefone do cliente são obrigatórios")
+        
+        # Extrair informações de entrega
+        entrega_info = data.get("entrega", {})
+        endereco = entrega_info.get("endereco", "")
+        numero = entrega_info.get("numero", "")
+        bairro = entrega_info.get("bairro", "")
+        cidade = entrega_info.get("cidade", "")
+        cep = entrega_info.get("cep", "")
+        
+        # Extrair informações de pagamento
+        pagamento_info = data.get("pagamento", {})
+        forma_pagamento = pagamento_info.get("forma_pagamento", "")
+        valor_total = pagamento_info.get("valor_total", 0)
+        
+        # Extrair produtos
+        produtos = data.get("produtos", [])
+        if not produtos:
+            raise HTTPException(status_code=400, detail="Lista de produtos não fornecida")
+        
+        # Processar cada produto
         produtos_processados = []
-        for produto in data["produtos"]:
-            # Mapear campos do n8n para o formato esperado
+        for produto in produtos:
             produto_processado = {
-                "id": int(produto.get("id", 0)),
-                "descricao": str(produto.get("descricao", "Produto sem descrição")),
-                "preco": float(produto.get("valor", produto.get("preco", 0.0))),  # n8n usa "valor"
-                "estoque": int(produto.get("qtd", produto.get("estoque", 1))),  # n8n usa "qtd"
-                "imagem_url": produto.get("img") if produto.get("img") else produto.get("imagem_url"),
-                "categoria": produto.get("categoria") if produto.get("categoria") else None
+                "nome": produto.get("nome", ""),
+                "codigo": produto.get("codigo", ""),
+                "preco_unitario": produto.get("preco_unitario", 0),
+                "quantidade": produto.get("quantidade", 0),
+                "subtotal": produto.get("subtotal", 0)
             }
-            produtos_processados.append(ProdutoIn(**produto_processado))
+            produtos_processados.append(produto_processado)
         
-        # Criar payload para criar sessão
-        payload = CriarSessaoPayload(
-            cliente_telefone=data["cliente_telefone"],
-            cliente_nome=data["cliente_nome"],
-            produtos=produtos_processados,
-            quantidade_produtos=data.get("quantidade_produtos", len(produtos_processados)),
-            timestamp=data.get("timestamp", datetime.utcnow().isoformat())
-        )
+        # Simular processamento do pedido
+        # Aqui você pode integrar com sistemas externos, banco de dados, etc.
         
-        # Criar sessão usando a lógica existente
-        db = SessionLocal()
+        response_data = {
+            "status": "success",
+            "message": "Pedido processado com sucesso",
+            "pedido_id": f"PED-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+            "cliente": {
+                "nome": cliente_nome,
+                "telefone": cliente_telefone
+            },
+            "entrega": {
+                "endereco_completo": f"{endereco}, {numero} - {bairro} - {cidade} - CEP: {cep}"
+            },
+            "pagamento": {
+                "forma": forma_pagamento,
+                "valor_total": valor_total
+            },
+            "produtos": produtos_processados,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        print(f"[WEBHOOK N8N] Resposta: {response_data}")
+        
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[WEBHOOK N8N] Erro: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+@app.post("/api/process-order")
+def process_order(data: dict, _: None = Depends(rate_limit_dep)):
+    """
+    Endpoint para processar pedidos usando o sistema independente (sem n8n)
+    """
+    try:
+        from order_processor import order_processor, OrderPayload
+        
+        # Log dos dados recebidos
+        print(f"[PROCESS ORDER] Dados recebidos: {data}")
+        
+        # Validar e converter dados para o modelo
         try:
-            sessao_id = gerar_sessao_id()
-            expira_em = datetime.utcnow() + timedelta(hours=SESSION_VALIDITY_HOURS)
-            
-            # Criar sessão no banco
-            nova_sessao = Sessao(
-                sessao_id=sessao_id,
-                cliente_telefone=payload.cliente_telefone,
-                cliente_nome=payload.cliente_nome,
-                expira_em=expira_em
-            )
-            db.add(nova_sessao)
-            db.flush()  # Para obter o ID
-            
-            # Adicionar produtos à sessão
-            for produto in payload.produtos:
-                produto_sessao = ProdutoSessao(
-                    sessao_uuid=nova_sessao.id,
-                    produto_id=produto.id,
-                    descricao=produto.descricao,
-                    preco=produto.preco,
-                    estoque=produto.estoque,
-                    imagem_url=produto.imagem_url,
-                    categoria=produto.categoria,
-                    apresentacao=produto.apresentacao
-                )
-                db.add(produto_sessao)
-            
-            db.commit()
-            
-            # Gerar link do catálogo
-            catalogo_url = f"{CLIENT_BASE_URL}?sessao_id={sessao_id}"
-            
-            # Formatear mensagem para WhatsApp
-            quantidade_produtos = len(payload.produtos)
-            mensagem_formatada = f"""🛍️ *Catálogo de Produtos*
-
-Olá {payload.cliente_nome}! 
-
-Encontrei *{quantidade_produtos} produto{'s' if quantidade_produtos != 1 else ''}* disponível{'is' if quantidade_produtos != 1 else ''} para você! 
-
-🔗 *Clique no link abaixo para ver todos os produtos:*
-{catalogo_url}
-
-📱 Clique no link acima para ver todos os produtos encontrados!
-
-⏰ Este catálogo expira em 4 horas."""
-            
-            return {
-                "success": True,
-                "message": mensagem_formatada,
-                "data": {
-                    "sessao_id": sessao_id,
-                    "catalogo_url": catalogo_url,
-                    "cliente_nome": payload.cliente_nome,
-                    "cliente_telefone": payload.cliente_telefone,
-                    "quantidade_produtos": quantidade_produtos,
-                    "expira_em": expira_em.isoformat()
-                }
-            }
-            
+            payload = OrderPayload(**data)
         except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"Erro ao criar sessão: {str(e)}")
-        finally:
-            db.close()
+            raise HTTPException(status_code=400, detail=f"Dados inválidos: {str(e)}")
+        
+        # Processar pedido
+        result = order_processor.process_order(payload)
+        
+        if result["success"]:
+            print(f"[PROCESS ORDER] Sucesso: {result}")
+            return {
+                "status": "success",
+                "message": result["message"],
+                "order_id": result["order_id"],
+                "whatsapp_sent": result["whatsapp_sent"],
+                "data": result["data"]
+            }
+        else:
+            print(f"[PROCESS ORDER] Erro: {result}")
+            raise HTTPException(status_code=500, detail=result["message"])
             
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erro ao processar dados: {str(e)}")
+        print(f"[PROCESS ORDER] Erro inesperado: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.app:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

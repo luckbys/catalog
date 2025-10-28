@@ -1,0 +1,26 @@
+{
+  "cliente": {
+    "nome": "Teste",
+    "telefone": "11999999999"
+  },
+  "entrega": {
+    "endereco": "Rua Teste",
+    "numero": "123",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "cep": "01000-000"
+  },
+  "pagamento": {
+    "forma_pagamento": "pix",
+    "valor_total": 50.0
+  },
+  "produtos": [
+    {
+      "nome": "Produto Teste",
+      "preco_unitario": 25.0,
+      "quantidade": 2,
+      "subtotal": 50.0
+    }
+  ]
+}
