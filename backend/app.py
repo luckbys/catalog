@@ -22,7 +22,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 DB_URL = os.getenv("DB_URL", "sqlite:///./backend_data.db")
 CLIENT_BASE_URL = os.getenv("CLIENT_BASE_URL", "http://localhost:5500/catalogo.html")
 SESSION_VALIDITY_HOURS = int(os.getenv("SESSION_VALIDITY_HOURS", "4"))
-ALLOWED_ORIGINS = ["*"]  # Permite todas as origens - ajuste conforme necessidade de segurança
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGIN", "http://localhost:5500").split(",")  # Usa o domínio do .env
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
