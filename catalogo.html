@@ -1519,7 +1519,7 @@
 
             // Tentar primeiro o sistema independente (novo)
             try {
-                const independentResponse = await fetch('http://localhost:8000/api/process-order', {
+                const independentResponse = await fetch(`${API_BASE}/api/process-order`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
