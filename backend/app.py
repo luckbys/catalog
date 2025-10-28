@@ -127,7 +127,13 @@ app.add_middleware(
 )
 
 # Montar arquivos estáticos (ajustar caminho para o diretório pai)
-app.mount("/public", StaticFiles(directory="../public"), name="public")
+import os
+if os.path.exists("/app/public"):
+    # Docker environment
+    app.mount("/public", StaticFiles(directory="/app/public"), name="public")
+else:
+    # Local development environment
+    app.mount("/public", StaticFiles(directory="../public"), name="public")
 
 # Servir arquivos estáticos
 @app.get("/test_order.html")
@@ -137,17 +143,32 @@ async def serve_test_order():
 @app.get("/catalogo.html")
 async def serve_catalogo():
     """Serve o arquivo catalogo.html"""
-    return FileResponse("../catalogo.html", media_type="text/html")
+    if os.path.exists("/app/catalogo.html"):
+        # Docker environment
+        return FileResponse("/app/catalogo.html", media_type="text/html")
+    else:
+        # Local development environment
+        return FileResponse("../catalogo.html", media_type="text/html")
 
 @app.get("/demo.html")
 async def serve_demo():
     """Serve o arquivo demo.html"""
-    return FileResponse("../demo.html", media_type="text/html")
+    if os.path.exists("/app/demo.html"):
+        # Docker environment
+        return FileResponse("/app/demo.html", media_type="text/html")
+    else:
+        # Local development environment
+        return FileResponse("../demo.html", media_type="text/html")
 
 @app.get("/favicon.ico")
 async def serve_favicon():
     """Serve o favicon.ico"""
-    return FileResponse("../favicon.ico", media_type="image/x-icon")
+    if os.path.exists("/app/favicon.ico"):
+        # Docker environment
+        return FileResponse("/app/favicon.ico", media_type="image/x-icon")
+    else:
+        # Local development environment
+        return FileResponse("../favicon.ico", media_type="image/x-icon")
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
