@@ -136,6 +136,16 @@ else:
     app.mount("/public", StaticFiles(directory="../public"), name="public")
 
 # Servir arquivos estáticos
+@app.get("/")
+async def serve_root():
+    """Redireciona a rota raiz para catalogo.html"""
+    if os.path.exists("/app/catalogo.html"):
+        # Docker environment
+        return FileResponse("/app/catalogo.html", media_type="text/html")
+    else:
+        # Local development environment
+        return FileResponse("../catalogo.html", media_type="text/html")
+
 @app.get("/test_order.html")
 async def serve_test_order():
     return FileResponse("test_order.html")
