@@ -19,15 +19,21 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-# Importar order_processor no nível superior
+# Importar order_processor no nível superior (compatível com execução local e via pacote backend)
+ORDER_PROCESSOR_AVAILABLE = False
+order_processor = None
+OrderPayload = None
 try:
-    from order_processor import order_processor, OrderPayload
+    # Contexto de produção (Docker): uvicorn backend.app:app
+    from backend.order_processor import order_processor, OrderPayload  # type: ignore
     ORDER_PROCESSOR_AVAILABLE = True
-except ImportError as e:
-    print(f"[WARNING] Order processor não disponível: {e}")
-    ORDER_PROCESSOR_AVAILABLE = False
-    order_processor = None
-    OrderPayload = None
+except ImportError as e_pkg:
+    try:
+        # Contexto de desenvolvimento local: uvicorn app:app com cwd em backend/
+        from order_processor import order_processor, OrderPayload  # type: ignore
+        ORDER_PROCESSOR_AVAILABLE = True
+    except ImportError as e_local:
+        print(f"[WARNING] Order processor não disponível: pkg={e_pkg} | local={e_local}")
 
 # -------------------- Config --------------------
 DB_URL = os.getenv("DB_URL", "sqlite:///./backend_data.db")
