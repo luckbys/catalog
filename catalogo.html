@@ -1447,7 +1447,7 @@
     }
 
     async function postSelection(deliveryDetails = null) {
-        if (!sessionId) return;
+        if (!sessionId) return false;
         
         // Preparar dados dos produtos selecionados
         const produtos_selecionados = Object.values(cart).map(item => ({
@@ -1476,10 +1476,13 @@
 
             // 2. Enviar dados completos para webhook do n8n (se tiver dados de entrega)
             if (deliveryDetails) {
-                await sendWebhookToN8n(deliveryDetails, formaPagamento);
+                const ok = await sendWebhookToN8n(deliveryDetails, formaPagamento);
+                return !!ok;
             }
+            return false;
         } catch (e) {
             console.warn('Erro ao registrar seleção no backend', e);
+            throw e;
         }
     }
 
@@ -1541,7 +1544,7 @@
                 if (independentResponse.ok && independentResult.status === 'success') {
                     console.log('✅ Pedido processado com sucesso pelo sistema independente');
                     alert(`✅ Pedido #${independentResult.order_id} confirmado e processado com sucesso!${independentResult.whatsapp_sent ? ' WhatsApp enviado!' : ''}`);
-                    return;
+                    return true;
                 }
             } catch (independentError) {
                 console.warn('⚠️ Sistema independente indisponível, tentando n8n como fallback:', independentError);
@@ -1578,13 +1581,16 @@
             if (webhookResponse.ok) {
                 console.log('✅ Pedido enviado com sucesso para n8n (fallback)');
                 alert('✅ Pedido confirmado e enviado para o sistema!');
+                return true;
             } else {
                 console.warn('⚠️ Falha ao enviar pedido para n8n:', webhookResponse.status, responseText);
                 alert('⚠️ Pedido confirmado! (Sistema temporariamente indisponível)');
+                return false;
             }
         } catch (error) {
             console.error('❌ Erro ao processar pedido:', error);
             alert('❌ Pedido confirmado! (Erro de conexão temporário)');
+            return false;
         }
     }
 
@@ -1655,13 +1661,22 @@
 
         if (deliveryDetails.name && deliveryDetails.street && deliveryDetails.number) {
             try {
-                await postSelection(deliveryDetails);
-                closeDeliveryModal();
-                deliveryForm.reset();
-                // Limpar carrinho após finalização bem-sucedida
-                cart = {};
-                saveCart();
-                renderCart();
+                // Evita erro genérico quando a página foi aberta sem ?sessao_id=
+                if (!sessionId) {
+                    alert('Sessão não identificada. Abra o catálogo pelo link com "?sessao_id=..." ou gere uma sessão em /api/demo/criar-sessao.');
+                    return;
+                }
+                const sucesso = await postSelection(deliveryDetails);
+                if (sucesso) {
+                    closeDeliveryModal();
+                    deliveryForm.reset();
+                    // Limpar carrinho apenas quando pedido confirmado
+                    cart = {};
+                    saveCart();
+                    renderCart();
+                } else {
+                    alert('Não foi possível confirmar o pedido. Tente novamente.');
+                }
             } catch (error) {
                 console.error('Erro durante finalização:', error);
                 alert('Erro ao finalizar pedido. Tente novamente.');

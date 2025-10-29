@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 from supabase import create_client, Client
 from pydantic import BaseModel, Field
+from urllib.parse import quote
 
 # -------------------- Config --------------------
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
@@ -251,7 +252,8 @@ Pedido registrado com sucesso! ✅"""
                 "text": message
             }
             
-            url = f"{EVOLUTION_API_URL}/message/sendText/{EVOLUTION_INSTANCE_NAME}"
+            instance_segment = quote(EVOLUTION_INSTANCE_NAME or "", safe="")
+            url = f"{EVOLUTION_API_URL}/message/sendText/{instance_segment}"
             
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             

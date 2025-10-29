@@ -30,9 +30,12 @@ except ImportError as e:
 
 # -------------------- Config --------------------
 DB_URL = os.getenv("DB_URL", "sqlite:///./backend_data.db")
-CLIENT_BASE_URL = os.getenv("CLIENT_BASE_URL", "http://localhost:5500/catalogo.html")
+CLIENT_BASE_URL = os.getenv("CLIENT_BASE_URL", "http://localhost:8010/catalogo.html")
 SESSION_VALIDITY_HOURS = int(os.getenv("SESSION_VALIDITY_HOURS", "4"))
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGIN", "http://localhost:5500").split(",")  # Usa o domínio do .env
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGIN",
+    "http://localhost:5500,http://localhost:3000,http://localhost:8000,http://localhost:8010"
+).split(",")  # Permite origens comuns em dev/local
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
