@@ -45,17 +45,21 @@ echo "🧪 Testando endpoints..."
 
 # Teste 1: Health check
 echo "1. Testando /health..."
-curl -s -o /dev/null -w "%{http_code}" https://chatbot-catalog.zv7gpn.easypanel.host/health
+if curl -s -o /dev/null -w "%{http_code}" https://hakimfarma.devsible.com.br/health | grep -q "200"; then
+  echo "✅ Health check OK"
+else
+  echo "❌ Health check failed"
+fi
 echo ""
 
 # Teste 2: Produtos
 echo "2. Testando /api/produtos..."
-curl -s -o /dev/null -w "%{http_code}" https://chatbot-catalog.zv7gpn.easypanel.host/api/produtos
+curl -s -o /dev/null -w "%{http_code}" https://hakimfarma.devsible.com.br/api/produtos
 echo ""
 
 # Teste 3: Catalogo HTML
 echo "3. Testando catalogo.html..."
-curl -s -o /dev/null -w "%{http_code}" https://chatbot-catalog.zv7gpn.easypanel.host/catalogo.html
+curl -s -o /dev/null -w "%{http_code}" https://hakimfarma.devsible.com.br/catalogo.html
 echo ""
 
 # Teste 4: Process Order (POST)
@@ -91,7 +95,7 @@ curl -X POST \
     ]
   }' \
   -s -o /dev/null -w "%{http_code}" \
-  https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order
+  https://hakimfarma.devsible.com.br/api/process-order
 echo ""
 
 echo "✅ Deploy concluído! Verifique os códigos de status acima:"

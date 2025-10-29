@@ -16,7 +16,7 @@ def print_header(title):
 def test_vps_endpoints():
     """Testa diferentes endpoints da VPS para diagnosticar o problema"""
     
-    base_url = "https://chatbot-catalog.zv7gpn.easypanel.host"
+    base_url = "https://hakimfarma.devsible.com.br"
     
     endpoints = [
         "/",

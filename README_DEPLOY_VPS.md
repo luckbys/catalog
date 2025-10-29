@@ -82,10 +82,10 @@ docker-compose -f docker-compose.prod.yml ps
 docker-compose -f docker-compose.prod.yml logs backend
 
 # Testar health
-curl https://chatbot-catalog.zv7gpn.easypanel.host/health
+curl https://hakimfarma.devsible.com.br/health
 
 # Testar endpoint de pedido
-curl -X POST https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order \
+curl -X POST https://hakimfarma.devsible.com.br/api/process-order \
   -H "Content-Type: application/json" \
   -d '{"cliente":{"nome":"Teste"},"produtos":[]}'
 ```

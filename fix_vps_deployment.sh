@@ -102,11 +102,11 @@ curl -f http://localhost:8000/health || echo "❌ Endpoint de saúde local falho
 
 echo ""
 echo "🧪 Testando endpoint de saúde público..."
-curl -f https://chatbot-catalog.zv7gpn.easypanel.host/api/health || echo "❌ Endpoint de saúde público falhou"
+curl -f https://hakimfarma.devsible.com.br/api/health || echo "❌ Endpoint de saúde público falhou"
 
 echo ""
 echo "🧪 Testando endpoint de pedidos..."
-curl -X POST https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order \
+curl -X POST https://hakimfarma.devsible.com.br/api/process-order \
   -H "Content-Type: application/json" \
   -d '{
     "cliente": {
@@ -154,8 +154,8 @@ frontend_running=$(docker-compose -f docker-compose.prod.yml ps frontend | grep 
 
 if [ "$backend_running" -gt 0 ] && [ "$frontend_running" -gt 0 ]; then
     echo "✅ SUCESSO! Todos os serviços estão rodando"
-    echo "🌐 Frontend: https://chatbot-catalog.zv7gpn.easypanel.host"
-    echo "🔧 Backend: https://chatbot-catalog.zv7gpn.easypanel.host/api"
+    echo "🌐 Frontend: https://hakimfarma.devsible.com.br"
+    echo "🔧 Backend: https://hakimfarma.devsible.com.br/api"
     echo ""
     echo "📋 Próximos passos:"
     echo "1. Testar o catálogo no navegador"

@@ -9,7 +9,7 @@ import sys
 
 def test_vps_order():
     # URL da VPS
-    vps_url = "https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order"
+    vps_url = "https://hakimfarma.devsible.com.br/api/process-order"
     
     # Dados de teste
     test_data = {
@@ -74,7 +74,7 @@ def test_vps_order():
 
 def test_health_endpoint():
     """Testa o endpoint de health da VPS"""
-    health_url = "https://chatbot-catalog.zv7gpn.easypanel.host/health"
+    health_url = "https://hakimfarma.devsible.com.br/health"
     
     print(f"\n🏥 Testando endpoint de health...")
     print(f"URL: {health_url}")

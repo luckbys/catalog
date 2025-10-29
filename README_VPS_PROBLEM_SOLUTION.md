@@ -65,20 +65,20 @@ Após a correção, os seguintes testes devem passar:
 
 ### 1. Teste de Saúde
 ```bash
-curl https://chatbot-catalog.zv7gpn.easypanel.host/api/health
+curl https://hakimfarma.devsible.com.br/api/health
 # Esperado: Status 200
 ```
 
 ### 2. Teste de Pedido
 ```bash
-curl -X POST https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order \
+curl -X POST https://hakimfarma.devsible.com.br/api/process-order \
   -H "Content-Type: application/json" \
   -d '{"cliente":{"nome":"Teste","telefone":"11999999999"},...}'
 # Esperado: Status 200 com order_id
 ```
 
 ### 3. Teste no Navegador
-1. Acessar: https://chatbot-catalog.zv7gpn.easypanel.host
+1. Acessar: https://hakimfarma.devsible.com.br
 2. Adicionar produtos ao carrinho
 3. Clicar em "Confirmar Pedido"
 4. Verificar se o pedido foi salvo no Supabase
@@ -112,7 +112,7 @@ netstat -tlnp | grep -E ":80|:443|:8000"
 
 ### Endpoints de Saúde:
 - **Local**: http://localhost:8000/health
-- **Público**: https://chatbot-catalog.zv7gpn.easypanel.host/api/health
+- **Público**: https://hakimfarma.devsible.com.br/api/health
 
 ## 🎯 RESULTADO ESPERADO
 

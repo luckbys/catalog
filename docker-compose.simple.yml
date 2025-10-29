@@ -8,8 +8,8 @@ services:
       - "8000:8000"
     environment:
       - DB_URL=sqlite:////data/backend_data.db
-      - CLIENT_BASE_URL=${CLIENT_BASE_URL:-https://chatbot-catalog.zv7gpn.easypanel.host}
-      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-https://chatbot-catalog.zv7gpn.easypanel.host}
+      - CLIENT_BASE_URL=${CLIENT_BASE_URL:-https://hakimfarma.devsible.com.br}
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-https://hakimfarma.devsible.com.br}
       - SESSION_VALIDITY_HOURS=${SESSION_VALIDITY_HOURS:-4}
     volumes:
       - ./data:/data

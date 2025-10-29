@@ -122,7 +122,7 @@ def test_vps_backend():
     
     try:
         response = requests.post(
-            "https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order",
+            "https://hakimfarma.devsible.com.br/api/process-order",
             json=test_data,
             headers={'Content-Type': 'application/json'},
             timeout=30
