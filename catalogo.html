@@ -1383,7 +1383,15 @@
 
         const encodedMessage = encodeURIComponent(message);
         const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-        window.open(url, '_blank');
+        
+        // Criar link temporário para evitar problemas com window.open
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function openDeliveryModal() {
@@ -1646,11 +1654,18 @@
         }
 
         if (deliveryDetails.name && deliveryDetails.street && deliveryDetails.number) {
-            await postSelection(deliveryDetails);
-            // Remover envio automático para WhatsApp - agora só envia para webhook
-            // sendWhatsAppMessage(deliveryDetails);
-            closeDeliveryModal();
-            deliveryForm.reset();
+            try {
+                await postSelection(deliveryDetails);
+                closeDeliveryModal();
+                deliveryForm.reset();
+                // Limpar carrinho após finalização bem-sucedida
+                cart = {};
+                saveCart();
+                renderCart();
+            } catch (error) {
+                console.error('Erro durante finalização:', error);
+                alert('Erro ao finalizar pedido. Tente novamente.');
+            }
         }
     });
 
