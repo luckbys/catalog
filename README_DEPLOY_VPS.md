@@ -1,13 +1,18 @@
-# 🚨 Correção: Sistema de Pedidos não funciona na VPS
+# Correção do Sistema de Pedidos na VPS
 
-## 🔍 Problema Identificado
+## Problema Identificado
 
-O sistema de finalização de pedidos funciona no **localhost** mas **não funciona na VPS**. 
+O botão "Finalizar Pedido" funciona no `localhost` mas não na VPS. A investigação revelou:
 
-### Diagnóstico:
-- ✅ **Localhost**: Endpoint `/api/process-order` responde corretamente
-- ❌ **VPS**: Endpoint retorna `404 Not Found`
-- ❌ **Backend não está rodando** ou não está configurado corretamente na VPS
+1. ✅ **Supabase**: Conexão e estrutura da tabela `orders` estão corretas
+2. ❌ **Backend VPS**: O endpoint `/api/process-order` retorna 404 (backend não está rodando)
+3. ✅ **Frontend VPS**: Catalogo.html e demo.html funcionam normalmente
+
+## Causa Raiz
+
+O backend na VPS não está iniciando corretamente devido a:
+- Variáveis de ambiente do Supabase não configuradas adequadamente
+- Possível problema na configuração do Docker Compose de produção
 
 ## 🛠️ Solução
 

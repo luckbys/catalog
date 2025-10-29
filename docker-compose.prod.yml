@@ -10,8 +10,8 @@ services:
       - CLIENT_BASE_URL=${CLIENT_BASE_URL:-https://chatbot-catalog.zv7gpn.easypanel.host}
       - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-https://chatbot-catalog.zv7gpn.easypanel.host}
       - SESSION_VALIDITY_HOURS=${SESSION_VALIDITY_HOURS:-4}
-      - SUPABASE_URL=${SUPABASE_URL:-https://chatbot-supabase1.zv7gpn.easypanel.host}
-      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_URL=https://chatbot-supabase1.zv7gpn.easypanel.host
+      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE
       - EVOLUTION_API_URL=${EVOLUTION_API_URL}
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - EVOLUTION_INSTANCE_NAME=${EVOLUTION_INSTANCE_NAME}

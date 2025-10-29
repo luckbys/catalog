@@ -1,84 +1,100 @@
 #!/bin/bash
 
-echo "🚀 Corrigindo sistema de pedidos na VPS..."
+# Script para corrigir o sistema de pedidos na VPS
+# Problema: Backend não está rodando, endpoint /api/process-order retorna 404
 
-# Verificar se as variáveis de ambiente estão definidas
+echo "🚀 Iniciando correção do sistema de pedidos na VPS"
+echo "=================================================="
+
+# 1. Verificar variáveis de ambiente necessárias
 echo "🔍 Verificando variáveis de ambiente..."
+echo "SUPABASE_URL: https://chatbot-supabase1.zv7gpn.easypanel.host"
+echo "SUPABASE_KEY: [CONFIGURADO NO DOCKER-COMPOSE]"
+echo "EVOLUTION_API_URL: ${EVOLUTION_API_URL:-https://c4crm-evolution-api.zv7gpn.easypanel.host}"
+echo "EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-E7Bp3tlb9zQxd54rHzBzVOxDEwF8BDbZ9cR16WeEGXGpEeZMorP8cdrGWhpkfDQODlwh5CuO1aN8pTpj2Fwmc2ARYPgibsnoB8oXIynzcifVqhWTI7R4PCHsQcDFQM0p}"
+echo "EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-hakim t}"
+echo "WHATSAPP_PHONE: ${WHATSAPP_PHONE:-5512981443806}"
 
-if [ -z "$SUPABASE_KEY" ]; then
-    echo "❌ SUPABASE_KEY não está definida!"
-    echo "Execute: export SUPABASE_KEY=your_supabase_key"
-    exit 1
-fi
-
-if [ -z "$EVOLUTION_API_KEY" ]; then
-    echo "⚠️ EVOLUTION_API_KEY não está definida - WhatsApp não funcionará"
-fi
-
-if [ -z "$EVOLUTION_INSTANCE_NAME" ]; then
-    echo "⚠️ EVOLUTION_INSTANCE_NAME não está definida - WhatsApp não funcionará"
-fi
-
-echo "✅ Variáveis principais configuradas"
-
-# Parar containers existentes
-echo "⏹️ Parando containers..."
+# 2. Parar containers existentes
+echo "🛑 Parando containers existentes..."
 docker-compose -f docker-compose.prod.yml down
 
-# Limpar imagens antigas
-echo "🧹 Limpando imagens antigas..."
+# 3. Limpar containers e imagens antigas
+echo "🧹 Limpando containers e imagens antigas..."
 docker system prune -f
+docker image prune -f
 
-# Rebuild dos containers
-echo "🔨 Fazendo rebuild dos containers..."
-docker-compose -f docker-compose.prod.yml build --no-cache
+# 4. Reconstruir e iniciar containers
+echo "🔨 Reconstruindo e iniciando containers..."
+docker-compose -f docker-compose.prod.yml up --build -d
 
-# Iniciar containers
-echo "▶️ Iniciando containers..."
-docker-compose -f docker-compose.prod.yml up -d
-
-# Aguardar containers iniciarem
+# 5. Aguardar containers iniciarem
 echo "⏳ Aguardando containers iniciarem..."
-sleep 15
+sleep 30
 
-# Verificar se containers estão rodando
-echo "🔍 Verificando status dos containers..."
+# 6. Verificar status dos containers
+echo "📊 Verificando status dos containers..."
 docker-compose -f docker-compose.prod.yml ps
 
-# Verificar logs do backend
+# 7. Verificar logs do backend
 echo "📋 Verificando logs do backend..."
-docker-compose -f docker-compose.prod.yml logs backend | tail -20
+docker-compose -f docker-compose.prod.yml logs backend
 
-# Testar endpoints
+# 8. Testar endpoints
 echo "🧪 Testando endpoints..."
 
-echo "Testando API health..."
-curl -s https://chatbot-catalog.zv7gpn.easypanel.host/health
+# Teste 1: Health check
+echo "1. Testando /health..."
+curl -s -o /dev/null -w "%{http_code}" https://chatbot-catalog.zv7gpn.easypanel.host/health
+echo ""
 
-echo -e "\nTestando endpoint de produtos..."
-curl -s https://chatbot-catalog.zv7gpn.easypanel.host/api/produtos | head -100
+# Teste 2: Produtos
+echo "2. Testando /api/produtos..."
+curl -s -o /dev/null -w "%{http_code}" https://chatbot-catalog.zv7gpn.easypanel.host/api/produtos
+echo ""
 
-echo -e "\nTestando catalogo.html..."
-curl -s -I https://chatbot-catalog.zv7gpn.easypanel.host/catalogo.html
+# Teste 3: Catalogo HTML
+echo "3. Testando catalogo.html..."
+curl -s -o /dev/null -w "%{http_code}" https://chatbot-catalog.zv7gpn.easypanel.host/catalogo.html
+echo ""
 
-# Testar endpoint de pedido
-echo -e "\n🧪 Testando endpoint de pedido..."
-curl -X POST https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order \
+# Teste 4: Process Order (POST)
+echo "4. Testando /api/process-order..."
+curl -X POST \
   -H "Content-Type: application/json" \
   -d '{
-    "cliente": {"nome": "Teste Deploy", "telefone": "11999999999"},
-    "entrega": {"cep": "01310-100", "endereco": "Av Paulista", "numero": "1000", "bairro": "Centro", "cidade": "SP", "estado": "SP"},
-    "pagamento": {"forma_pagamento": "PIX", "valor_total": 100.00},
-    "produtos": [{"id": 1, "nome": "Teste", "preco_unitario": 100.00, "quantidade": 1, "subtotal": 100.00}]
-  }'
+    "cliente": {
+      "nome": "Teste VPS",
+      "telefone": "11999999999"
+    },
+    "entrega": {
+      "endereco": "Rua Teste",
+      "numero": "123",
+      "bairro": "Centro",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "cep": "01234-567",
+      "complemento": ""
+    },
+    "pagamento": {
+      "forma_pagamento": "pix",
+      "valor_total": 25.50
+    },
+    "produtos": [
+      {
+        "nome": "Produto Teste",
+        "codigo": "TEST001",
+        "preco_unitario": 25.50,
+        "quantidade": 1,
+        "subtotal": 25.50
+      }
+    ]
+  }' \
+  -s -o /dev/null -w "%{http_code}" \
+  https://chatbot-catalog.zv7gpn.easypanel.host/api/process-order
+echo ""
 
-echo -e "\n✅ Deploy do sistema de pedidos concluído!"
-echo "🔗 Teste o catálogo: https://chatbot-catalog.zv7gpn.easypanel.host/catalogo.html"
-
-echo -e "\n📝 Próximos passos:"
-echo "1. Configure as variáveis de ambiente no servidor:"
-echo "   - SUPABASE_KEY=sua_chave_supabase"
-echo "   - EVOLUTION_API_KEY=sua_chave_evolution"
-echo "   - EVOLUTION_INSTANCE_NAME=nome_da_instancia"
-echo "   - WHATSAPP_PHONE=seu_numero_whatsapp"
-echo "2. Execute novamente este script após configurar as variáveis"
+echo "✅ Deploy concluído! Verifique os códigos de status acima:"
+echo "   - 200: OK"
+echo "   - 404: Endpoint não encontrado"
+echo "   - 500: Erro interno do servidor"
