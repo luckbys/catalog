@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import List, Optional, Dict
 from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente do arquivo .env
+# Carregar variáveis de ambiente primeiro
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -17,6 +17,16 @@ from sqlalchemy import (
     create_engine, Column, Integer, String, DateTime, Numeric, ForeignKey
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+
+# Importar order_processor no nível superior
+try:
+    from order_processor import order_processor, OrderPayload
+    ORDER_PROCESSOR_AVAILABLE = True
+except ImportError as e:
+    print(f"[WARNING] Order processor não disponível: {e}")
+    ORDER_PROCESSOR_AVAILABLE = False
+    order_processor = None
+    OrderPayload = None
 
 # -------------------- Config --------------------
 DB_URL = os.getenv("DB_URL", "sqlite:///./backend_data.db")
@@ -556,7 +566,10 @@ def process_order(data: dict, _: None = Depends(rate_limit_dep)):
     Endpoint para processar pedidos usando o sistema independente (sem n8n)
     """
     try:
-        from order_processor import order_processor, OrderPayload
+        # Verificar se o order_processor está disponível
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            print("[PROCESS ORDER] ERRO: Order processor não está disponível")
+            raise HTTPException(status_code=500, detail="Sistema de processamento de pedidos não disponível")
         
         # Log dos dados recebidos
         print(f"[PROCESS ORDER] Dados recebidos: {data}")
@@ -564,11 +577,15 @@ def process_order(data: dict, _: None = Depends(rate_limit_dep)):
         # Validar e converter dados para o modelo
         try:
             payload = OrderPayload(**data)
+            print(f"[PROCESS ORDER] Payload validado: {payload}")
         except Exception as e:
+            print(f"[PROCESS ORDER] ERRO na validação: {str(e)}")
             raise HTTPException(status_code=400, detail=f"Dados inválidos: {str(e)}")
         
         # Processar pedido
+        print("[PROCESS ORDER] Iniciando processamento do pedido...")
         result = order_processor.process_order(payload)
+        print(f"[PROCESS ORDER] Resultado do processamento: {result}")
         
         if result["success"]:
             print(f"[PROCESS ORDER] Sucesso: {result}")
@@ -580,8 +597,16 @@ def process_order(data: dict, _: None = Depends(rate_limit_dep)):
                 "data": result["data"]
             }
         else:
-            print(f"[PROCESS ORDER] Erro: {result}")
+            print(f"[PROCESS ORDER] Erro no processamento: {result}")
             raise HTTPException(status_code=500, detail=result["message"])
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[PROCESS ORDER] ERRO GERAL: {str(e)}")
+        import traceback
+        print(f"[PROCESS ORDER] Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
             
     except HTTPException:
         raise

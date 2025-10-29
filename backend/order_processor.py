@@ -48,10 +48,20 @@ class OrderPayload(BaseModel):
 # -------------------- Order Processor --------------------
 class OrderProcessor:
     def __init__(self):
-        if not SUPABASE_URL or not SUPABASE_KEY:
-            raise ValueError("SUPABASE_URL e SUPABASE_KEY devem ser configurados")
+        print(f"[ORDER PROCESSOR] Inicializando com SUPABASE_URL: {SUPABASE_URL[:50]}..." if SUPABASE_URL else "[ORDER PROCESSOR] SUPABASE_URL não configurada")
+        print(f"[ORDER PROCESSOR] SUPABASE_KEY configurada: {'Sim' if SUPABASE_KEY else 'Não'}")
         
-        self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            error_msg = "SUPABASE_URL e SUPABASE_KEY devem ser configurados"
+            print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
+            raise ValueError(error_msg)
+        
+        try:
+            self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            print("[ORDER PROCESSOR] Cliente Supabase criado com sucesso")
+        except Exception as e:
+            print(f"[ORDER PROCESSOR] ERRO ao criar cliente Supabase: {e}")
+            raise
     
     def process_order(self, payload: OrderPayload) -> Dict[str, Any]:
         """
@@ -139,19 +149,28 @@ class OrderProcessor:
     def _create_order(self, order_data: Dict[str, Any]) -> Dict[str, Any]:
         """Cria o pedido no Supabase (equivalente ao 'Criar Pedido no Supabase')"""
         try:
+            print(f"[ORDER PROCESSOR] Criando pedido no Supabase com dados: {order_data}")
             result = self.supabase.table("orders").insert(order_data).execute()
+            print(f"[ORDER PROCESSOR] Resultado da criação do pedido: {result}")
+            
             if result.data:
+                print(f"[ORDER PROCESSOR] Pedido criado com sucesso: ID {result.data[0].get('id')}")
                 return result.data[0]
             else:
-                raise Exception("Falha ao criar pedido no Supabase")
+                error_msg = "Falha ao criar pedido no Supabase - sem dados retornados"
+                print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
+                raise Exception(error_msg)
         except Exception as e:
-            raise Exception(f"Erro ao criar pedido: {str(e)}")
+            error_msg = f"Erro ao criar pedido: {str(e)}"
+            print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
+            raise Exception(error_msg)
     
     def _create_order_items(self, order_id: int, produtos: List[Produto]) -> List[Dict[str, Any]]:
         """Cria os itens do pedido (equivalente ao 'Separar Produtos' + 'Edit Fields - Preparar Itens' + 'Criar Itens do Pedido')"""
         order_items = []
+        print(f"[ORDER PROCESSOR] Criando {len(produtos)} itens para o pedido {order_id}")
         
-        for produto in produtos:
+        for i, produto in enumerate(produtos):
             # Usar um product_id padrão (1) ou gerar um baseado no código do produto
             # Como a tabela products não existe, vamos usar uma abordagem simplificada
             product_id = hash(produto.codigo or produto.nome) % 1000000 if produto.codigo else 1
@@ -167,14 +186,23 @@ class OrderProcessor:
             }
             
             try:
+                print(f"[ORDER PROCESSOR] Criando item {i+1}/{len(produtos)}: {produto.nome}")
                 result = self.supabase.table("order_items").insert(item_data).execute()
+                print(f"[ORDER PROCESSOR] Resultado da criação do item: {result}")
+                
                 if result.data:
                     order_items.append(result.data[0])
+                    print(f"[ORDER PROCESSOR] Item criado com sucesso: {produto.nome}")
                 else:
-                    raise Exception(f"Falha ao criar item do pedido: {produto.nome}")
+                    error_msg = f"Falha ao criar item do pedido: {produto.nome} - sem dados retornados"
+                    print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
+                    raise Exception(error_msg)
             except Exception as e:
-                raise Exception(f"Erro ao criar item do pedido {produto.nome}: {str(e)}")
+                error_msg = f"Erro ao criar item do pedido {produto.nome}: {str(e)}"
+                print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
+                raise Exception(error_msg)
         
+        print(f"[ORDER PROCESSOR] Todos os {len(order_items)} itens criados com sucesso")
         return order_items
     
     def _format_message(self, order: Dict[str, Any], items: List[Dict[str, Any]]) -> str:
