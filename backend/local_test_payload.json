@@ -1,0 +1,10 @@
+{
+  "cliente_telefone": "5512976021836",
+  "cliente_nome": "Teste Criar Sessao",
+  "produtos": [
+    { "id": 1, "descricao": "Produto A", "preco": 19.9, "estoque": 10, "imagem_url": "", "categoria": "Teste", "apresentacao": "" },
+    { "id": 2, "descricao": "Produto B", "preco": 29.9, "estoque": 5, "imagem_url": "", "categoria": "Teste", "apresentacao": "" }
+  ],
+  "quantidade_produtos": 2,
+  "timestamp": "2025-10-29T10:00:00Z"
+}
