@@ -1545,48 +1545,19 @@
                     console.log('✅ Pedido processado com sucesso pelo sistema independente');
                     alert(`✅ Pedido #${independentResult.order_id} confirmado e processado com sucesso!${independentResult.whatsapp_sent ? ' WhatsApp enviado!' : ''}`);
                     return true;
+                } else {
+                    console.warn('⚠️ Falha ao processar pelo sistema independente:', independentResponse.status, independentResult);
+                    alert('⚠️ Não foi possível processar seu pedido. Tente novamente.');
+                    return false;
                 }
             } catch (independentError) {
-                console.warn('⚠️ Sistema independente indisponível, tentando n8n como fallback:', independentError);
-            }
-
-            // Fallback para n8n (sistema antigo)
-            const legacyPayload = {
-                pedido: {
-                    sessao_id: sessionId,
-                    data_pedido: new Date().toISOString(),
-                    status: "novo",
-                    valor_total: total
-                },
-                ...webhookPayload
-            };
-
-            console.log('📤 Fallback: Enviando webhook via backend para n8n:', legacyPayload);
-
-            const webhookResponse = await fetch(`${API_BASE}/api/relay/n8n`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(legacyPayload)
-            });
-
-            const responseText = await webhookResponse.text();
-            console.log('📥 Resposta do webhook n8n:', {
-                status: webhookResponse.status,
-                statusText: webhookResponse.statusText,
-                response: responseText
-            });
-
-            if (webhookResponse.ok) {
-                console.log('✅ Pedido enviado com sucesso para n8n (fallback)');
-                alert('✅ Pedido confirmado e enviado para o sistema!');
-                return true;
-            } else {
-                console.warn('⚠️ Falha ao enviar pedido para n8n:', webhookResponse.status, responseText);
-                alert('⚠️ Pedido confirmado! (Sistema temporariamente indisponível)');
+                console.warn('❌ Sistema independente indisponível:', independentError);
+                alert('❌ Não foi possível processar seu pedido agora. Tente novamente em alguns minutos.');
                 return false;
             }
+
+            // Não usar n8n para processamento de pedidos
+            return false;
         } catch (error) {
             console.error('❌ Erro ao processar pedido:', error);
             alert('❌ Pedido confirmado! (Erro de conexão temporário)');
