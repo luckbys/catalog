@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request, Depends
+import requests
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -36,6 +37,7 @@ ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGIN",
     "http://localhost:5500,http://localhost:3000,http://localhost:8000,http://localhost:8010"
 ).split(",")  # Permite origens comuns em dev/local
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
@@ -125,6 +127,23 @@ def build_catalog_url(request: Request, sessao_id: str) -> str:
 
     # Fallback para variável de ambiente
     return f"{CLIENT_BASE_URL}?sessao_id={sessao_id}"
+
+@app.post("/api/relay/n8n")
+def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_dep)):
+    """Encaminha payload para o webhook do n8n no servidor, evitando CORS no navegador.
+    Define a URL pelo env N8N_WEBHOOK_URL. Retorna corpo e status da resposta do n8n."""
+    if not N8N_WEBHOOK_URL:
+        raise HTTPException(status_code=500, detail="N8N_WEBHOOK_URL não configurada")
+    try:
+        resp = requests.post(N8N_WEBHOOK_URL, json=payload, timeout=15)
+        return {
+            "ok": resp.ok,
+            "status_code": resp.status_code,
+            "status_text": getattr(resp, 'reason', ''),
+            "response": resp.text
+        }
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Falha ao encaminhar para n8n: {str(e)}")
 def gerar_sessao_id(length: int = 10) -> str:
     import random, string
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

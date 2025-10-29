@@ -1561,9 +1561,9 @@
                 ...webhookPayload
             };
 
-            console.log('📤 Fallback: Enviando webhook para n8n:', legacyPayload);
+            console.log('📤 Fallback: Enviando webhook via backend para n8n:', legacyPayload);
 
-            const webhookResponse = await fetch('https://integra.devsible.com.br/webhook-test/env_pedido', {
+            const webhookResponse = await fetch(`${API_BASE}/api/relay/n8n`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
