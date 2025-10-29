@@ -110,6 +110,21 @@ class SelecionarPayload(BaseModel):
     forma_pagamento: Optional[str] = None  # Novo campo para forma de pagamento
 
 # -------------------- Utils --------------------
+def build_catalog_url(request: Request, sessao_id: str) -> str:
+    """Montar URL do catálogo usando host e scheme da requisição.
+    Considera cabeçalhos de proxy (x-forwarded-*) para ambientes atrás de Nginx.
+    Fallback para CLIENT_BASE_URL quando não houver informações suficientes.
+    """
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host")
+    scheme = forwarded_proto or request.url.scheme
+    host = forwarded_host or request.headers.get("host") or request.url.hostname
+
+    if scheme and host:
+        return f"{scheme}://{host}/catalogo.html?sessao_id={sessao_id}"
+
+    # Fallback para variável de ambiente
+    return f"{CLIENT_BASE_URL}?sessao_id={sessao_id}"
 def gerar_sessao_id(length: int = 10) -> str:
     import random, string
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -269,7 +284,7 @@ def listar_produtos_demo():
     return {"produtos": produtos_demo}
 
 @app.post("/api/demo/criar-sessao")
-def criar_sessao_demo():
+def criar_sessao_demo(request: Request):
     """Cria uma sessão de demonstração com produtos pré-definidos"""
     try:
         db = SessionLocal()
@@ -317,7 +332,7 @@ def criar_sessao_demo():
         return {
             "success": True,
             "sessao_id": novo_sessao_id,
-            "url_catalogo": f"{CLIENT_BASE_URL}?sessao_id={novo_sessao_id}",
+            "url_catalogo": build_catalog_url(request, novo_sessao_id),
             "expira_em": expira_em.isoformat(),
             "produtos_count": len(produtos_demo)
         }
@@ -329,7 +344,7 @@ def criar_sessao_demo():
         db.close()
 
 @app.post("/api/produtos/criar-sessao")
-def criar_sessao(payload: CriarSessaoPayload, _: None = Depends(rate_limit_dep)):
+def criar_sessao(request: Request, payload: CriarSessaoPayload, _: None = Depends(rate_limit_dep)):
     db = SessionLocal()
     try:
         now = datetime.utcnow()
@@ -340,7 +355,7 @@ def criar_sessao(payload: CriarSessaoPayload, _: None = Depends(rate_limit_dep))
             Sessao.expira_em > now
         ).first()
         if existing:
-            link = f"{CLIENT_BASE_URL}?sessao_id={existing.sessao_id}"
+            link = build_catalog_url(request, existing.sessao_id)
             return {
                 "success": True,
                 "sessao_id": existing.sessao_id,
@@ -374,7 +389,7 @@ def criar_sessao(payload: CriarSessaoPayload, _: None = Depends(rate_limit_dep))
                 apresentacao=p.apresentacao,
             ))
         db.commit()
-        link = f"{CLIENT_BASE_URL}?sessao_id={sessao.sessao_id}"
+        link = build_catalog_url(request, sessao.sessao_id)
         return {
             "success": True,
             "sessao_id": sessao.sessao_id,
