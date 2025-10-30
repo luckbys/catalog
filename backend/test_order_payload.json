@@ -1,0 +1,42 @@
+{
+  "cliente": {
+    "nome": "João Silva",
+    "telefone": "5512976021836"
+  },
+  "entrega": {
+    "endereco": "Rua das Flores, 123",
+    "numero": "123",
+    "bairro": "Centro",
+    "cidade": "São José dos Campos",
+    "estado": "SP",
+    "cep": "12345-678",
+    "complemento": "Apto 45"
+  },
+  "pagamento": {
+    "forma_pagamento": "PIX",
+    "valor_total": 89.80
+  },
+  "produtos": [
+    {
+      "nome": "Paracetamol 750mg",
+      "codigo": "PAR750",
+      "preco_unitario": 12.50,
+      "quantidade": 2,
+      "subtotal": 25.00
+    },
+    {
+      "nome": "Dipirona 500mg",
+      "codigo": "DIP500", 
+      "preco_unitario": 8.90,
+      "quantidade": 3,
+      "subtotal": 26.70
+    },
+    {
+      "nome": "Vitamina C 1g",
+      "codigo": "VITC1G",
+      "preco_unitario": 19.05,
+      "quantidade": 2,
+      "subtotal": 38.10
+    }
+  ]
+}
