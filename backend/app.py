@@ -107,6 +107,8 @@ class CriarSessaoPayload(BaseModel):
     produtos: List[ProdutoIn]
     quantidade_produtos: int
     timestamp: str
+    # Permite forçar a criação de uma nova sessão (opcional)
+    forcar_nova_sessao: Optional[bool] = False
 
 class SelecionarItemIn(BaseModel):
     produto_id: int
@@ -380,7 +382,26 @@ def criar_sessao(request: Request, payload: CriarSessaoPayload, _: None = Depend
             Sessao.status == "ativa",
             Sessao.expira_em > now
         ).first()
-        if existing:
+        if existing and not (payload.forcar_nova_sessao or False):
+            # Atualiza produtos da sessão existente para refletir o payload atual
+            # 1) Remove produtos antigos
+            db.query(ProdutoSessao).filter(ProdutoSessao.sessao_uuid == existing.id).delete(synchronize_session=False)
+            # 2) Insere novos produtos
+            for p in payload.produtos:
+                db.add(ProdutoSessao(
+                    sessao_uuid=existing.id,
+                    produto_id=p.id,
+                    descricao=p.descricao,
+                    preco=Decimal(p.preco),
+                    estoque=p.estoque,
+                    imagem_url=p.imagem_url,
+                    categoria=p.categoria,
+                    apresentacao=p.apresentacao,
+                ))
+            # 3) Atualiza timestamps e validade
+            existing.atualizado_em = now
+            existing.expira_em = now + timedelta(hours=SESSION_VALIDITY_HOURS)
+            db.commit()
             link = build_catalog_url(request, existing.sessao_id)
             return {
                 "success": True,
