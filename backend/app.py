@@ -662,8 +662,13 @@ def process_order(data: dict, _: None = Depends(rate_limit_dep)):
                 "data": result["data"]
             }
         else:
+            # Expor detalhes do erro no 500 para facilitar diagnóstico em produção
+            error_detail = result.get("error")
+            detail_msg = result["message"] if "message" in result else "Erro ao processar pedido"
+            if error_detail:
+                detail_msg = f"{detail_msg}: {error_detail}"
             print(f"[PROCESS ORDER] Erro no processamento: {result}")
-            raise HTTPException(status_code=500, detail=result["message"])
+            raise HTTPException(status_code=500, detail=detail_msg)
             
     except HTTPException:
         raise

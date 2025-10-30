@@ -170,7 +170,16 @@ class OrderProcessor:
                 print(f"[ORDER PROCESSOR] Pedido criado com sucesso: ID {result.data[0].get('id')}")
                 return result.data[0]
             else:
-                error_msg = "Falha ao criar pedido no Supabase - sem dados retornados"
+                # Tentar extrair detalhes do erro do cliente Supabase
+                error_detail = None
+                try:
+                    error_detail = getattr(result, "error", None)
+                except Exception:
+                    error_detail = None
+                if error_detail:
+                    error_msg = f"Falha ao criar pedido no Supabase: {error_detail}"
+                else:
+                    error_msg = "Falha ao criar pedido no Supabase - sem dados retornados"
                 print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
                 raise Exception(error_msg)
         except Exception as e:
@@ -207,7 +216,16 @@ class OrderProcessor:
                     order_items.append(result.data[0])
                     print(f"[ORDER PROCESSOR] Item criado com sucesso: {produto.nome}")
                 else:
-                    error_msg = f"Falha ao criar item do pedido: {produto.nome} - sem dados retornados"
+                    # Tentar extrair detalhes do erro do cliente Supabase
+                    error_detail = None
+                    try:
+                        error_detail = getattr(result, "error", None)
+                    except Exception:
+                        error_detail = None
+                    if error_detail:
+                        error_msg = f"Falha ao criar item do pedido {produto.nome}: {error_detail}"
+                    else:
+                        error_msg = f"Falha ao criar item do pedido: {produto.nome} - sem dados retornados"
                     print(f"[ORDER PROCESSOR] ERRO: {error_msg}")
                     raise Exception(error_msg)
             except Exception as e:
