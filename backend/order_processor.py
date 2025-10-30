@@ -138,18 +138,28 @@ class OrderProcessor:
         }
         payment_method = payment_method_map.get(pm_upper, "cash")
 
-        # Gerar um número de pedido único (conforme constraint NOT NULL UNIQUE)
-        # Formato: ORD-YYYYMMDD-HHMMSS-XXXX (XXXX = sufixo aleatório)
+        # Gerar um número de pedido único com no máximo 20 caracteres
+        # Formato compacto: ORDYYMMDDHHMMSSXXXX (XXXX = sufixo aleatório)
         dt = datetime.utcnow()
-        ts = dt.strftime("%Y%m%d-%H%M%S")
+        ts_compact = dt.strftime("%y%m%d%H%M%S")  # 12 chars
         import random
-        suffix = f"{random.randint(0, 9999):04d}"
-        order_number = f"ORD-{ts}-{suffix}"
+        suffix = f"{random.randint(0, 9999):04d}"  # 4 chars
+        order_number = f"ORD{ts_compact}{suffix}"  # 3 + 12 + 4 = 19 chars
+
+        # Sanitizar telefone do cliente para evitar estouro de VARCHAR(20) no Supabase
+        raw_phone = payload.cliente.telefone or ""
+        # Remover possíveis sufixos como "@s.whatsapp.net"
+        if "@" in raw_phone:
+            raw_phone = raw_phone.split("@")[0]
+        # Manter apenas dígitos
+        phone_digits = "".join(ch for ch in raw_phone if ch.isdigit())
+        # Limitar a 20 caracteres por segurança (E.164 geralmente <= 15)
+        safe_phone = phone_digits[:20]
         
         return {
             "order_number": order_number,
             "customer_name": payload.cliente.nome,
-            "customer_phone": payload.cliente.telefone or "",
+            "customer_phone": safe_phone,
             "customer_address": customer_address,
             "payment_method": payment_method,
             "subtotal": payload.pagamento.valor_total,

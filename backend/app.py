@@ -164,14 +164,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Montar arquivos estáticos (ajustar caminho para o diretório pai)
+# Montar arquivos estáticos com caminho robusto
 import os
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+LOCAL_PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 if os.path.exists("/app/public"):
     # Docker environment
     app.mount("/public", StaticFiles(directory="/app/public"), name="public")
 else:
     # Local development environment
-    app.mount("/public", StaticFiles(directory="../public"), name="public")
+    app.mount("/public", StaticFiles(directory=LOCAL_PUBLIC_DIR), name="public")
 
 # Servir arquivos estáticos
 @app.get("/")
@@ -182,7 +184,7 @@ async def serve_root():
         return FileResponse("/app/catalogo.html", media_type="text/html")
     else:
         # Local development environment
-        return FileResponse("../catalogo.html", media_type="text/html")
+        return FileResponse(os.path.join(BASE_DIR, "catalogo.html"), media_type="text/html")
 
 @app.get("/test_order.html")
 async def serve_test_order():
@@ -196,7 +198,7 @@ async def serve_catalogo():
         return FileResponse("/app/catalogo.html", media_type="text/html")
     else:
         # Local development environment
-        return FileResponse("../catalogo.html", media_type="text/html")
+        return FileResponse(os.path.join(BASE_DIR, "catalogo.html"), media_type="text/html")
 
 @app.get("/demo.html")
 async def serve_demo():
@@ -206,7 +208,7 @@ async def serve_demo():
         return FileResponse("/app/demo.html", media_type="text/html")
     else:
         # Local development environment
-        return FileResponse("../demo.html", media_type="text/html")
+        return FileResponse(os.path.join(BASE_DIR, "demo.html"), media_type="text/html")
 
 # -------------------- Rotas auxiliares --------------------
 @app.post("/api/relay/n8n")

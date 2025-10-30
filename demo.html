@@ -8,6 +8,7 @@
     
     <!-- Tailwind CSS - Local Build -->
     <link rel="stylesheet" href="./public/styles.css">
+    <link rel="stylesheet" href="./public/mobile.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .gradient-bg {
@@ -247,8 +248,10 @@
                 // Renderizar produtos
                 productsGrid.innerHTML = data.produtos.map(produto => `
                     <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
-                        <img src="${produto.imagem_url || (API_BASE + '/public/ppadrão.png')}" alt="${produto.descricao}" class="w-full h-48 object-cover"
-                                 onerror="this.onerror=null; this.src='/public/ppadrão.png';">
+                        <div class="product-img-wrapper relative">
+                            <img src="${produto.imagem_url || (API_BASE + '/public/ppadrão.png')}" alt="${produto.descricao}" class="product-img w-full" loading="lazy" decoding="async" fetchpriority="low"
+                                 onerror="this.onerror=null; this.src='/public/ppadrão.png';" onload="this.closest('.product-img-wrapper')?.classList.add('loaded')">
+                        </div>
                         <div class="p-6">
                             <h3 class="text-lg font-bold text-gray-800 mb-2">${produto.descricao}</h3>
                             <p class="text-gray-600 text-sm mb-3">${produto.categoria}</p>
