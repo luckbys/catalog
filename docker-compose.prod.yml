@@ -33,6 +33,7 @@ services:
     volumes:
       - ./catalogo.html:/usr/share/nginx/html/catalogo.html
       - ./demo.html:/usr/share/nginx/html/demo.html
+      - ./public:/usr/share/nginx/html/public:ro
       - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
