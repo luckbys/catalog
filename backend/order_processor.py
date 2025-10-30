@@ -120,22 +120,34 @@ class OrderProcessor:
         if payload.entrega.complemento:
             customer_address += f" - {payload.entrega.complemento}"
         
-        # Mapear formas de pagamento para valores aceitos pela constraint
+        # Mapear formas de pagamento para valores aceitos pela constraint da tabela `orders`
+        # Valores válidos: 'cash', 'credit_card', 'debit_card', 'pix', 'bank_transfer'
+        pm_upper = payload.pagamento.forma_pagamento.upper()
         payment_method_map = {
             "PIX": "pix",
-            "CARTÃO": "card",
-            "CARTAO": "card", 
             "DINHEIRO": "cash",
-            "TRANSFERÊNCIA": "transfer",
-            "TRANSFERENCIA": "transfer"
+            "CARTAO": "credit_card",        # fallback genérico para "cartão"
+            "CARTÃO": "credit_card",
+            "CARTAO_CREDITO": "credit_card",
+            "CARTÃO_CREDITO": "credit_card",
+            "CARTAO_DEBITO": "debit_card",
+            "CARTÃO_DEBITO": "debit_card",
+            "TRANSFERENCIA": "bank_transfer",
+            "TRANSFERÊNCIA": "bank_transfer",
+            "BANK_TRANSFER": "bank_transfer",
         }
-        
-        payment_method = payment_method_map.get(
-            payload.pagamento.forma_pagamento.upper(), 
-            "cash"  # valor padrão
-        )
+        payment_method = payment_method_map.get(pm_upper, "cash")
+
+        # Gerar um número de pedido único (conforme constraint NOT NULL UNIQUE)
+        # Formato: ORD-YYYYMMDD-HHMMSS-XXXX (XXXX = sufixo aleatório)
+        dt = datetime.utcnow()
+        ts = dt.strftime("%Y%m%d-%H%M%S")
+        import random
+        suffix = f"{random.randint(0, 9999):04d}"
+        order_number = f"ORD-{ts}-{suffix}"
         
         return {
+            "order_number": order_number,
             "customer_name": payload.cliente.nome,
             "customer_phone": payload.cliente.telefone or "",
             "customer_address": customer_address,
