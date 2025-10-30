@@ -280,11 +280,37 @@
             }
             
             .product-card {
-                border-radius: 0.5rem;
+                border-radius: 0.75rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
             
-            .product-card img {
-                height: 9rem;
+            /* Melhor controle das imagens no mobile */
+            .product-img-wrapper {
+                position: relative;
+                width: 100%;
+                aspect-ratio: 1 / 1; /* Formato quadrado consistente */
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                overflow: hidden;
+                border-radius: 0.5rem;
+                padding: 8px;
+                margin-bottom: 0.75rem;
+            }
+            
+            .product-card img,
+            .product-img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain; /* Mostra a imagem completa sem cortar */
+                object-position: center;
+                border-radius: 0.375rem;
+                background: #ffffff;
+                padding: 4px;
+                transition: transform 0.2s ease;
+            }
+            
+            .product-card:hover img,
+            .product-card:hover .product-img {
+                transform: scale(1.02);
             }
             
             /* Smaller text on very small screens */
@@ -303,13 +329,64 @@
         }
         
         /* Tablet adjustments */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .product-card img {
-                height: 12rem;
+        @media (min-width: 481px) and (max-width: 768px) {
+            .product-img-wrapper {
+                position: relative;
+                width: 100%;
+                aspect-ratio: 4 / 3; /* Formato mais retangular para tablets */
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                overflow: hidden;
+                border-radius: 0.75rem;
+                padding: 12px;
+                margin-bottom: 1rem;
             }
             
-            #bannerCarousel {
-                height: 18rem;
+            .product-card img,
+            .product-img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                object-position: center;
+                border-radius: 0.5rem;
+                background: #ffffff;
+                padding: 6px;
+                transition: transform 0.2s ease;
+            }
+            
+            .product-card:hover img,
+            .product-card:hover .product-img {
+                transform: scale(1.03);
+            }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .product-img-wrapper {
+                position: relative;
+                width: 100%;
+                aspect-ratio: 3 / 2; /* Formato landscape para tablets maiores */
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                overflow: hidden;
+                border-radius: 1rem;
+                padding: 16px;
+                margin-bottom: 1.25rem;
+            }
+            
+            .product-card img,
+            .product-img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                object-position: center;
+                border-radius: 0.75rem;
+                background: #ffffff;
+                padding: 8px;
+                transition: transform 0.3s ease;
+            }
+            
+            .product-card:hover img,
+            .product-card:hover .product-img {
+                transform: scale(1.05);
             }
         }
             
@@ -328,7 +405,51 @@
                 touch-action: manipulation;
             }
             
-            /* Touch-friendly product cards */
+            /* Estilos gerais para imagens de produtos */
+        .product-img-wrapper {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .product-img-wrapper.loaded {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .product-img-wrapper:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            background: #ffffff;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 1025px) {
+            .product-img-wrapper {
+                aspect-ratio: 1 / 1; /* Quadrado para desktop */
+                border-radius: 1.25rem;
+                padding: 20px;
+                margin-bottom: 1.5rem;
+            }
+            
+            .product-img {
+                border-radius: 1rem;
+                padding: 12px;
+            }
+            
+            .product-card:hover .product-img {
+                transform: scale(1.08);
+            }
+        }
             .product-card {
                 cursor: pointer;
                 touch-action: manipulation;
@@ -1157,7 +1278,7 @@
     </button>
 
     <!-- Toast de Carrinho (otimizado para mobile) -->
-    <div id="toast" class="fixed bottom-4 sm:bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 sm:max-w-md rounded-xl shadow-2xl opacity-0 translate-y-10 transition-all duration-300 ease-out z-[101] border border-green-600/20 will-change-transform" style="background-color: #16a34a !important; color: white !important; padding: 16px 20px;">
+    <div id="toast" class="fixed bottom-4 sm:bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 sm:max-w-md rounded-xl shadow-2xl opacity-0 translate-y-10 transition-all duration-300 ease-out z-[1001] border border-green-600/20 will-change-transform" style="background-color: #16a34a !important; color: white !important; padding: 16px 20px;">
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <div class="flex items-center gap-2 flex-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" class="flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: white !important;">
@@ -1334,9 +1455,33 @@
         }
     }
 
+    // Funções para controlar o FAB durante o toast
+    function hideFabForToast() {
+        if (scrollToTopFab.classList.contains('visible')) {
+            scrollToTopFab.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            scrollToTopFab.style.opacity = '0';
+            scrollToTopFab.style.visibility = 'hidden';
+            scrollToTopFab.style.transform = 'translateY(10px)';
+        }
+    }
+
+    function showFabAfterToast() {
+        // Só mostra o FAB se ele deveria estar visível (scroll > 300px)
+        if (window.scrollY > 300) {
+            scrollToTopFab.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            scrollToTopFab.style.opacity = '1';
+            scrollToTopFab.style.visibility = 'visible';
+            scrollToTopFab.style.transform = 'translateY(0)';
+        }
+    }
+
     function showToast() {
         const count = getCartItemCount();
         const label = count === 1 ? '1 item' : `${count} itens`;
+        
+        // Oculta o FAB quando o toast aparecer
+        hideFabForToast();
+        
         // Atualiza conteúdo do toast com layout otimizado para mobile
         toastElement.innerHTML = `
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
@@ -1363,7 +1508,11 @@
             btn.addEventListener('click', () => {
                 try { 
                     toastElement.classList.add('opacity-0', 'translate-y-10');
-                    setTimeout(() => toggleCart(), 150); 
+                    // Mostra o FAB novamente quando o toast for fechado pelo botão
+                    setTimeout(() => {
+                        showFabAfterToast();
+                        toggleCart();
+                    }, 150); 
                 } catch (_) {}
             }, { once: true });
         }
@@ -1371,6 +1520,8 @@
         toastElement.classList.remove('opacity-0', 'translate-y-10');
         setTimeout(() => {
             toastElement.classList.add('opacity-0', 'translate-y-10');
+            // Mostra o FAB novamente quando o toast desaparecer automaticamente
+            setTimeout(() => showFabAfterToast(), 300);
         }, 3500);
     }
 
@@ -1551,19 +1702,32 @@
     }
 
     async function postSelection(deliveryDetails = null) {
-        if (!sessionId) return false;
+        console.log('🔍 [DEBUG] postSelection iniciado');
+        console.log('🔍 [DEBUG] sessionId:', sessionId);
+        console.log('🔍 [DEBUG] deliveryDetails:', deliveryDetails);
+        
+        if (!sessionId) {
+            console.log('❌ [DEBUG] postSelection: sessionId não encontrado');
+            return false;
+        }
         
         // Preparar dados dos produtos selecionados
         const produtos_selecionados = Object.values(cart).map(item => ({
             produto_id: Number(item.id.replace(/\D/g, '')) || Number(item.id),
             quantidade: item.quantity
         }));
+        
+        console.log('🔍 [DEBUG] produtos_selecionados:', produtos_selecionados);
 
         // Obter forma de pagamento selecionada
         const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
         const formaPagamento = selectedPaymentMethod ? selectedPaymentMethod.value : null;
+        
+        console.log('🔍 [DEBUG] formaPagamento:', formaPagamento);
 
         try {
+            console.log('🔍 [DEBUG] Iniciando chamada para API backend...');
+            
             // 1. Registrar seleção no backend (mantém funcionalidade existente)
             const res = await fetch(`${API_BASE}/api/produtos/${sessionId}/selecionar`, {
                 method: 'POST',
@@ -1574,23 +1738,38 @@
                     forma_pagamento: formaPagamento
                 })
             });
+            
+            console.log('🔍 [DEBUG] Resposta da API backend:', res.status, res.statusText);
+            
             if (!res.ok) {
-                console.warn('Falha ao registrar seleção no backend');
+                console.warn('⚠️ [DEBUG] Falha ao registrar seleção no backend');
+            } else {
+                const backendResult = await res.json();
+                console.log('🔍 [DEBUG] Resultado do backend:', backendResult);
             }
 
             // 2. Enviar dados completos para webhook do n8n (se tiver dados de entrega)
             if (deliveryDetails) {
+                console.log('🔍 [DEBUG] Iniciando sendWebhookToN8n...');
                 const ok = await sendWebhookToN8n(deliveryDetails, formaPagamento);
+                console.log('🔍 [DEBUG] Resultado do sendWebhookToN8n:', ok);
                 return !!ok;
             }
+            
+            console.log('❌ [DEBUG] deliveryDetails não fornecido');
             return false;
         } catch (e) {
+            console.error('❌ [DEBUG] Erro em postSelection:', e);
             console.warn('Erro ao registrar seleção no backend', e);
             throw e;
         }
     }
 
     async function sendWebhookToN8n(deliveryDetails, formaPagamento) {
+        console.log('🔍 [DEBUG] sendWebhookToN8n iniciado');
+        console.log('🔍 [DEBUG] deliveryDetails:', deliveryDetails);
+        console.log('🔍 [DEBUG] formaPagamento:', formaPagamento);
+        
         try {
             // Calcular total do pedido
             let total = 0;
@@ -1607,6 +1786,9 @@
                     subtotal: subtotal
                 };
             });
+            
+            console.log('🔍 [DEBUG] produtos processados:', produtos);
+            console.log('🔍 [DEBUG] total calculado:', total);
 
             // Estruturar payload JSON completo para o novo sistema
             const webhookPayload = {
@@ -1634,6 +1816,8 @@
 
             // Tentar primeiro o sistema independente (novo)
             try {
+                console.log('🔍 [DEBUG] Fazendo fetch para:', `${API_BASE}/api/process-order`);
+                
                 const independentResponse = await fetch(`${API_BASE}/api/process-order`, {
                     method: 'POST',
                     headers: {
@@ -1641,6 +1825,9 @@
                     },
                     body: JSON.stringify(webhookPayload)
                 });
+
+                console.log('🔍 [DEBUG] Status da resposta:', independentResponse.status);
+                console.log('🔍 [DEBUG] Headers da resposta:', [...independentResponse.headers.entries()]);
 
                 const independentResult = await independentResponse.json();
                 console.log('📥 Resposta do sistema independente:', independentResult);
@@ -1655,7 +1842,8 @@
                     return false;
                 }
             } catch (independentError) {
-                console.warn('❌ Sistema independente indisponível:', independentError);
+                console.error('❌ Sistema independente indisponível:', independentError);
+                console.error('❌ Stack trace:', independentError.stack);
                 alert('❌ Não foi possível processar seu pedido agora. Tente novamente em alguns minutos.');
                 return false;
             }
@@ -1664,6 +1852,7 @@
             return false;
         } catch (error) {
             console.error('❌ Erro ao processar pedido:', error);
+            console.error('❌ Stack trace:', error.stack);
             alert('❌ Pedido confirmado! (Erro de conexão temporário)');
             return false;
         }
@@ -1705,6 +1894,8 @@
     
     deliveryForm.addEventListener('submit', async (event) => {
         event.preventDefault();
+        console.log('🔍 [DEBUG] Formulário de entrega submetido');
+        
         const deliveryDetails = {
             name: document.getElementById('customerName').value.trim(),
             cep: document.getElementById('customerCep').value.trim(),
@@ -1716,33 +1907,64 @@
             state: document.getElementById('customerState').value.trim()
         };
         
+        console.log('🔍 [DEBUG] Dados de entrega coletados:', deliveryDetails);
+        
         // Validações adicionais: CEP (8 dígitos) e Número (apenas dígitos)
         const cepDigits = deliveryDetails.cep.replace(/\D/g, '');
+        console.log('🔍 [DEBUG] CEP processado:', cepDigits, 'Tamanho:', cepDigits.length);
+        
         if (cepDigits.length !== 8) {
+            console.log('❌ [DEBUG] Erro: CEP inválido');
             alert('CEP deve ter 8 dígitos.');
             return;
         }
         if (!/^\d+$/.test(deliveryDetails.number)) {
+            console.log('❌ [DEBUG] Erro: Número inválido');
             alert('Número deve conter apenas dígitos.');
             return;
         }
 
         // Validação da forma de pagamento
         const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        console.log('🔍 [DEBUG] Forma de pagamento selecionada:', selectedPaymentMethod?.value);
+        
         if (!selectedPaymentMethod) {
+            console.log('❌ [DEBUG] Erro: Nenhuma forma de pagamento selecionada');
             alert('Por favor, selecione uma forma de pagamento.');
             return;
         }
 
+        console.log('🔍 [DEBUG] Validações básicas passaram');
+        
         if (deliveryDetails.name && deliveryDetails.street && deliveryDetails.number) {
+            console.log('🔍 [DEBUG] Campos obrigatórios preenchidos');
+            
             try {
                 // Evita erro genérico quando a página foi aberta sem ?sessao_id=
                 if (!sessionId) {
+                    console.log('❌ [DEBUG] Erro: Sessão não identificada');
                     alert('Sessão não identificada. Abra o catálogo pelo link com "?sessao_id=..." ou gere uma sessão em /api/demo/criar-sessao.');
                     return;
                 }
+                
+                console.log('🔍 [DEBUG] SessionId encontrado:', sessionId);
+                console.log('🔍 [DEBUG] Iniciando postSelection...');
+                
+                // Adicionar indicador visual de carregamento
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processando...';
+                
                 const sucesso = await postSelection(deliveryDetails);
+                console.log('🔍 [DEBUG] Resultado do postSelection:', sucesso);
+                
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                
                 if (sucesso) {
+                    console.log('✅ [DEBUG] Pedido finalizado com sucesso');
                     closeDeliveryModal();
                     deliveryForm.reset();
                     // Limpar carrinho apenas quando pedido confirmado
@@ -1750,12 +1972,24 @@
                     saveCart();
                     renderCart();
                 } else {
+                    console.log('❌ [DEBUG] Falha ao confirmar pedido');
                     alert('Não foi possível confirmar o pedido. Tente novamente.');
                 }
             } catch (error) {
-                console.error('Erro durante finalização:', error);
+                console.error('❌ [DEBUG] Erro durante finalização:', error);
+                
+                // Restaurar botão em caso de erro
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirmar Pedido';
+                
                 alert('Erro ao finalizar pedido. Tente novamente.');
             }
+        } else {
+            console.log('❌ [DEBUG] Campos obrigatórios não preenchidos');
+            console.log('Nome:', deliveryDetails.name);
+            console.log('Rua:', deliveryDetails.street);
+            console.log('Número:', deliveryDetails.number);
         }
     });
 
