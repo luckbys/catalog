@@ -1593,10 +1593,13 @@
         if (!productListContainer) return;
         const searchInput = document.getElementById('searchInput');
         const headerSearchInput = document.getElementById('headerSearchInput');
+        const mobileSearchInput = document.getElementById('mobileSearchInput');
         
         // Pegar valor de busca de qualquer um dos campos
         let query = '';
-        if (searchInput && searchInput.value) {
+        if (mobileSearchInput && mobileSearchInput.value) {
+            query = mobileSearchInput.value.toLowerCase().trim();
+        } else if (searchInput && searchInput.value) {
             query = searchInput.value.toLowerCase().trim();
         } else if (headerSearchInput && headerSearchInput.value) {
             query = headerSearchInput.value.toLowerCase().trim();
@@ -2911,19 +2914,21 @@
             });
         }
         
-        // Sincronizar campos de busca
+        // Sincronizar campos de busca e aplicar filtro com debounce
         if (mobileSearchInput && desktopSearchInput) {
-            mobileSearchInput.addEventListener('input', (e) => {
-                desktopSearchInput.value = e.target.value;
-                // Trigger search functionality
-                if (window.filterProducts) {
-                    window.filterProducts();
-                }
-            });
-            
-            desktopSearchInput.addEventListener('input', (e) => {
-                mobileSearchInput.value = e.target.value;
-            });
+            const handleMobileSearch = debounce(() => {
+                // Mantém os campos sincronizados
+                desktopSearchInput.value = mobileSearchInput.value;
+                // Atualiza a lista de produtos
+                renderProducts();
+            }, 200);
+
+            mobileSearchInput.addEventListener('input', handleMobileSearch);
+
+            const handleDesktopMirror = debounce(() => {
+                mobileSearchInput.value = desktopSearchInput.value;
+            }, 200);
+            desktopSearchInput.addEventListener('input', handleDesktopMirror);
         }
         
         // Performance optimizations
