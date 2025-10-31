@@ -1418,7 +1418,18 @@
             <p class="text-sm text-gray-600" id="deliveryEstimateText">Estimativa de entrega: —</p>
             <p class="text-sm text-slate-600 mt-2" id="whatsappNoticeText">Você receberá o resumo pelo WhatsApp em instantes</p>
             <p class="text-sm text-slate-500" id="thankYouText">Obrigado pela preferência! 💚</p>
-            <a id="trackDeliveryLink" href="#" class="mt-4 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
+            <div id="successOrderSummary" class="mt-3 text-left bg-slate-50 border border-slate-200 rounded-xl p-3 hidden">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-600">Itens</span>
+                    <span id="summaryItemsCount" class="text-slate-800">—</span>
+                </div>
+                <div class="flex justify-between text-sm mt-1">
+                    <span class="text-slate-600 font-medium">Total</span>
+                    <span id="summaryTotal" class="text-slate-800 font-semibold">—</span>
+                </div>
+            </div>
+            <a id="trackDeliveryLink" href="#" class="mt-4 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/></svg>
                 Acompanhar entrega
             </a>
             <button id="closeSuccessModal" class="mt-2 bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
@@ -1874,13 +1885,16 @@
     }
 
     // Success Modal Functions
-    function showSuccessModal(orderData) {
+    async function showSuccessModal(orderData) {
         const successModal = document.getElementById('successModal');
         const orderNumberText = document.getElementById('orderNumberText');
         const deliveryEstimateText = document.getElementById('deliveryEstimateText');
         const whatsappNoticeText = document.getElementById('whatsappNoticeText');
         const thankYouText = document.getElementById('thankYouText');
         const trackDeliveryLink = document.getElementById('trackDeliveryLink');
+        const summaryBox = document.getElementById('successOrderSummary');
+        const summaryItemsCount = document.getElementById('summaryItemsCount');
+        const summaryTotal = document.getElementById('summaryTotal');
 
         // Fecha o drawer para evitar conflitos de stacking/transform
         closeCartDrawer();
@@ -1896,6 +1910,28 @@
         thankYouText.textContent = 'Obrigado pela preferência! 💚';
         if (trackDeliveryLink) {
             trackDeliveryLink.href = `/status.html?id=${orderId}`;
+            // Ajuste de cor conforme tema do sistema
+            try {
+                const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                trackDeliveryLink.classList.remove('bg-emerald-600','hover:bg-emerald-700','bg-emerald-500','hover:bg-emerald-600');
+                trackDeliveryLink.classList.add(isDark ? 'bg-emerald-500','hover:bg-emerald-600' : 'bg-emerald-600','hover:bg-emerald-700');
+            } catch (e) {}
+        }
+
+        // Buscar mini-resumo do pedido (itens/total) se disponível
+        if (summaryBox && orderId && orderId !== 'N/A') {
+            try {
+                const res = await fetch(`/api/order-status?order_id=${orderId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    summaryItemsCount.textContent = Array.isArray(data.items) ? data.items.length : 0;
+                    const total = (data.order && (data.order.total ?? data.order.subtotal)) || 0;
+                    summaryTotal.textContent = `R$ ${Number(total).toFixed(2)}`;
+                    summaryBox.classList.remove('hidden');
+                }
+            } catch (e) {
+                // Mantém oculto em caso de falha
+            }
         }
 
         // Exibe modal

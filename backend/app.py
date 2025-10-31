@@ -290,11 +290,42 @@ def get_order_status(order_id: int):
         for i, s in enumerate(timeline_steps):
             s["done"] = i <= status_index
 
+        # ETA refinado com base no horário de criação e médias operacionais
+        def _parse_ts(ts):
+            try:
+                if isinstance(ts, str):
+                    if ts.endswith("Z"):
+                        ts = ts.replace("Z", "+00:00")
+                    return datetime.fromisoformat(ts)
+            except Exception:
+                return None
+            return None
+
+        now = datetime.utcnow()
+        created_at = _parse_ts(order_data.get("created_at"))
+        elapsed_mins = max(int((now - created_at).total_seconds() / 60), 0) if created_at else 0
+
+        # Totais típicos da operação (pode ser parametrizado por ENV no futuro)
+        TOTAL_MIN, TOTAL_MAX = 45, 60
+        remaining_min = max(TOTAL_MIN - elapsed_mins, 0)
+        remaining_max = max(TOTAL_MAX - elapsed_mins, 0)
+
+        if status == "delivered":
+            eta_text = "Entregue ✅"
+        else:
+            eta_text = f"Estimativa de entrega: ~{remaining_min}–{remaining_max} min"
+
         return {
             "order": order_data,
             "items": items_data,
             "timeline": timeline_steps,
-            "server_time": datetime.utcnow().isoformat()
+            "server_time": now.isoformat(),
+            "eta": {
+                "min": remaining_min,
+                "max": remaining_max,
+                "text": eta_text,
+                "elapsed_minutes": elapsed_mins
+            }
         }
     except HTTPException:
         raise
