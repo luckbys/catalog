@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Acompanhar entrega</title>
   <link rel="icon" href="/public/logo.png" />
-  <link rel="stylesheet" href="/public/styles.css" />
+  <link rel="stylesheet" href="/public/styles.css?v=1730398499" />
   <style>
     /* Animações personalizadas para a timeline */
     @keyframes timelineGlow {
@@ -266,8 +266,6 @@
                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
                </div>
              </div>
-             <!-- Indicador de porcentagem -->
-             <div id="progressPercentage" class="absolute -top-6 left-0 text-xs font-semibold text-emerald-600 transition-all duration-1000" style="left: 0;">0%</div>
            </div>
         </div>
       </div>
@@ -310,7 +308,6 @@
     const itemsList = document.getElementById('itemsList');
     const timelineProgress = document.getElementById('timelineProgress');
     const timelineProgressLine = document.getElementById('timelineProgressLine');
-    const progressPercentage = document.getElementById('progressPercentage');
     const lastUpdateText = document.getElementById('lastUpdateText');
 
     let pollHandle = null;
@@ -393,10 +390,6 @@
       setTimeout(() => {
         timelineProgress.style.width = `${percent}%`;
         timelineProgressLine.style.width = `${percent}%`;
-        
-        // Animar indicador de porcentagem
-        progressPercentage.textContent = `${Math.round(percent)}%`;
-        progressPercentage.style.left = `calc(${percent}% - 12px)`;
       }, 300);
       
       // Atualizar ícones da timeline com animações
@@ -468,39 +461,147 @@
     }
 
     async function buscar(orderId) {
-      // Mostrar skeleton enquanto busca
-      statusSkeleton.classList.remove('hidden');
-      statusCard.classList.add('hidden');
-      feedbackCard.classList.add('hidden');
       try {
         const data = await fetchStatus(orderId);
-        render(data);
+        
+        // Atualizar apenas os elementos da timeline se houver mudança de status
+        const currentDisplayedStatus = document.querySelector('.timeline-step.active')?.dataset.status;
+        if (currentDisplayedStatus !== data.order.status) {
+          // Atualizar status na interface
+          statusBadge.textContent = statusLabels[data.order.status] || data.order.status;
+          statusBadge.className = `text-xs px-2 py-1 rounded ${statusBadgeClasses[data.order.status] || 'bg-slate-100 text-slate-700'}`;
+          
+          // Renderizar timeline atualizada
+          renderTimeline(data.order.status, data.eta);
+          
+          // Atualizar timestamp
+          lastUpdate = Date.parse(data.server_time || new Date().toISOString());
+          updateLastUpdateLabel();
+        }
+        
+        // Se é a primeira vez carregando, renderizar tudo
+        if (statusCard.classList.contains('hidden')) {
+          statusSkeleton.classList.remove('hidden');
+          statusCard.classList.add('hidden');
+          feedbackCard.classList.add('hidden');
+          render(data);
+        }
+        
       } catch (e) {
         statusSkeleton.classList.add('hidden');
         statusCard.classList.add('hidden');
         feedbackCard.classList.remove('hidden');
       }
     }
+    
+    function renderTimeline(status, eta) {
+      const mapStepToIndex = { pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3 };
+      const idx = mapStepToIndex[status] ?? 0;
+      const percent = ((idx + 1) / 4) * 100;
+      
+      // Animar barra de progresso principal
+      timelineProgress.style.width = `${percent}%`;
+      timelineProgressLine.style.width = `${percent}%`;
+      
+      // Atualizar ETA
+      etaText.textContent = (eta && eta.text) ? eta.text : etaForStatus(status);
+      
+      // Atualizar ícones da timeline com animações
+      document.querySelectorAll('#timeline .timeline-step').forEach((step, stepIndex) => {
+        const stepKey = step.getAttribute('data-step');
+        const icon = step.querySelector('.timeline-icon');
+        const isCompleted = stepIndex <= idx;
+        const isActive = stepIndex === idx;
+        
+        if (isCompleted) {
+          // Etapa concluída - verde com check
+          icon.classList.remove('bg-slate-200', 'text-slate-500');
+          icon.classList.add('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'completed', 'bounce-in');
+          icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
+          
+          // Adicionar efeito de pulso para etapa ativa
+          if (isActive && status !== 'delivered') {
+            icon.classList.add('animate-pulse');
+          } else {
+            icon.classList.remove('animate-pulse');
+          }
+        } else {
+          // Etapa pendente - cinza com ícone original
+          icon.classList.remove('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'animate-pulse', 'completed', 'bounce-in');
+          icon.classList.add('bg-slate-200', 'text-slate-500');
+        }
+      });
+    }
 
     buscarBtn.addEventListener('click', () => {
       const id = orderIdInput.value.trim();
       if (!id) return;
-      buscar(id);
-      if (pollHandle) clearInterval(pollHandle);
-      pollHandle = setInterval(() => buscar(id), 10000);
+      window.currentOrderId = id;
+      startPolling(id);
     });
 
-    const qId = getParam('id') || getParam('order_id');
-    if (qId) {
-      orderIdInput.value = qId;
-      buscar(qId);
-      pollHandle = setInterval(() => buscar(qId), 10000);
+    // Polling inteligente - ajusta frequência baseado no status
+    let pollingInterval;
+    
+    function startPolling(id) {
+      if (pollingInterval) clearInterval(pollingInterval);
+      
+      const getPollingFrequency = (status) => {
+        // Pedidos entregues não precisam de polling frequente
+        if (status === 'delivered') return 60000; // 1 minuto
+        // Pedidos em preparação ou saindo para entrega precisam de mais atualizações
+        if (status === 'preparing' || status === 'out_for_delivery') return 15000; // 15 segundos
+        // Pedidos recebidos podem ter polling menos frequente
+        return 30000; // 30 segundos
+      };
+      
+      let currentStatus = 'pending';
+      
+      const poll = async () => {
+        await buscar(id);
+        // Atualizar frequência baseada no status atual
+        const statusBadgeText = statusBadge.textContent;
+        let newStatus = 'pending';
+        if (statusBadgeText.includes('preparação')) newStatus = 'preparing';
+        else if (statusBadgeText.includes('entrega')) newStatus = 'out_for_delivery';
+        else if (statusBadgeText.includes('Entregue')) newStatus = 'delivered';
+        
+        if (newStatus !== currentStatus) {
+          currentStatus = newStatus;
+          // Reiniciar polling com nova frequência
+          startPolling(id);
+        }
+      };
+      
+      // Primeira busca imediata
+      poll();
+      
+      // Configurar intervalo baseado no status
+      const frequency = getPollingFrequency(currentStatus);
+      pollingInterval = setInterval(poll, frequency);
     }
-  </script>
-</body>
-</html>
+    
+    // Parar polling quando a página não está visível (otimização de performance)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && pollingInterval) {
+        clearInterval(pollingInterval);
+      } else if (!document.hidden && window.currentOrderId) {
+        startPolling(window.currentOrderId);
+      }
+    });
+
     function updateLastUpdateLabel() {
       if (!lastUpdate || !lastUpdateText) return;
       const sec = Math.max(0, Math.floor((Date.now() - lastUpdate) / 1000));
       lastUpdateText.textContent = `Atualizado há ${sec}s`;
     }
+
+    const qId = getParam('id') || getParam('order_id');
+    if (qId) {
+      orderIdInput.value = qId;
+      window.currentOrderId = qId;
+      startPolling(qId);
+    }
+  </script>
+</body>
+</html>
