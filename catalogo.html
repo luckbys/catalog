@@ -252,6 +252,13 @@
             50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
             100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
         }
+        /* Estabilidade mobile para container da animação de sucesso */
+        .lottie-stable-container {
+            position: relative;
+            display: inline-block;
+            overflow: visible;
+            will-change: auto;
+        }
         
         /* Toast de Erro */
         .error-toast {
@@ -1882,6 +1889,12 @@
         successModal.classList.add('flex');
         // Bloqueia scroll enquanto o modal está aberto
         document.body.style.overflow = 'hidden';
+        // Neutraliza efeitos de will-change do toast enquanto o modal está ativo
+        if (toastElement) {
+            toastElement.classList.remove('will-change-transform');
+            toastElement.style.willChange = 'auto';
+            toastElement.style.pointerEvents = 'none';
+        }
         
         // Add scale animation
         const modalContent = successModal.querySelector('div > div');
@@ -1902,18 +1915,27 @@
             successModal.classList.remove('flex');
             // Restaura scroll do body após fechar o modal
             document.body.style.overflow = '';
+            // Restaura comportamento do toast
+            if (toastElement) {
+                toastElement.style.pointerEvents = '';
+                toastElement.classList.add('will-change-transform');
+                toastElement.style.willChange = '';
+            }
         }, 200);
     }
 
     async function loadSuccessAnimation(container) {
         try {
+            // Aplicar classe estável ao container
+            container.classList.add('lottie-stable-container');
             // Criar elemento lottie-player com a animação moderna
             container.innerHTML = `
                 <lottie-player 
                     src="https://lottie.host/49923f07-d10c-4386-9495-2aa432f19706/mELQ5oK5wy.lottie"
                     background="transparent"
                     speed="1"
-                    style="width: 200px; height: 200px; margin: 0 auto;"
+                    renderer="svg"
+                    style="width: 200px; height: 200px; margin: 0 auto; display: inline-block;"
                     loop
                     autoplay>
                 </lottie-player>
