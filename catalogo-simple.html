@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Teste</title>
+</head>
+<body>
+    <h1>Catálogo de Produtos</h1>
+    <div id="products"></div>
+    
+    <script>
+        console.log('🔄 Script iniciado');
+        
+        const API_BASE = 'http://localhost:8000';
+        let productsData = [];
+        let sessionId = null;
+        
+        function getSessionIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('sessao_id');
+        }
+        
+        async function loadSession() {
+            console.log('🔄 loadSession() iniciada');
+            sessionId = getSessionIdFromURL();
+            console.log('🆔 Session ID:', sessionId);
+            
+            if (!sessionId) {
+                console.log('⚠️ Sem session ID, usando produtos padrão');
+                return;
+            }
+            
+            try {
+                console.log('📡 Fazendo fetch para:', `${API_BASE}/api/produtos/${sessionId}`);
+                const res = await fetch(`${API_BASE}/api/produtos/${sessionId}`);
+                
+                if (!res.ok) {
+                    console.error('❌ Resposta não OK:', res.status, res.statusText);
+                    return;
+                }
+                
+                const data = await res.json();
+                console.log('📦 Dados recebidos:', data);
+                
+                // Limpar produtos existentes
+                productsData.splice(0, productsData.length);
+                
+                // Adicionar produtos da sessão
+                data.produtos.forEach(p => {
+                    productsData.push({
+                        id: String(p.id),
+                        name: p.descricao,
+                        description: p.apresentacao || p.categoria || p.descricao,
+                        price: Number(p.preco),
+                        imageUrl: p.imagem_url || (API_BASE + '/public/ppadrão.png')
+                    });
+                });
+                
+                console.log('✅ Produtos carregados:', productsData.length);
+                
+            } catch (e) {
+                console.error('❌ Falha ao carregar sessão:', e);
+            }
+        }
+        
+        function renderProducts() {
+            console.log('🔄 renderProducts() chamada');
+            const container = document.getElementById('products');
+            
+            if (!container) {
+                console.error('❌ Container não encontrado');
+                return;
+            }
+            
+            console.log('📦 productsData:', productsData.length, 'produtos');
+            
+            if (productsData.length === 0) {
+                container.innerHTML = '<p>Nenhum produto encontrado</p>';
+                return;
+            }
+            
+            container.innerHTML = productsData.map(product => `
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 10px;">
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <p>Preço: R$ ${product.price.toFixed(2)}</p>
+                    <img src="${product.imageUrl}" alt="${product.name}" style="max-width: 100px;">
+                </div>
+            `).join('');
+            
+            console.log('✅ Produtos renderizados');
+        }
+        
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🔄 DOM carregado');
+            await loadSession();
+            renderProducts();
+        });
+    </script>
+</body>
+</html>

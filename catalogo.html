@@ -1590,7 +1590,14 @@
     }
 
     function renderProducts() {
-        if (!productListContainer) return;
+        console.log('[DEBUG] renderProducts() chamada');
+        if (!productListContainer) {
+            console.error('[ERROR] productListContainer nao encontrado');
+            return;
+        }
+        
+        console.log('[DEBUG] productsData:', productsData.length, 'produtos');
+        
         const searchInput = document.getElementById('searchInput');
         const headerSearchInput = document.getElementById('headerSearchInput');
         const mobileSearchInput = document.getElementById('mobileSearchInput');
@@ -1599,10 +1606,13 @@
         let query = '';
         if (mobileSearchInput && mobileSearchInput.value) {
             query = mobileSearchInput.value.toLowerCase().trim();
+            console.log('[DEBUG] Busca mobile:', query);
         } else if (searchInput && searchInput.value) {
             query = searchInput.value.toLowerCase().trim();
+            console.log('[DEBUG] Busca desktop:', query);
         } else if (headerSearchInput && headerSearchInput.value) {
             query = headerSearchInput.value.toLowerCase().trim();
+            console.log('[DEBUG] Busca header:', query);
         }
         
         const filtered = productsData.filter(p => {
@@ -1610,11 +1620,14 @@
             const tDesc = p.description.toLowerCase();
             return tName.includes(query) || tDesc.includes(query);
         });
+        
+        console.log('[DEBUG] Produtos filtrados:', filtered.length);
+        
         productListContainer.innerHTML = filtered.map(product => `
             <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-2 flex flex-col transition-all duration-300 border border-slate-100">
                 <div class="product-img-wrapper relative">
                     <img src="${product.imageUrl}" alt="${product.name}" class="product-img w-full" loading="lazy" decoding="async" fetchpriority="low"
-                         onerror="this.onerror=null; this.src='/public/ppadrão.png';" onload="this.closest('.product-img-wrapper')?.classList.add('loaded')">
+                         onerror="this.onerror=null; this.src='/public/padrao.png';" onload="this.closest('.product-img-wrapper')?.classList.add('loaded')">
                 </div>
                 <div class="p-3 sm:p-5 flex flex-col flex-grow">
                     <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mb-1">${product.name}</h3>
@@ -1917,7 +1930,7 @@
             try {
                 const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 trackDeliveryLink.classList.remove('bg-emerald-600','hover:bg-emerald-700','bg-emerald-500','hover:bg-emerald-600');
-                trackDeliveryLink.classList.add(isDark ? 'bg-emerald-500','hover:bg-emerald-600' : 'bg-emerald-600','hover:bg-emerald-700');
+                trackDeliveryLink.classList.add(isDark ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700');
             } catch (e) {}
         }
 
@@ -2170,12 +2183,22 @@
     }
 
     async function loadSession() {
+        console.log('[DEBUG] loadSession() iniciada');
         sessionId = getSessionIdFromURL();
-        if (!sessionId) return;
+        console.log('[DEBUG] Session ID:', sessionId);
+        if (!sessionId) {
+            console.log('[DEBUG] Sem session ID, usando produtos padrao');
+            return;
+        }
         try {
+            console.log('[DEBUG] Fazendo fetch para:', `${API_BASE}/api/produtos/${sessionId}`);
             const res = await fetch(`${API_BASE}/api/produtos/${sessionId}`);
-            if (!res.ok) return;
+            if (!res.ok) {
+                console.error('[ERROR] Resposta nao OK:', res.status, res.statusText);
+                return;
+            }
             const data = await res.json();
+            console.log('[DEBUG] Dados recebidos:', data);
             sessionPhone = data.cliente_telefone || null;
             const status = data.status;
             if (status === 'expirada' || status === 'finalizada') {
@@ -2189,11 +2212,12 @@
                     name: p.descricao,
                     description: p.apresentacao || p.categoria || p.descricao,
                     price: Number(p.preco),
-                    imageUrl: p.imagem_url || (API_BASE + '/public/ppadrão.png')
+                    imageUrl: p.imagem_url || (API_BASE + '/public/padrao.png')
                 });
             });
+            console.log('[DEBUG] Produtos carregados:', productsData.length);
         } catch (e) {
-            console.error('Falha ao carregar sessão', e);
+            console.error('[ERROR] Falha ao carregar sessao:', e);
         }
     }
 

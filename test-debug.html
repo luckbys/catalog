@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        console.log('🔄 Script iniciado');
+        
+        // Testar se o problema está na sintaxe básica
+        const API_BASE = 'http://localhost:8000';
+        let productsData = [];
+        
+        async function testAPI() {
+            try {
+                console.log('📡 Testando API...');
+                const response = await fetch(`${API_BASE}/api/produtos/CusqvOh`);
+                if (!response.ok) {
+                    console.error('❌ Erro na API:', response.status);
+                    return;
+                }
+                const data = await response.json();
+                console.log('✅ Dados recebidos:', data);
+                document.getElementById('output').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                document.getElementById('output').innerHTML = `<p>Erro: ${error.message}</p>`;
+            }
+        }
+        
+        // Executar teste
+        testAPI();
+    </script>
+</body>
+</html>
