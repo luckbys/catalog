@@ -1391,7 +1391,7 @@
     </div>
 
     <!-- Success Animation Modal -->
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-70 z-[103] hidden items-center justify-center p-4">
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-70 z-[1002] hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full transform scale-95 transition-all duration-300">
             <!-- SVG Animation Container -->
             <div class="mb-6 flex justify-center">
@@ -1728,6 +1728,16 @@
         }
     }
 
+    // Garantir fechamento explícito do drawer (evita conflito com modais)
+    function closeCartDrawer() {
+        if (!cartDrawer.classList.contains('translate-x-full')) {
+            cartDrawer.classList.add('translate-x-full');
+        }
+        cartOverlay.classList.add('hidden');
+        // Não bloquear scroll por causa do drawer quando modal abrir
+        document.body.style.overflow = '';
+    }
+
     function renderCart() {
         if (!cartItemsContainer || !cartItemsList) return;
         const cartKeys = Object.keys(cart);
@@ -1852,7 +1862,10 @@
         const successMessage = document.getElementById('successMessage');
         const orderDetails = document.getElementById('orderDetails');
         const animationContainer = document.getElementById('successAnimationContainer');
-        
+
+        // Fecha o drawer para evitar conflitos de stacking/transform
+        closeCartDrawer();
+
         // Update modal content
         if (orderData) {
             successMessage.textContent = `Pedido #${orderData.order_id} confirmado com sucesso! 🎉`;
@@ -1867,6 +1880,8 @@
         // Show modal with animation
         successModal.classList.remove('hidden');
         successModal.classList.add('flex');
+        // Bloqueia scroll enquanto o modal está aberto
+        document.body.style.overflow = 'hidden';
         
         // Add scale animation
         const modalContent = successModal.querySelector('div > div');
@@ -1885,6 +1900,8 @@
         setTimeout(() => {
             successModal.classList.add('hidden');
             successModal.classList.remove('flex');
+            // Restaura scroll do body após fechar o modal
+            document.body.style.overflow = '';
         }, 200);
     }
 
