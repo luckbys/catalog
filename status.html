@@ -601,6 +601,11 @@
       orderIdInput.value = qId;
       window.currentOrderId = qId;
       startPolling(qId);
+    } else if (orderIdInput.value.trim()) {
+      // Se não há parâmetro na URL mas há valor no input, buscar automaticamente
+      const inputId = orderIdInput.value.trim();
+      window.currentOrderId = inputId;
+      startPolling(inputId);
     }
   </script>
 </body>
