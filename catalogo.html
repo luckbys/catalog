@@ -1397,22 +1397,16 @@
         </div>
     </div>
 
-    <!-- Success Animation Modal -->
+    <!-- Success Overlay Modal (Simplified) -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-70 z-[1002] hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full transform scale-95 transition-all duration-300">
-            <!-- SVG Animation Container -->
             <div class="mb-6 flex justify-center">
-                <div id="successAnimationContainer"></div>
+                <img id="successCartImage" src="/public/cart.png" alt="Carrinho" class="w-24 h-24 object-contain" />
             </div>
-            
-            <!-- Success Message -->
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">🎉 Pedido Confirmado!</h2>
-            <p class="text-gray-600 mb-4" id="successMessage">Seu pedido foi processado com sucesso!</p>
-            <p class="text-sm text-gray-500 mb-6" id="orderDetails">Você receberá uma confirmação via WhatsApp em breve.</p>
-            
-            <!-- Close Button -->
+            <h2 class="text-2xl font-bold text-gray-800 mb-2" id="orderNumberText">Pedido #—</h2>
+            <p class="text-sm text-gray-600 mb-6" id="deliveryEstimateText">Estimativa de entrega: —</p>
             <button id="closeSuccessModal" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
-                Continuar Comprando
+                OK
             </button>
         </div>
     </div>
@@ -1866,25 +1860,21 @@
     // Success Modal Functions
     function showSuccessModal(orderData) {
         const successModal = document.getElementById('successModal');
-        const successMessage = document.getElementById('successMessage');
-        const orderDetails = document.getElementById('orderDetails');
-        const animationContainer = document.getElementById('successAnimationContainer');
+        const orderNumberText = document.getElementById('orderNumberText');
+        const deliveryEstimateText = document.getElementById('deliveryEstimateText');
 
         // Fecha o drawer para evitar conflitos de stacking/transform
         closeCartDrawer();
 
-        // Update modal content
-        if (orderData) {
-            successMessage.textContent = `Pedido #${orderData.order_id} confirmado com sucesso! 🎉`;
-            orderDetails.textContent = orderData.whatsapp_sent 
-                ? 'Você receberá uma confirmação via WhatsApp em breve.' 
-                : 'Seu pedido foi registrado com sucesso!';
-        }
-        
-        // Load SVG animation
-        loadSuccessAnimation(animationContainer);
-        
-        // Show modal with animation
+        // Atualiza conteúdo do overlay simples
+        const orderId = (orderData && (orderData.order_id || (orderData.data && orderData.data.order && orderData.data.order.id)))
+            ? (orderData.order_id || orderData.data.order.id)
+            : 'N/A';
+        orderNumberText.textContent = `Pedido #${orderId}`;
+        const estimate = '45–60 min';
+        deliveryEstimateText.textContent = `Estimativa de entrega: ${estimate}`;
+
+        // Exibe modal
         successModal.classList.remove('hidden');
         successModal.classList.add('flex');
         // Bloqueia scroll enquanto o modal está aberto
@@ -1896,7 +1886,7 @@
             toastElement.style.pointerEvents = 'none';
         }
         
-        // Add scale animation
+        // Animação de escala
         const modalContent = successModal.querySelector('div > div');
         setTimeout(() => {
             modalContent.style.transform = 'scale(1)';
@@ -1924,30 +1914,7 @@
         }, 200);
     }
 
-    async function loadSuccessAnimation(container) {
-        try {
-            // Aplicar classe estável ao container
-            container.classList.add('lottie-stable-container');
-            // Criar elemento lottie-player com a animação moderna
-            container.innerHTML = `
-                <lottie-player 
-                    src="https://lottie.host/49923f07-d10c-4386-9495-2aa432f19706/mELQ5oK5wy.lottie"
-                    background="transparent"
-                    speed="1"
-                    renderer="svg"
-                    style="width: 200px; height: 200px; margin: 0 auto; display: inline-block;"
-                    loop
-                    autoplay>
-                </lottie-player>
-            `;
-            
-            console.log('✅ Animação Lottie carregada com sucesso!');
-        } catch (error) {
-            console.error('Erro ao carregar animação Lottie:', error);
-            // Fallback: emoji simples
-            container.innerHTML = '<div style="font-size: 4rem; animation: bounce 1s infinite;">🛒✅</div>';
-        }
-    }
+    // Removido: função de animação Lottie (substituída por overlay simples)
 
     function clearAddressForm() {
         document.getElementById('customerStreet').value = '';
