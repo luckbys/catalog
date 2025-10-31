@@ -6,6 +6,127 @@
   <title>Acompanhar entrega</title>
   <link rel="icon" href="/public/logo.png" />
   <link rel="stylesheet" href="/public/styles.css" />
+  <style>
+    /* Animações personalizadas para a timeline */
+    @keyframes timelineGlow {
+      0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.3); }
+      50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.4); }
+    }
+    
+    @keyframes progressShimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes bounceIn {
+      0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+      50% { transform: scale(1.1) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    
+    .timeline-step {
+      transition: all 0.3s ease;
+    }
+    
+    .timeline-step:hover {
+      transform: translateY(-2px);
+    }
+    
+    .timeline-icon.completed {
+      animation: timelineGlow 2s ease-in-out infinite;
+    }
+    
+    .timeline-icon.bounce-in {
+      animation: bounceIn 0.6s ease-out;
+    }
+    
+    .progress-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: progressShimmer 2s infinite;
+    }
+    
+    /* Tooltips para as etapas */
+    .timeline-step {
+      position: relative;
+    }
+    
+    .timeline-step::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .timeline-step::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-2px);
+      border: 4px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .timeline-step:hover::before,
+    .timeline-step:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+    
+    /* Responsividade aprimorada */
+    @media (max-width: 480px) {
+      .timeline-icon {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+      
+      .timeline-icon svg {
+        width: 1rem !important;
+        height: 1rem !important;
+      }
+      
+      #timeline {
+        gap: 0.25rem;
+      }
+      
+      .timeline-step span {
+        font-size: 10px;
+      }
+      
+      .timeline-step span:last-child {
+        font-size: 8px;
+      }
+    }
+    
+    /* Efeito de loading para o skeleton */
+    .skeleton-pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
 </head>
 <body class="bg-slate-100 min-h-dvh">
   <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
@@ -80,28 +201,74 @@
           <span id="statusBadge" class="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded">—</span>
         </div>
 
-        <div class="mt-3">
-          <ol id="timeline" class="grid grid-cols-4 gap-2">
-            <li class="flex flex-col items-center">
-              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="pending">1</div>
-              <span class="mt-1 text-[10px] text-center text-slate-600">Recebido</span>
-            </li>
-            <li class="flex flex-col items-center">
-              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="preparing">2</div>
-              <span class="mt-1 text-[10px] text-center text-slate-600">Preparando</span>
-            </li>
-            <li class="flex flex-col items-center">
-              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="out_for_delivery">3</div>
-              <span class="mt-1 text-[10px] text-center text-slate-600">Saiu p/ entrega</span>
-            </li>
-            <li class="flex flex-col items-center">
-              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="delivered">4</div>
-              <span class="mt-1 text-[10px] text-center text-slate-600">Entregue</span>
-            </li>
-          </ol>
-          <div class="mt-2 h-1 bg-slate-200 rounded-full overflow-hidden">
-            <div id="timelineProgress" class="h-full bg-emerald-500 w-0"></div>
+        <div class="mt-4 relative">
+          <!-- Timeline moderna com conexões visuais -->
+          <div class="relative">
+            <!-- Linha de conexão de fundo -->
+            <div class="absolute top-6 left-6 right-6 h-0.5 bg-slate-200 rounded-full"></div>
+            <!-- Linha de progresso animada -->
+            <div id="timelineProgressLine" class="absolute top-6 left-6 h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000 ease-out" style="width: 0;"></div>
+            
+            <ol id="timeline" class="relative grid grid-cols-4 gap-2">
+              <li class="flex flex-col items-center timeline-step" data-step="pending" data-tooltip="Pedido recebido e confirmado pelo sistema">
+                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="pending">
+                  <!-- Ícone de recebimento -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Recebido</span>
+                <span class="text-[10px] text-center text-slate-400">Pedido confirmado</span>
+              </li>
+              
+              <li class="flex flex-col items-center timeline-step" data-step="preparing" data-tooltip="Pedido sendo preparado pela equipe">
+                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="preparing">
+                  <!-- Ícone de preparação -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+                  </svg>
+                </div>
+                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Preparando</span>
+                <span class="text-[10px] text-center text-slate-400">Em produção</span>
+              </li>
+              
+              <li class="flex flex-col items-center timeline-step" data-step="out_for_delivery" data-tooltip="Pedido saiu para entrega - a caminho do destino">
+                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="out_for_delivery">
+                  <!-- Ícone de entrega -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                  </svg>
+                </div>
+                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Saiu p/ entrega</span>
+                <span class="text-[10px] text-center text-slate-400">A caminho</span>
+              </li>
+              
+              <li class="flex flex-col items-center timeline-step" data-step="delivered" data-tooltip="Pedido entregue com sucesso! ✨">
+                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="delivered">
+                  <!-- Ícone de entregue -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v0"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21l4-4 4 4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h6v6H9z"/>
+                  </svg>
+                </div>
+                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Entregue</span>
+                <span class="text-[10px] text-center text-slate-400">Concluído ✨</span>
+              </li>
+            </ol>
           </div>
+          
+          <!-- Barra de progresso moderna -->
+           <div class="mt-4 relative">
+             <div class="h-2 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+               <div id="timelineProgress" class="h-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 rounded-full transition-all duration-1000 ease-out relative overflow-hidden progress-shimmer" style="width: 0;">
+                 <!-- Efeito de brilho animado -->
+                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+               </div>
+             </div>
+             <!-- Indicador de porcentagem -->
+             <div id="progressPercentage" class="absolute -top-6 left-0 text-xs font-semibold text-emerald-600 transition-all duration-1000" style="left: 0;">0%</div>
+           </div>
         </div>
       </div>
 
@@ -142,6 +309,8 @@
     const orderTotal = document.getElementById('orderTotal');
     const itemsList = document.getElementById('itemsList');
     const timelineProgress = document.getElementById('timelineProgress');
+    const timelineProgressLine = document.getElementById('timelineProgressLine');
+    const progressPercentage = document.getElementById('progressPercentage');
     const lastUpdateText = document.getElementById('lastUpdateText');
 
     let pollHandle = null;
@@ -219,25 +388,62 @@
       const mapStepToIndex = { pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3 };
       const idx = mapStepToIndex[currentStatus] ?? 0;
       const percent = ((idx + 1) / 4) * 100;
-      timelineProgress.style.width = `${percent}%`;
-      document.querySelectorAll('#timeline [data-step]').forEach(el => {
-        const step = el.getAttribute('data-step');
-        const i = mapStepToIndex[step];
-        if (i <= idx) {
-          el.classList.remove('bg-slate-200','text-slate-600');
-          el.classList.add('bg-emerald-500','text-white');
-          // Ícone de check nos passos concluídos
-          el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-        } else {
-          el.classList.remove('bg-emerald-500','text-white');
-          el.classList.add('bg-slate-200','text-slate-600');
-          // Número para os próximos passos
-          el.textContent = (i + 1);
-          if (step === 'out_for_delivery') {
-            // Caminhão no passo de entrega
-            el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/></svg>';
-          }
-        }
+      
+      // Animar barra de progresso principal
+      setTimeout(() => {
+        timelineProgress.style.width = `${percent}%`;
+        timelineProgressLine.style.width = `${percent}%`;
+        
+        // Animar indicador de porcentagem
+        progressPercentage.textContent = `${Math.round(percent)}%`;
+        progressPercentage.style.left = `calc(${percent}% - 12px)`;
+      }, 300);
+      
+      // Atualizar ícones da timeline com animações
+      document.querySelectorAll('#timeline .timeline-step').forEach((step, stepIndex) => {
+        const stepKey = step.getAttribute('data-step');
+        const icon = step.querySelector('.timeline-icon');
+        const isCompleted = stepIndex <= idx;
+        const isActive = stepIndex === idx;
+        
+        setTimeout(() => {
+           if (isCompleted) {
+             // Etapa concluída - verde com check
+             icon.classList.remove('bg-slate-200', 'text-slate-500');
+             icon.classList.add('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'completed', 'bounce-in');
+             icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
+             
+             // Adicionar efeito de pulso para etapa ativa
+             if (isActive && currentStatus !== 'delivered') {
+               icon.classList.add('animate-pulse');
+             } else {
+               icon.classList.remove('animate-pulse');
+             }
+             
+             // Efeito especial para pedido entregue
+             if (stepKey === 'delivered' && isCompleted) {
+               setTimeout(() => {
+                 // Confetti effect simulation
+                 icon.style.animation = 'timelineGlow 1s ease-in-out 3';
+               }, 500);
+             }
+           } else {
+             // Etapa pendente - cinza com ícone original
+             icon.classList.remove('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'animate-pulse', 'completed', 'bounce-in');
+             icon.classList.add('bg-slate-200', 'text-slate-500');
+             
+             // Restaurar ícones originais baseado no tipo de etapa
+             if (stepKey === 'pending') {
+               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+             } else if (stepKey === 'preparing') {
+               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/></svg>';
+             } else if (stepKey === 'out_for_delivery') {
+               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>';
+             } else if (stepKey === 'delivered') {
+               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v0"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21l4-4 4 4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h6v6H9z"/></svg>';
+             }
+           }
+         }, stepIndex * 150); // Animação escalonada
       });
 
       itemsList.innerHTML = '';
