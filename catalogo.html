@@ -267,6 +267,17 @@
             border: 1px solid #dc2626;
         }
         
+        /* Bloqueio de interação do conteúdo quando o modal está aberto */
+        body.modal-open #mainHeader,
+        body.modal-open .banner-carousel-section,
+        body.modal-open #bannerCarousel,
+        body.modal-open #cartDrawer,
+        body.modal-open #cartOverlay,
+        body.modal-open main,
+        body.modal-open .container {
+            pointer-events: none !important;
+        }
+        
         @media (max-width: 768px) {
             /* Mobile Typography Adjustments */
             h1, .text-4xl {
@@ -1398,7 +1409,7 @@
     </div>
 
     <!-- Success Overlay Modal (Simplified) -->
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-70 z-[1002] hidden items-center justify-center p-4">
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-70 z-[9999] hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full transform scale-95 transition-all duration-300">
             <div class="mb-6 flex justify-center">
                 <img id="successCartImage" src="/public/cart.png" alt="Carrinho" class="w-24 h-24 object-contain" />
@@ -1879,6 +1890,8 @@
         successModal.classList.add('flex');
         // Bloqueia scroll enquanto o modal está aberto
         document.body.style.overflow = 'hidden';
+        // Sinaliza estado de modal aberto para bloquear interações abaixo
+        document.body.classList.add('modal-open');
         // Neutraliza efeitos de will-change do toast enquanto o modal está ativo
         if (toastElement) {
             toastElement.classList.remove('will-change-transform');
@@ -1905,6 +1918,7 @@
             successModal.classList.remove('flex');
             // Restaura scroll do body após fechar o modal
             document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
             // Restaura comportamento do toast
             if (toastElement) {
                 toastElement.style.pointerEvents = '';
