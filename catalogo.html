@@ -1418,7 +1418,10 @@
             <p class="text-sm text-gray-600" id="deliveryEstimateText">Estimativa de entrega: —</p>
             <p class="text-sm text-slate-600 mt-2" id="whatsappNoticeText">Você receberá o resumo pelo WhatsApp em instantes</p>
             <p class="text-sm text-slate-500" id="thankYouText">Obrigado pela preferência! 💚</p>
-            <button id="closeSuccessModal" class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
+            <a id="trackDeliveryLink" href="#" class="mt-4 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
+                Acompanhar entrega
+            </a>
+            <button id="closeSuccessModal" class="mt-2 bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 w-full">
                 OK
             </button>
         </div>
@@ -1877,6 +1880,7 @@
         const deliveryEstimateText = document.getElementById('deliveryEstimateText');
         const whatsappNoticeText = document.getElementById('whatsappNoticeText');
         const thankYouText = document.getElementById('thankYouText');
+        const trackDeliveryLink = document.getElementById('trackDeliveryLink');
 
         // Fecha o drawer para evitar conflitos de stacking/transform
         closeCartDrawer();
@@ -1890,6 +1894,9 @@
         deliveryEstimateText.textContent = `Estimativa de entrega: ${estimate}`;
         whatsappNoticeText.textContent = 'Você receberá o resumo pelo WhatsApp em instantes';
         thankYouText.textContent = 'Obrigado pela preferência! 💚';
+        if (trackDeliveryLink) {
+            trackDeliveryLink.href = `/status.html?id=${orderId}`;
+        }
 
         // Exibe modal
         successModal.classList.remove('hidden');

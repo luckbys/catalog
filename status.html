@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acompanhar entrega</title>
+  <link rel="icon" href="/public/logo.png" />
+  <link rel="stylesheet" href="/public/styles.css" />
+</head>
+<body class="bg-slate-100 min-h-dvh">
+  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
+    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <img src="/public/logo.png" alt="Logo" class="w-7 h-7" />
+        <span class="font-semibold text-slate-800">Acompanhar Entrega</span>
+      </div>
+      <a href="/catalogo.html" class="text-sm text-slate-600 hover:text-slate-800">Voltar</a>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 py-6">
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+        <div class="flex-1">
+          <label for="orderIdInput" class="block text-xs font-medium text-slate-600">ID do pedido</label>
+          <input id="orderIdInput" type="number" inputmode="numeric" placeholder="ex: 49"
+                 class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+        <button id="buscarBtn" class="mt-1 sm:mt-0 inline-flex items-center justify-center rounded-lg bg-emerald-600 text-white px-4 py-2 hover:bg-emerald-700 active:bg-emerald-800">
+          Ver status
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">Digite o número mostrado como "Pedido #" na confirmação.</p>
+    </section>
+
+    <section id="statusCard" class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4 hidden">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6 text-emerald-600"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/></svg>
+        </div>
+        <div class="flex-1">
+          <h2 class="text-base font-semibold text-slate-800">Pedido <span id="orderNumberLabel">#—</span></h2>
+          <p id="etaText" class="text-xs text-slate-600">Estimativa de entrega: ~45–60 min</p>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-600">Status atual</span>
+          <span id="statusBadge" class="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded">—</span>
+        </div>
+
+        <div class="mt-3">
+          <ol id="timeline" class="grid grid-cols-4 gap-2">
+            <li class="flex flex-col items-center">
+              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="pending">1</div>
+              <span class="mt-1 text-[10px] text-center text-slate-600">Recebido</span>
+            </li>
+            <li class="flex flex-col items-center">
+              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="preparing">2</div>
+              <span class="mt-1 text-[10px] text-center text-slate-600">Preparando</span>
+            </li>
+            <li class="flex flex-col items-center">
+              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="out_for_delivery">3</div>
+              <span class="mt-1 text-[10px] text-center text-slate-600">Saiu p/ entrega</span>
+            </li>
+            <li class="flex flex-col items-center">
+              <div class="w-7 h-7 rounded-full grid place-items-center bg-slate-200 text-slate-600" data-step="delivered">4</div>
+              <span class="mt-1 text-[10px] text-center text-slate-600">Entregue</span>
+            </li>
+          </ol>
+          <div class="mt-2 h-1 bg-slate-200 rounded-full overflow-hidden">
+            <div id="timelineProgress" class="h-full bg-emerald-500 w-0"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 border-t border-slate-200 pt-3">
+        <h3 class="text-sm font-semibold text-slate-800">Resumo</h3>
+        <div class="mt-2 grid grid-cols-2 gap-y-1 text-sm">
+          <span class="text-slate-600">Cliente</span>
+          <span id="customerName" class="text-slate-800">—</span>
+          <span class="text-slate-600">Telefone</span>
+          <span id="customerPhone" class="text-slate-800">—</span>
+          <span class="text-slate-600">Pagamento</span>
+          <span id="paymentMethod" class="text-slate-800">—</span>
+          <span class="text-slate-600">Total</span>
+          <span id="orderTotal" class="text-slate-800">—</span>
+        </div>
+      </div>
+
+      <div id="itemsList" class="mt-3"></div>
+    </section>
+
+    <section id="feedbackCard" class="mt-6 hidden">
+      <div class="text-center text-slate-600 text-sm">Pedido não encontrado. Verifique o número informado.</div>
+    </section>
+  </main>
+
+  <script>
+    const orderIdInput = document.getElementById('orderIdInput');
+    const buscarBtn = document.getElementById('buscarBtn');
+    const statusCard = document.getElementById('statusCard');
+    const feedbackCard = document.getElementById('feedbackCard');
+    const orderNumberLabel = document.getElementById('orderNumberLabel');
+    const statusBadge = document.getElementById('statusBadge');
+    const customerName = document.getElementById('customerName');
+    const customerPhone = document.getElementById('customerPhone');
+    const paymentMethod = document.getElementById('paymentMethod');
+    const orderTotal = document.getElementById('orderTotal');
+    const itemsList = document.getElementById('itemsList');
+    const timelineProgress = document.getElementById('timelineProgress');
+
+    let pollHandle = null;
+
+    function getParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function pmLabel(value) {
+      const m = {
+        cash: 'Dinheiro',
+        credit_card: 'Cartão (crédito)',
+        debit_card: 'Cartão (débito)',
+        pix: 'PIX',
+        bank_transfer: 'Transferência'
+      };
+      return m[value] || value || '—';
+    }
+
+    async function fetchStatus(orderId) {
+      const url = `/api/order-status?order_id=${encodeURIComponent(orderId)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Request failed');
+      return await res.json();
+    }
+
+    function render(data) {
+      const { order, items, timeline } = data;
+      statusCard.classList.remove('hidden');
+      feedbackCard.classList.add('hidden');
+
+      orderNumberLabel.textContent = `#${order.id}`;
+      statusBadge.textContent = (order.status || 'pending');
+      customerName.textContent = order.customer_name || '—';
+      customerPhone.textContent = order.customer_phone || '—';
+      paymentMethod.textContent = pmLabel(order.payment_method);
+      orderTotal.textContent = `R$ ${(order.total ?? order.subtotal ?? 0).toFixed(2)}`;
+
+      const mapStepToIndex = { pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3 };
+      const idx = mapStepToIndex[(order.status || 'pending').toLowerCase()] ?? 0;
+      const percent = ((idx + 1) / 4) * 100;
+      timelineProgress.style.width = `${percent}%`;
+      document.querySelectorAll('#timeline [data-step]').forEach(el => {
+        const step = el.getAttribute('data-step');
+        const i = mapStepToIndex[step];
+        if (i <= idx) {
+          el.classList.remove('bg-slate-200','text-slate-600');
+          el.classList.add('bg-emerald-500','text-white');
+        } else {
+          el.classList.remove('bg-emerald-500','text-white');
+          el.classList.add('bg-slate-200','text-slate-600');
+        }
+      });
+
+      itemsList.innerHTML = '';
+      if (Array.isArray(items) && items.length) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden';
+        items.forEach(it => {
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between px-3 py-2 bg-white';
+          const left = document.createElement('div');
+          left.className = 'text-sm text-slate-800';
+          left.textContent = `${it.product_descricao} × ${it.quantity}`;
+          const right = document.createElement('div');
+          right.className = 'text-sm text-slate-700';
+          right.textContent = `R$ ${(it.subtotal ?? 0).toFixed(2)}`;
+          row.appendChild(left);
+          row.appendChild(right);
+          wrapper.appendChild(row);
+        });
+        itemsList.appendChild(wrapper);
+      }
+    }
+
+    async function buscar(orderId) {
+      try {
+        const data = await fetchStatus(orderId);
+        render(data);
+      } catch (e) {
+        statusCard.classList.add('hidden');
+        feedbackCard.classList.remove('hidden');
+      }
+    }
+
+    buscarBtn.addEventListener('click', () => {
+      const id = orderIdInput.value.trim();
+      if (!id) return;
+      buscar(id);
+      if (pollHandle) clearInterval(pollHandle);
+      pollHandle = setInterval(() => buscar(id), 10000);
+    });
+
+    const qId = getParam('id') || getParam('order_id');
+    if (qId) {
+      orderIdInput.value = qId;
+      buscar(qId);
+      pollHandle = setInterval(() => buscar(qId), 10000);
+    }
+  </script>
+</body>
+</html>

@@ -210,6 +210,17 @@ async def serve_demo():
         # Local development environment
         return FileResponse(os.path.join(BASE_DIR, "demo.html"), media_type="text/html")
 
+@app.get("/status.html")
+async def serve_status_page():
+    """Serve a página de acompanhamento de status"""
+    file_name = "status.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
 # -------------------- Rotas auxiliares --------------------
 @app.post("/api/relay/n8n")
 def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_dep)):
@@ -251,6 +262,44 @@ async def security_headers(request: Request, call_next):
 @app.get("/health")
 def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
+@app.get("/api/order-status")
+def get_order_status(order_id: int):
+    """Retorna detalhes do pedido e itens para acompanhamento de status"""
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            raise HTTPException(status_code=500, detail="Sistema de pedidos não disponível")
+
+        order_res = order_processor.supabase.table("orders").select("*").eq("id", order_id).limit(1).execute()
+        order_data = order_res.data[0] if getattr(order_res, "data", None) else None
+        if not order_data:
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+
+        items_res = order_processor.supabase.table("order_items").select("*").eq("order_id", order_id).execute()
+        items_data = getattr(items_res, "data", []) or []
+
+        status = (order_data.get("status") or "pending").lower()
+        timeline_steps = [
+            {"key": "pending", "label": "Pedido recebido"},
+            {"key": "preparing", "label": "Em preparação"},
+            {"key": "out_for_delivery", "label": "Saiu para entrega"},
+            {"key": "delivered", "label": "Entregue"},
+        ]
+
+        status_index = next((i for i, s in enumerate(timeline_steps) if s["key"] == status), 0)
+        for i, s in enumerate(timeline_steps):
+            s["done"] = i <= status_index
+
+        return {
+            "order": order_data,
+            "items": items_data,
+            "timeline": timeline_steps,
+            "server_time": datetime.utcnow().isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar status: {str(e)}")
 
 @app.get("/api/produtos")
 def listar_produtos_demo():
