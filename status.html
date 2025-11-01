@@ -449,16 +449,16 @@
     const customerName = document.getElementById('customerName');
     const customerAddress = document.getElementById('customerAddress');
 
-    // Status mapping
+    // Status mapping - mapeando os status do backend para o frontend
     const statusMap = {
-      'pedido_recebido': { title: 'Pedido Recebido', desc: 'Seu pedido foi confirmado' },
-      'preparando': { title: 'Preparando', desc: 'Estamos preparando seu pedido' },
-      'pronto': { title: 'Pronto', desc: 'Pedido pronto para entrega' },
-      'saiu_entrega': { title: 'Saiu para Entrega', desc: 'A caminho do destino' },
-      'entregue': { title: 'Entregue', desc: 'Pedido entregue com sucesso' }
+      'pending': { title: 'Pedido Recebido', desc: 'Seu pedido foi confirmado' },
+      'preparing': { title: 'Preparando', desc: 'Estamos preparando seu pedido' },
+      'ready': { title: 'Pronto', desc: 'Pedido pronto para entrega' },
+      'out_for_delivery': { title: 'Saiu para Entrega', desc: 'A caminho do destino' },
+      'delivered': { title: 'Entregue', desc: 'Pedido entregue com sucesso' }
     };
 
-    const statusOrder = ['pedido_recebido', 'preparando', 'pronto', 'saiu_entrega', 'entregue'];
+    const statusOrder = ['pending', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
 
     // Show/Hide sections
     function showSection(section) {
@@ -521,15 +521,15 @@
         const data = await response.json();
         
         // Update order info
-        orderTitle.textContent = `Pedido #${data.order_id}`;
-        orderMeta.textContent = `Estimativa: 45-60 min`;
+        orderTitle.textContent = `Pedido #${data.order.order_number || data.order.id}`;
+        orderMeta.textContent = data.eta?.text || 'Estimativa: 45-60 min';
         
         // Update customer info
-        customerName.textContent = data.customer_name || 'Nome não informado';
-        customerAddress.textContent = data.customer_address || 'Endereço não informado';
+        customerName.textContent = data.order.customer_name || 'Nome não informado';
+        customerAddress.textContent = data.order.customer_address || 'Endereço não informado';
         
-        // Create timeline
-        createTimeline(data.status, data.timestamps || {});
+        // Create timeline usando o status do pedido
+        createTimeline(data.order.status, data.timestamps || {});
         
         showSection(statusCard);
         

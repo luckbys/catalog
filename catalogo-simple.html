@@ -84,7 +84,7 @@
             container.innerHTML = productsData.map(product => `
                 <div style="border: 1px solid #ccc; padding: 10px; margin: 10px;">
                     <h3>${product.name}</h3>
-                    ${product.laboratorio ? `<p style="color: #2563eb; font-weight: 500; font-size: 0.875rem; margin: 5px 0;">🏢 ${product.laboratorio}</p>` : ''}
+                    ${product.laboratorio ? `<p style="color: #2563eb; font-weight: 500; font-size: 0.875rem; margin: 5px 0;">🧪 ${product.laboratorio}</p>` : ''}
                     <p>${product.description}</p>
                     <p>Preço: R$ ${product.price.toFixed(2)}</p>
                     <img src="${product.imageUrl}" alt="${product.name}" style="max-width: 100px;">

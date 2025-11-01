@@ -1739,42 +1739,48 @@
             name: 'Dipirona Sódica 500mg',
             description: 'Caixa com 10 comprimidos. Analgésico e antitérmico.',
             price: 8.50,
-            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Dipirona'
+            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Dipirona',
+            laboratorio: 'Medley Farmacêutica'
         },
         {
             id: 'prod002',
             name: 'Paracetamol 750mg',
             description: 'Caixa com 20 comprimidos. Indicado para dor e febre.',
             price: 12.75,
-            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Paracetamol'
+            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Paracetamol',
+            laboratorio: 'EMS Pharma'
         },
         {
             id: 'prod003',
             name: 'Vitamina C Efervescente',
             description: 'Tubo com 10 comprimidos. Sabor laranja.',
             price: 15.00,
-            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Vitamina+C'
+            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Vitamina+C',
+            laboratorio: 'Bayer HealthCare'
         },
         {
             id: 'prod004',
             name: 'Soro Fisiológico 0,9%',
             description: 'Frasco com 500ml. Uso nasal, inalações e limpeza.',
             price: 6.20,
-            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Soro'
+            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Soro',
+            laboratorio: 'Fresenius Kabi'
         },
         {
             id: 'prod005',
             name: 'Álcool em Gel 70%',
             description: 'Frasco com 250ml. Antisséptico para as mãos.',
             price: 9.90,
-            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Álcool+Gel'
+            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Álcool+Gel',
+            laboratorio: 'Rioquímica'
         },
         {
             id: 'prod006',
             name: 'Curativos Adesivos',
             description: 'Caixa com 35 unidades. Discretos e resistentes.',
             price: 7.80,
-            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Curativos'
+            imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Curativos',
+            laboratorio: '3M do Brasil'
         }
     ];
 
@@ -1856,7 +1862,7 @@
         console.log('[DEBUG] Produtos filtrados:', filtered.length);
         
         productListContainer.innerHTML = filtered.map(product => `
-            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-2 flex flex-col transition-all duration-300 border border-slate-100">
+            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-2 flex flex-col transition-all duration-300 border border-slate-100 group">
                 <div class="product-img-wrapper relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
                     <img src="${product.imageUrl}" 
                          alt="${product.name}" 
@@ -1866,7 +1872,9 @@
                          fetchpriority="low"
                          onerror="this.onerror=null; this.src='/public/padrao.png'; this.classList.add('fallback-img');" 
                          onload="this.closest('.product-img-wrapper')?.classList.add('loaded'); this.classList.add('loaded-img');">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    
+                    <!-- Overlay gradiente para o laboratório - REMOVIDO -->
+                    
                     <div class="absolute top-2 right-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                         <div class="bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
@@ -1879,14 +1887,12 @@
                     </div>
                 </div>
                 <div class="p-3 sm:p-5 flex flex-col flex-grow">
+                    ${product.laboratorio ? `
+                    <div class="flex items-center text-gray-500 mb-2">
+                        <span class="text-sm mr-1">🧪</span>
+                        <span class="text-xs font-medium">${product.laboratorio}</span>
+                    </div>` : ''}
                     <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mb-1 line-clamp-2">${product.name}</h3>
-                    ${product.laboratorio ? `<p class="text-xs sm:text-sm text-blue-600 font-medium mb-2 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5 flex-shrink-0">
-                            <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"></path>
-                            <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"></path>
-                        </svg>
-                        <span class="truncate">${product.laboratorio}</span>
-                    </p>` : ''}
                     <p class="text-slate-600 text-xs sm:text-sm flex-grow leading-relaxed line-clamp-3 mb-3">${product.description}</p>
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-2">
                         <span class="text-xl sm:text-2xl font-bold text-green-600">${formatCurrency(product.price)}</span>
