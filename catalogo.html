@@ -1739,6 +1739,8 @@
             name: 'Dipirona Sódica 500mg',
             description: 'Caixa com 10 comprimidos. Analgésico e antitérmico.',
             price: 8.50,
+            originalPrice: 12.00,
+            promoPrice: 8.50,
             imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Dipirona',
             laboratorio: 'Medley Farmacêutica'
         },
@@ -1755,6 +1757,8 @@
             name: 'Vitamina C Efervescente',
             description: 'Tubo com 10 comprimidos. Sabor laranja.',
             price: 15.00,
+            originalPrice: 22.50,
+            promoPrice: 15.00,
             imageUrl: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Vitamina+C',
             laboratorio: 'Bayer HealthCare'
         },
@@ -1873,7 +1877,16 @@
                          onerror="this.onerror=null; this.src='/public/padrao.png'; this.classList.add('fallback-img');" 
                          onload="this.closest('.product-img-wrapper')?.classList.add('loaded'); this.classList.add('loaded-img');">
                     
-                    <!-- Overlay gradiente para o laboratório - REMOVIDO -->
+                    <!-- Badge Promocional -->
+                    ${product.originalPrice && product.promoPrice ? `
+                        <div class="absolute top-2 right-2 z-20">
+                            <div class="bg-red-400 text-white px-2 py-1 rounded-lg shadow-xl border-2 border-white transform rotate-3 hover:scale-105 transition-transform duration-200">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs font-bold tracking-wide">🔥 OFERTA</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
                     
                     <div class="absolute top-2 right-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                         <div class="bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
@@ -1895,7 +1908,12 @@
                     <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mb-1 line-clamp-2">${product.name}</h3>
                     <p class="text-slate-600 text-xs sm:text-sm flex-grow leading-relaxed line-clamp-3 mb-3">${product.description}</p>
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-2">
-                        <span class="text-xl sm:text-2xl font-bold text-green-600">${formatCurrency(product.price)}</span>
+                        ${product.originalPrice && product.promoPrice ? `
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-500 line-through">De ${formatCurrency(product.originalPrice)}</span>
+                            <span class="text-xl sm:text-2xl font-bold text-red-600">Por ${formatCurrency(product.promoPrice)}</span>
+                        </div>` : `
+                        <span class="text-xl sm:text-2xl font-bold text-green-600">${formatCurrency(product.price)}</span>`}
                         <button class="add-to-cart-btn bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3 px-5 sm:px-6 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 touch-manipulation text-sm sm:text-base w-full sm:w-auto group" data-id="${product.id}" aria-label="Adicionar ${product.name} ao carrinho">
                             <span class="flex items-center justify-center space-x-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="sm:w-4 sm:h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
