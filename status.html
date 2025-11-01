@@ -3,610 +3,562 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Acompanhar entrega</title>
+  <title>Status do Pedido</title>
   <link rel="icon" href="/public/logo.png" />
-  <link rel="stylesheet" href="/public/styles.css?v=1730398500" />
+  <link rel="stylesheet" href="/public/styles.css" />
   <style>
-    /* Animações personalizadas para a timeline */
-    @keyframes timelineGlow {
-      0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.3); }
-      50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.4); }
+    /* Design System Minimalista */
+    :root {
+      --primary: #059669;
+      --primary-light: #10b981;
+      --primary-dark: #047857;
+      --secondary: #6b7280;
+      --background: #f8fafc;
+      --surface: #ffffff;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --border: #e5e7eb;
+      --border-light: #f3f4f6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --radius: 12px;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     }
-    
-    @keyframes progressShimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.5;
     }
-    
-    @keyframes bounceIn {
-      0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
-      50% { transform: scale(1.1) rotate(5deg); }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
     }
-    
-    .timeline-step {
-      transition: all 0.3s ease;
+
+    .breadcrumb a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
     }
-    
-    .timeline-step:hover {
-      transform: translateY(-2px);
+
+    .breadcrumb a:hover {
+      color: var(--primary);
     }
-    
-    .timeline-icon.completed {
-      animation: timelineGlow 2s ease-in-out infinite;
+
+    .breadcrumb-separator {
+      color: var(--text-muted);
+      font-size: 12px;
     }
-    
-    .timeline-icon.bounce-in {
-      animation: bounceIn 0.6s ease-out;
+
+    .breadcrumb-current {
+      color: var(--text-primary);
+      font-weight: 500;
     }
-    
-    .progress-shimmer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      animation: progressShimmer 2s infinite;
+
+    /* Container */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 24px 16px;
     }
-    
-    /* Tooltips para as etapas */
-    .timeline-step {
-      position: relative;
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      overflow: hidden;
     }
-    
-    .timeline-step::before {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-8px);
-      background: rgba(0, 0, 0, 0.8);
+
+    .card-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    /* Search Section */
+    .search-section {
+      margin-bottom: 32px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .input-field {
+      flex: 1;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      transition: all 0.2s;
+      background: var(--surface);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgb(5 150 105 / 0.1);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
       color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 11px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s ease;
-      z-index: 10;
     }
-    
-    .timeline-step::after {
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* Status Card */
+    .status-card {
+      margin-bottom: 24px;
+    }
+
+    .order-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .order-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .order-info h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+    }
+
+    .order-meta {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    /* Timeline Minimalista */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
       content: '';
       position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-2px);
-      border: 4px solid transparent;
-      border-top-color: rgba(0, 0, 0, 0.8);
-      opacity: 0;
-      transition: all 0.3s ease;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
     }
-    
-    .timeline-step:hover::before,
-    .timeline-step:hover::after {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-4px);
-    }
-    
-    /* Responsividade aprimorada */
-    @media (max-width: 480px) {
-      .timeline-icon {
-        width: 2.5rem !important;
-        height: 2.5rem !important;
-      }
-      
-      .timeline-icon svg {
-        width: 1rem !important;
-        height: 1rem !important;
-      }
-      
-      #timeline {
-        gap: 0.25rem;
-      }
-      
-      .timeline-step span {
-        font-size: 10px;
-      }
-      
-      .timeline-step span:last-child {
-        font-size: 8px;
-      }
-    }
-    
-    /* Efeito de loading para o skeleton */
-    .skeleton-pulse {
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    </style>
-  </head>
-<body class="bg-slate-100 min-h-screen">
-  <header class="sticky top-0 bg-white border-b border-slate-200">
-    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <img src="/public/logo.png" alt="Logo" class="w-7 h-7" style="width: 28px !important; height: 28px !important; max-width: 28px !important; max-height: 28px !important;" />
-        <span class="font-semibold text-slate-800">Acompanhar Entrega</span>
-      </div>
-      <a href="/catalogo.html" class="text-sm text-slate-600 hover:text-slate-800">Voltar</a>
-    </div>
-  </header>
 
-  <main class="max-w-md mx-auto px-4 py-6">
-    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-      <div class="flex flex-col sm:flex-row sm:items-end gap-3">
-        <div class="flex-1">
-          <label for="orderIdInput" class="block text-xs font-medium text-slate-600">ID do pedido</label>
-          <input id="orderIdInput" type="number" inputmode="numeric" placeholder="ex: 49"
-                 class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-        <button id="buscarBtn" class="mt-1 sm:mt-0 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white px-4 py-2 hover:bg-emerald-700 active:bg-emerald-800">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/></svg>
-          Ver status
-        </button>
-      </div>
-      <p class="text-xs text-slate-500 mt-2">Digite o número mostrado como "Pedido #" na confirmação.</p>
-    </section>
+    .timeline-item {
+      position: relative;
+      padding-bottom: 24px;
+    }
 
-    <!-- Skeleton enquanto carrega -->
-    <section id="statusSkeleton" class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4 hidden">
-      <div class="animate-pulse">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-slate-200"></div>
-          <div class="flex-1">
-            <div class="h-4 bg-slate-200 rounded w-32"></div>
-            <div class="h-3 bg-slate-200 rounded w-48 mt-2"></div>
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      transition: all 0.3s;
+    }
+
+    .timeline-marker.completed {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .timeline-marker.current {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgb(5 150 105 / 0.1);
+    }
+
+    .timeline-content h3 {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0 0 4px 0;
+      color: var(--text-primary);
+    }
+
+    .timeline-content p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Customer Info */
+    .customer-info {
+      background: var(--border-light);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 24px;
+    }
+
+    .customer-info h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+    }
+
+    .customer-info p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0 0 4px 0;
+    }
+
+    /* Loading States */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      height: 16px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-text.short { width: 60%; }
+    .skeleton-text.medium { width: 80%; }
+    .skeleton-text.long { width: 100%; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container {
+        padding: 16px 12px;
+      }
+      
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+
+    /* Utilities */
+    .hidden { display: none; }
+    .text-center { text-align: center; }
+    .mb-4 { margin-bottom: 16px; }
+    .mt-4 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/catalogo.html">Catálogo</a>
+      <span class="breadcrumb-separator">›</span>
+      <span class="breadcrumb-current">Status do Pedido</span>
+    </nav>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <div class="card">
+        <div class="card-content">
+          <div class="input-group">
+            <div class="input-field">
+              <label for="orderIdInput" class="input-label">Número do Pedido</label>
+              <input 
+                id="orderIdInput" 
+                type="number" 
+                class="input" 
+                placeholder="Ex: 49"
+                value="49"
+              />
+            </div>
+            <button id="buscarBtn" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              Buscar
+            </button>
           </div>
         </div>
-        <div class="mt-4">
-          <div class="h-3 bg-slate-200 rounded w-24"></div>
-          <div class="mt-3 grid grid-cols-4 gap-2">
-            <div class="h-7 bg-slate-200 rounded-full"></div>
-            <div class="h-7 bg-slate-200 rounded-full"></div>
-            <div class="h-7 bg-slate-200 rounded-full"></div>
-            <div class="h-7 bg-slate-200 rounded-full"></div>
+      </div>
+    </section>
+
+    <!-- Loading Skeleton -->
+    <section id="loadingSkeleton" class="hidden">
+      <div class="card status-card">
+        <div class="card-content">
+          <div class="order-header">
+            <div class="skeleton" style="width: 48px; height: 48px; border-radius: 12px;"></div>
+            <div style="flex: 1;">
+              <div class="skeleton skeleton-text medium"></div>
+              <div class="skeleton skeleton-text short"></div>
+            </div>
           </div>
-          <div class="mt-2 h-1 bg-slate-200 rounded-full"></div>
-        </div>
-        <div class="mt-4 border-t border-slate-200 pt-3">
-          <div class="h-4 bg-slate-200 rounded w-20"></div>
-          <div class="mt-2 h-3 bg-slate-200 rounded w-full"></div>
-          <div class="mt-1 h-3 bg-slate-200 rounded w-2/3"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="statusCard" class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4 hidden">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6 text-emerald-600"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/></svg>
-        </div>
-        <div class="flex-1">
-          <h2 class="text-base font-semibold text-slate-800">Pedido <span id="orderNumberLabel">#—</span></h2>
-          <p id="etaText" class="text-xs text-slate-600">Estimativa de entrega: ~45–60 min</p>
-          <p id="lastUpdateText" class="text-[11px] text-slate-400">Atualizado há —</p>
-        </div>
-      </div>
-
-      <div class="mt-4">
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-slate-600">Status atual</span>
-          <span id="statusBadge" class="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded">—</span>
-        </div>
-
-        <div class="mt-4 relative">
-          <!-- Timeline moderna com conexões visuais -->
-          <div class="relative">
-            <!-- Linha de conexão de fundo -->
-            <div class="absolute top-6 left-6 right-6 h-0.5 bg-slate-200 rounded-full"></div>
-            <!-- Linha de progresso animada -->
-            <div id="timelineProgressLine" class="absolute top-6 left-6 h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000 ease-out" style="width: 0;"></div>
-            
-            <ol id="timeline" class="relative grid grid-cols-4 gap-2">
-              <li class="flex flex-col items-center timeline-step" data-step="pending" data-tooltip="Pedido recebido e confirmado pelo sistema">
-                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="pending">
-                  <!-- Ícone de recebimento -->
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </div>
-                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Recebido</span>
-                <span class="text-[10px] text-center text-slate-400">Pedido confirmado</span>
-              </li>
-              
-              <li class="flex flex-col items-center timeline-step" data-step="preparing" data-tooltip="Pedido sendo preparado pela equipe">
-                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="preparing">
-                  <!-- Ícone de preparação -->
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
-                  </svg>
-                </div>
-                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Preparando</span>
-                <span class="text-[10px] text-center text-slate-400">Em produção</span>
-              </li>
-              
-              <li class="flex flex-col items-center timeline-step" data-step="out_for_delivery" data-tooltip="Pedido saiu para entrega - a caminho do destino">
-                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="out_for_delivery">
-                  <!-- Ícone de entrega -->
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-                  </svg>
-                </div>
-                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Saiu p/ entrega</span>
-                <span class="text-[10px] text-center text-slate-400">A caminho</span>
-              </li>
-              
-              <li class="flex flex-col items-center timeline-step" data-step="delivered" data-tooltip="Pedido entregue com sucesso! ✨">
-                <div class="timeline-icon w-12 h-12 rounded-full grid place-items-center bg-slate-200 text-slate-500 border-4 border-white shadow-lg transition-all duration-500 hover:scale-110 cursor-pointer" data-step="delivered">
-                  <!-- Ícone de entregue -->
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v0"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21l4-4 4 4"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h6v6H9z"/>
-                  </svg>
-                </div>
-                <span class="mt-2 text-xs text-center text-slate-600 font-medium">Entregue</span>
-                <span class="text-[10px] text-center text-slate-400">Concluído ✨</span>
-              </li>
-            </ol>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="skeleton skeleton-text long"></div>
+              <div class="skeleton skeleton-text short"></div>
+            </div>
+            <div class="timeline-item">
+              <div class="skeleton skeleton-text medium"></div>
+              <div class="skeleton skeleton-text short"></div>
+            </div>
           </div>
-          
-          <!-- Barra de progresso moderna -->
-           <div class="mt-4 relative">
-             <div class="h-2 bg-slate-200 rounded-full overflow-hidden shadow-inner">
-               <div id="timelineProgress" class="h-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 rounded-full transition-all duration-1000 ease-out relative overflow-hidden progress-shimmer" style="width: 0;">
-                 <!-- Efeito de brilho animado -->
-                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
-               </div>
-             </div>
-           </div>
         </div>
       </div>
+    </section>
 
-      <div class="mt-4 border-t border-slate-200 pt-3">
-        <h3 class="text-sm font-semibold text-slate-800">Resumo</h3>
-        <div class="mt-2 grid grid-cols-2 gap-y-1 text-sm">
-          <span class="text-slate-600">Cliente</span>
-          <span id="customerName" class="text-slate-800">—</span>
-          <span class="text-slate-600">Telefone</span>
-          <span id="customerPhone" class="text-slate-800">—</span>
-          <span class="text-slate-600">Pagamento</span>
-          <span id="paymentMethod" class="text-slate-800">—</span>
-          <span class="text-slate-600">Total</span>
-          <span id="orderTotal" class="text-slate-800">—</span>
+    <!-- Status Card -->
+    <section id="statusCard" class="hidden">
+      <div class="card status-card">
+        <div class="card-content">
+          <div class="order-header">
+            <div class="order-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/>
+              </svg>
+            </div>
+            <div class="order-info">
+              <h2 id="orderTitle">Pedido #49</h2>
+              <p class="order-meta" id="orderMeta">Estimativa: 45-60 min</p>
+            </div>
+          </div>
+
+          <div class="timeline" id="timeline">
+            <!-- Timeline items will be populated by JavaScript -->
+          </div>
+
+          <div class="customer-info" id="customerInfo">
+            <h4>Informações de Entrega</h4>
+            <p id="customerName">—</p>
+            <p id="customerAddress">—</p>
+          </div>
         </div>
       </div>
-
-      <div id="itemsList" class="mt-3"></div>
     </section>
 
-    <section id="feedbackCard" class="mt-6 hidden">
-      <div class="text-center text-slate-600 text-sm">Pedido não encontrado. Verifique o número informado.</div>
+    <!-- Error State -->
+    <section id="errorCard" class="hidden">
+      <div class="card">
+        <div class="card-content text-center">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--error); margin: 0 auto 16px;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          <h3 style="margin: 0 0 8px 0;">Pedido não encontrado</h3>
+          <p style="color: var(--text-secondary); margin: 0;">Verifique o número do pedido e tente novamente.</p>
+        </div>
+      </div>
     </section>
-  </main>
+  </div>
 
   <script>
+    // API Configuration
+    const API_BASE = window.location.origin;
+    
+    // DOM Elements
     const orderIdInput = document.getElementById('orderIdInput');
     const buscarBtn = document.getElementById('buscarBtn');
+    const loadingSkeleton = document.getElementById('loadingSkeleton');
     const statusCard = document.getElementById('statusCard');
-    const statusSkeleton = document.getElementById('statusSkeleton');
-    const feedbackCard = document.getElementById('feedbackCard');
-    const orderNumberLabel = document.getElementById('orderNumberLabel');
-    const statusBadge = document.getElementById('statusBadge');
-    const etaText = document.getElementById('etaText');
+    const errorCard = document.getElementById('errorCard');
+    const orderTitle = document.getElementById('orderTitle');
+    const orderMeta = document.getElementById('orderMeta');
+    const timeline = document.getElementById('timeline');
+    const customerInfo = document.getElementById('customerInfo');
     const customerName = document.getElementById('customerName');
-    const customerPhone = document.getElementById('customerPhone');
-    const paymentMethod = document.getElementById('paymentMethod');
-    const orderTotal = document.getElementById('orderTotal');
-    const itemsList = document.getElementById('itemsList');
-    const timelineProgress = document.getElementById('timelineProgress');
-    const timelineProgressLine = document.getElementById('timelineProgressLine');
-    const lastUpdateText = document.getElementById('lastUpdateText');
+    const customerAddress = document.getElementById('customerAddress');
 
-    let pollHandle = null;
-    let lastUpdateTimer = null;
-    let lastUpdate = null;
-
-    function getParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
-    }
-
-    function pmLabel(value) {
-      const m = {
-        cash: 'Dinheiro',
-        credit_card: 'Cartão (crédito)',
-        debit_card: 'Cartão (débito)',
-        pix: 'PIX',
-        bank_transfer: 'Transferência'
-      };
-      return m[value] || value || '—';
-    }
-
-    const statusLabels = {
-      pending: 'Recebido',
-      preparing: 'Em preparação',
-      out_for_delivery: 'Saiu para entrega',
-      delivered: 'Entregue'
-    };
-    const statusBadgeClasses = {
-      pending: 'bg-amber-100 text-amber-800',
-      preparing: 'bg-sky-100 text-sky-800',
-      out_for_delivery: 'bg-emerald-100 text-emerald-800',
-      delivered: 'bg-slate-200 text-slate-800'
+    // Status mapping
+    const statusMap = {
+      'pedido_recebido': { title: 'Pedido Recebido', desc: 'Seu pedido foi confirmado' },
+      'preparando': { title: 'Preparando', desc: 'Estamos preparando seu pedido' },
+      'pronto': { title: 'Pronto', desc: 'Pedido pronto para entrega' },
+      'saiu_entrega': { title: 'Saiu para Entrega', desc: 'A caminho do destino' },
+      'entregue': { title: 'Entregue', desc: 'Pedido entregue com sucesso' }
     };
 
-    function etaForStatus(status) {
-      const ranges = {
-        pending: [45, 60],
-        preparing: [25, 40],
-        out_for_delivery: [10, 25],
-        delivered: [0, 0]
-      };
-      const [min, max] = ranges[status] || ranges.pending;
-      if (max === 0) return 'Entregue ✅';
-      return `Estimativa de entrega: ~${min}–${max} min`;
+    const statusOrder = ['pedido_recebido', 'preparando', 'pronto', 'saiu_entrega', 'entregue'];
+
+    // Show/Hide sections
+    function showSection(section) {
+      [loadingSkeleton, statusCard, errorCard].forEach(el => el.classList.add('hidden'));
+      section.classList.remove('hidden');
     }
 
-    async function fetchStatus(orderId) {
-      const url = `/api/order-status?order_id=${encodeURIComponent(orderId)}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Request failed');
-      return await res.json();
+    // Format time
+    function formatTime(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     }
 
-    function render(data) {
-      const { order, items, timeline } = data;
-      statusCard.classList.remove('hidden');
-      feedbackCard.classList.add('hidden');
-      statusSkeleton.classList.add('hidden');
-
-      orderNumberLabel.textContent = `#${order.id}`;
-      const currentStatus = (order.status || 'pending').toLowerCase();
-      statusBadge.textContent = statusLabels[currentStatus] || currentStatus;
-      statusBadge.className = `text-xs px-2 py-1 rounded ${statusBadgeClasses[currentStatus] || 'bg-slate-100 text-slate-700'}`;
-      etaText.textContent = (data.eta && data.eta.text) ? data.eta.text : etaForStatus(currentStatus);
-      lastUpdate = Date.parse(data.server_time || new Date().toISOString());
-      updateLastUpdateLabel();
-      if (lastUpdateTimer) clearInterval(lastUpdateTimer);
-      lastUpdateTimer = setInterval(updateLastUpdateLabel, 1000);
-      customerName.textContent = order.customer_name || '—';
-      customerPhone.textContent = order.customer_phone || '—';
-      paymentMethod.textContent = pmLabel(order.payment_method);
-      orderTotal.textContent = `R$ ${(order.total ?? order.subtotal ?? 0).toFixed(2)}`;
-
-      const mapStepToIndex = { pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3 };
-      const idx = mapStepToIndex[currentStatus] ?? 0;
-      const percent = ((idx + 1) / 4) * 100;
+    // Create timeline
+    function createTimeline(currentStatus, timestamps = {}) {
+      timeline.innerHTML = '';
       
-      // Animar barra de progresso principal
-      setTimeout(() => {
-        timelineProgress.style.width = `${percent}%`;
-        timelineProgressLine.style.width = `${percent}%`;
-      }, 300);
-      
-      // Atualizar ícones da timeline com animações
-      document.querySelectorAll('#timeline .timeline-step').forEach((step, stepIndex) => {
-        const stepKey = step.getAttribute('data-step');
-        const icon = step.querySelector('.timeline-icon');
-        const isCompleted = stepIndex <= idx;
-        const isActive = stepIndex === idx;
+      statusOrder.forEach((status, index) => {
+        const statusInfo = statusMap[status];
+        const isCompleted = statusOrder.indexOf(currentStatus) >= index;
+        const isCurrent = currentStatus === status;
+        const timestamp = timestamps[status];
         
-        setTimeout(() => {
-           if (isCompleted) {
-             // Etapa concluída - verde com check
-             icon.classList.remove('bg-slate-200', 'text-slate-500');
-             icon.classList.add('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'completed', 'bounce-in');
-             icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
-             
-             // Adicionar efeito de pulso para etapa ativa
-             if (isActive && currentStatus !== 'delivered') {
-               icon.classList.add('animate-pulse');
-             } else {
-               icon.classList.remove('animate-pulse');
-             }
-             
-             // Efeito especial para pedido entregue
-             if (stepKey === 'delivered' && isCompleted) {
-               setTimeout(() => {
-                 // Confetti effect simulation
-                 icon.style.animation = 'timelineGlow 1s ease-in-out 3';
-               }, 500);
-             }
-           } else {
-             // Etapa pendente - cinza com ícone original
-             icon.classList.remove('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'animate-pulse', 'completed', 'bounce-in');
-             icon.classList.add('bg-slate-200', 'text-slate-500');
-             
-             // Restaurar ícones originais baseado no tipo de etapa
-             if (stepKey === 'pending') {
-               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
-             } else if (stepKey === 'preparing') {
-               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/></svg>';
-             } else if (stepKey === 'out_for_delivery') {
-               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>';
-             } else if (stepKey === 'delivered') {
-               icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v0"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21l4-4 4 4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h6v6H9z"/></svg>';
-             }
-           }
-         }, stepIndex * 150); // Animação escalonada
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        
+        const marker = document.createElement('div');
+        marker.className = `timeline-marker ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
+        
+        const content = document.createElement('div');
+        content.className = 'timeline-content';
+        content.innerHTML = `
+          <h3>${statusInfo.title}</h3>
+          <p>${statusInfo.desc}</p>
+          ${timestamp ? `<div class="timeline-time">${formatTime(timestamp)}</div>` : ''}
+        `;
+        
+        item.appendChild(marker);
+        item.appendChild(content);
+        timeline.appendChild(item);
       });
-
-      itemsList.innerHTML = '';
-      if (Array.isArray(items) && items.length) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden';
-        items.forEach(it => {
-          const row = document.createElement('div');
-          row.className = 'flex items-center justify-between px-3 py-2 bg-white';
-          const left = document.createElement('div');
-          left.className = 'text-sm text-slate-800';
-          left.textContent = `${it.product_descricao} × ${it.quantity}`;
-          const right = document.createElement('div');
-          right.className = 'text-sm text-slate-700';
-          right.textContent = `R$ ${(it.subtotal ?? 0).toFixed(2)}`;
-          row.appendChild(left);
-          row.appendChild(right);
-          wrapper.appendChild(row);
-        });
-        itemsList.appendChild(wrapper);
-      }
     }
 
-    async function buscar(orderId) {
+    // Search order
+    async function searchOrder() {
+      const orderId = orderIdInput.value.trim();
+      if (!orderId) return;
+
+      showSection(loadingSkeleton);
+      buscarBtn.disabled = true;
+
       try {
-        const data = await fetchStatus(orderId);
+        const response = await fetch(`${API_BASE}/api/order-status?order_id=${orderId}`);
         
-        // Atualizar apenas os elementos da timeline se houver mudança de status
-        const currentDisplayedStatus = document.querySelector('.timeline-step.active')?.dataset.status;
-        if (currentDisplayedStatus !== data.order.status) {
-          // Atualizar status na interface
-          statusBadge.textContent = statusLabels[data.order.status] || data.order.status;
-          statusBadge.className = `text-xs px-2 py-1 rounded ${statusBadgeClasses[data.order.status] || 'bg-slate-100 text-slate-700'}`;
-          
-          // Renderizar timeline atualizada
-          renderTimeline(data.order.status, data.eta);
-          
-          // Atualizar timestamp
-          lastUpdate = Date.parse(data.server_time || new Date().toISOString());
-          updateLastUpdateLabel();
+        if (!response.ok) {
+          throw new Error('Pedido não encontrado');
         }
+
+        const data = await response.json();
         
-        // Se é a primeira vez carregando, renderizar tudo
-        if (statusCard.classList.contains('hidden')) {
-          statusSkeleton.classList.remove('hidden');
-          statusCard.classList.add('hidden');
-          feedbackCard.classList.add('hidden');
-          render(data);
-        }
+        // Update order info
+        orderTitle.textContent = `Pedido #${data.order_id}`;
+        orderMeta.textContent = `Estimativa: 45-60 min`;
         
-      } catch (e) {
-        statusSkeleton.classList.add('hidden');
-        statusCard.classList.add('hidden');
-        feedbackCard.classList.remove('hidden');
+        // Update customer info
+        customerName.textContent = data.customer_name || 'Nome não informado';
+        customerAddress.textContent = data.customer_address || 'Endereço não informado';
+        
+        // Create timeline
+        createTimeline(data.status, data.timestamps || {});
+        
+        showSection(statusCard);
+        
+      } catch (error) {
+        console.error('Erro ao buscar pedido:', error);
+        showSection(errorCard);
+      } finally {
+        buscarBtn.disabled = false;
       }
     }
-    
-    function renderTimeline(status, eta) {
-      const mapStepToIndex = { pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3 };
-      const idx = mapStepToIndex[status] ?? 0;
-      const percent = ((idx + 1) / 4) * 100;
-      
-      // Animar barra de progresso principal
-      timelineProgress.style.width = `${percent}%`;
-      timelineProgressLine.style.width = `${percent}%`;
-      
-      // Atualizar ETA
-      etaText.textContent = (eta && eta.text) ? eta.text : etaForStatus(status);
-      
-      // Atualizar ícones da timeline com animações
-      document.querySelectorAll('#timeline .timeline-step').forEach((step, stepIndex) => {
-        const stepKey = step.getAttribute('data-step');
-        const icon = step.querySelector('.timeline-icon');
-        const isCompleted = stepIndex <= idx;
-        const isActive = stepIndex === idx;
-        
-        if (isCompleted) {
-          // Etapa concluída - verde com check
-          icon.classList.remove('bg-slate-200', 'text-slate-500');
-          icon.classList.add('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'completed', 'bounce-in');
-          icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
-          
-          // Adicionar efeito de pulso para etapa ativa
-          if (isActive && status !== 'delivered') {
-            icon.classList.add('animate-pulse');
-          } else {
-            icon.classList.remove('animate-pulse');
-          }
-        } else {
-          // Etapa pendente - cinza com ícone original
-          icon.classList.remove('bg-gradient-to-br', 'from-emerald-400', 'to-emerald-600', 'text-white', 'shadow-emerald-200', 'animate-pulse', 'completed', 'bounce-in');
-          icon.classList.add('bg-slate-200', 'text-slate-500');
-        }
-      });
-    }
 
-    buscarBtn.addEventListener('click', () => {
-      const id = orderIdInput.value.trim();
-      if (!id) return;
-      window.currentOrderId = id;
-      startPolling(id);
+    // Event listeners
+    buscarBtn.addEventListener('click', searchOrder);
+    orderIdInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchOrder();
     });
 
-    // Polling inteligente - ajusta frequência baseado no status
-    let pollingInterval;
-    
-    function startPolling(id) {
-      if (pollingInterval) clearInterval(pollingInterval);
+    // Auto-search on page load if order ID is present
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qId = urlParams.get('id') || urlParams.get('order_id');
       
-      const getPollingFrequency = (status) => {
-        // Pedidos entregues não precisam de polling frequente
-        if (status === 'delivered') return 60000; // 1 minuto
-        // Pedidos em preparação ou saindo para entrega precisam de mais atualizações
-        if (status === 'preparing' || status === 'out_for_delivery') return 15000; // 15 segundos
-        // Pedidos recebidos podem ter polling menos frequente
-        return 30000; // 30 segundos
-      };
-      
-      let currentStatus = 'pending';
-      
-      const poll = async () => {
-        await buscar(id);
-        // Atualizar frequência baseada no status atual
-        const statusBadgeText = statusBadge.textContent;
-        let newStatus = 'pending';
-        if (statusBadgeText.includes('preparação')) newStatus = 'preparing';
-        else if (statusBadgeText.includes('entrega')) newStatus = 'out_for_delivery';
-        else if (statusBadgeText.includes('Entregue')) newStatus = 'delivered';
-        
-        if (newStatus !== currentStatus) {
-          currentStatus = newStatus;
-          // Reiniciar polling com nova frequência
-          startPolling(id);
-        }
-      };
-      
-      // Primeira busca imediata
-      poll();
-      
-      // Configurar intervalo baseado no status
-      const frequency = getPollingFrequency(currentStatus);
-      pollingInterval = setInterval(poll, frequency);
-    }
-    
-    // Parar polling quando a página não está visível (otimização de performance)
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && pollingInterval) {
-        clearInterval(pollingInterval);
-      } else if (!document.hidden && window.currentOrderId) {
-        startPolling(window.currentOrderId);
+      if (qId) {
+        orderIdInput.value = qId;
+        searchOrder();
+      } else if (orderIdInput.value.trim()) {
+        searchOrder();
       }
     });
-
-    function updateLastUpdateLabel() {
-      if (!lastUpdate || !lastUpdateText) return;
-      const sec = Math.max(0, Math.floor((Date.now() - lastUpdate) / 1000));
-      lastUpdateText.textContent = `Atualizado há ${sec}s`;
-    }
-
-    const qId = getParam('id') || getParam('order_id');
-    if (qId) {
-      orderIdInput.value = qId;
-      window.currentOrderId = qId;
-      startPolling(qId);
-    } else if (orderIdInput.value.trim()) {
-      // Se não há parâmetro na URL mas há valor no input, buscar automaticamente
-      const inputId = orderIdInput.value.trim();
-      window.currentOrderId = inputId;
-      startPolling(inputId);
-    }
   </script>
 </body>
 </html>

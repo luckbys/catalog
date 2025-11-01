@@ -74,6 +74,7 @@ class ProdutoSessao(Base):
     imagem_url = Column(String, nullable=True)
     categoria = Column(String, nullable=True)
     apresentacao = Column(String, nullable=True)
+    laboratorio = Column(String, nullable=True)
 
     sessao = relationship("Sessao", back_populates="produtos")
 
@@ -100,6 +101,7 @@ class ProdutoIn(BaseModel):
     imagem_url: Optional[str] = None
     categoria: Optional[str] = None
     apresentacao: Optional[str] = None
+    laboratorio: Optional[str] = None
 
 class CriarSessaoPayload(BaseModel):
     cliente_telefone: str = Field(..., min_length=10, max_length=50)  # Aumentado para aceitar formato WhatsApp
@@ -343,7 +345,8 @@ def listar_produtos_demo():
             "preco": 2499.99,
             "estoque": 15,
             "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
-            "categoria": "Eletrônicos"
+            "categoria": "Eletrônicos",
+            "laboratorio": "Samsung Electronics"
         },
         {
             "id": 2,
@@ -352,7 +355,8 @@ def listar_produtos_demo():
             "preco": 3299.99,
             "estoque": 8,
             "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
-            "categoria": "Informática"
+            "categoria": "Informática",
+            "laboratorio": "Dell Technologies"
         },
         {
             "id": 3,
@@ -361,7 +365,8 @@ def listar_produtos_demo():
             "preco": 299.99,
             "estoque": 25,
             "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
-            "categoria": "Áudio"
+            "categoria": "Áudio",
+            "laboratorio": "Sony Corporation"
         },
         {
             "id": 4,
@@ -370,7 +375,8 @@ def listar_produtos_demo():
             "preco": 1899.99,
             "estoque": 12,
             "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400",
-            "categoria": "TV & Vídeo"
+            "categoria": "TV & Vídeo",
+            "laboratorio": "LG Electronics"
         },
         {
             "id": 5,
@@ -379,7 +385,8 @@ def listar_produtos_demo():
             "preco": 4599.99,
             "estoque": 5,
             "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
-            "categoria": "Fotografia"
+            "categoria": "Fotografia",
+            "laboratorio": "Canon Inc."
         },
         {
             "id": 6,
@@ -388,7 +395,8 @@ def listar_produtos_demo():
             "preco": 3799.99,
             "estoque": 10,
             "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
-            "categoria": "Tablets"
+            "categoria": "Tablets",
+            "laboratorio": "Apple Inc."
         }
     ]
     return {"produtos": produtos_demo}
@@ -415,12 +423,12 @@ def criar_sessao_demo(request: Request):
         
         # Produtos de demonstração
         produtos_demo = [
-            {"id": 1, "descricao": "Smartphone Galaxy S24", "apresentacao": "Smartphone premium com câmera de 200MP, tela AMOLED 6.8\" e processador Snapdragon 8 Gen 3", "preco": 2499.99, "estoque": 15, "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400", "categoria": "Eletrônicos"},
-            {"id": 2, "descricao": "Notebook Dell Inspiron", "apresentacao": "Notebook para trabalho e estudos com Intel Core i5, 8GB RAM, SSD 256GB e tela 15.6\"", "preco": 3299.99, "estoque": 8, "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400", "categoria": "Informática"},
-            {"id": 3, "descricao": "Fone Bluetooth Sony", "apresentacao": "Fone sem fio com cancelamento de ruído ativo, bateria de 30h e qualidade de áudio Hi-Res", "preco": 299.99, "estoque": 25, "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", "categoria": "Áudio"},
-            {"id": 4, "descricao": "Smart TV 55\" 4K", "apresentacao": "Smart TV LED 55 polegadas com resolução 4K UHD, HDR10+ e sistema operacional Android TV", "preco": 1899.99, "estoque": 12, "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400", "categoria": "TV & Vídeo"},
-            {"id": 5, "descricao": "Câmera Canon EOS", "apresentacao": "Câmera DSLR profissional com sensor APS-C 24.1MP, gravação 4K e lente 18-55mm incluída", "preco": 4599.99, "estoque": 5, "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400", "categoria": "Fotografia"},
-            {"id": 6, "descricao": "Tablet iPad Air", "apresentacao": "Tablet Apple com chip M1, tela Liquid Retina 10.9\", 64GB de armazenamento e suporte ao Apple Pencil", "preco": 3799.99, "estoque": 10, "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400", "categoria": "Tablets"}
+            {"id": 1, "descricao": "Smartphone Galaxy S24", "apresentacao": "Smartphone premium com câmera de 200MP, tela AMOLED 6.8\" e processador Snapdragon 8 Gen 3", "preco": 2499.99, "estoque": 15, "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400", "categoria": "Eletrônicos", "laboratorio": "Samsung Electronics"},
+            {"id": 2, "descricao": "Notebook Dell Inspiron", "apresentacao": "Notebook para trabalho e estudos com Intel Core i5, 8GB RAM, SSD 256GB e tela 15.6\"", "preco": 3299.99, "estoque": 8, "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400", "categoria": "Informática", "laboratorio": "Dell Technologies"},
+            {"id": 3, "descricao": "Fone Bluetooth Sony", "apresentacao": "Fone sem fio com cancelamento de ruído ativo, bateria de 30h e qualidade de áudio Hi-Res", "preco": 299.99, "estoque": 25, "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", "categoria": "Áudio", "laboratorio": "Sony Corporation"},
+            {"id": 4, "descricao": "Smart TV 55\" 4K", "apresentacao": "Smart TV LED 55 polegadas com resolução 4K UHD, HDR10+ e sistema operacional Android TV", "preco": 1899.99, "estoque": 12, "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400", "categoria": "TV & Vídeo", "laboratorio": "LG Electronics"},
+            {"id": 5, "descricao": "Câmera Canon EOS", "apresentacao": "Câmera DSLR profissional com sensor APS-C 24.1MP, gravação 4K e lente 18-55mm incluída", "preco": 4599.99, "estoque": 5, "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400", "categoria": "Fotografia", "laboratorio": "Canon Inc."},
+            {"id": 6, "descricao": "Tablet iPad Air", "apresentacao": "Tablet Apple com chip M1, tela Liquid Retina 10.9\", 64GB de armazenamento e suporte ao Apple Pencil", "preco": 3799.99, "estoque": 10, "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400", "categoria": "Tablets", "laboratorio": "Apple Inc."}
         ]
         
         # Adiciona produtos à sessão
@@ -433,7 +441,8 @@ def criar_sessao_demo(request: Request):
                 estoque=produto["estoque"],
                 imagem_url=produto["imagem_url"],
                 categoria=produto["categoria"],
-                apresentacao=produto.get("apresentacao")
+                apresentacao=produto.get("apresentacao"),
+                laboratorio=produto.get("laboratorio")
             )
             db.add(produto_sessao)
         
@@ -479,6 +488,7 @@ def criar_sessao(request: Request, payload: CriarSessaoPayload, _: None = Depend
                     imagem_url=p.imagem_url,
                     categoria=p.categoria,
                     apresentacao=p.apresentacao,
+                    laboratorio=p.laboratorio,
                 ))
             # 3) Atualiza timestamps e validade
             existing.atualizado_em = now
@@ -516,6 +526,7 @@ def criar_sessao(request: Request, payload: CriarSessaoPayload, _: None = Depend
                 imagem_url=p.imagem_url,
                 categoria=p.categoria,
                 apresentacao=p.apresentacao,
+                laboratorio=p.laboratorio,
             ))
         db.commit()
         link = build_catalog_url(request, sessao.sessao_id)
@@ -555,6 +566,7 @@ def obter_sessao(sessao_id: str, _: None = Depends(rate_limit_dep)):
                     "imagem_url": p.imagem_url,
                     "categoria": p.categoria,
                     "apresentacao": p.apresentacao,
+                    "laboratorio": p.laboratorio,
                 }
                 for p in produtos
             ],

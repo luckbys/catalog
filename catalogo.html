@@ -1880,6 +1880,13 @@
                 </div>
                 <div class="p-3 sm:p-5 flex flex-col flex-grow">
                     <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mb-1 line-clamp-2">${product.name}</h3>
+                    ${product.laboratorio ? `<p class="text-xs sm:text-sm text-blue-600 font-medium mb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5 flex-shrink-0">
+                            <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"></path>
+                            <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"></path>
+                        </svg>
+                        <span class="truncate">${product.laboratorio}</span>
+                    </p>` : ''}
                     <p class="text-slate-600 text-xs sm:text-sm flex-grow leading-relaxed line-clamp-3 mb-3">${product.description}</p>
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-2">
                         <span class="text-xl sm:text-2xl font-bold text-green-600">${formatCurrency(product.price)}</span>
@@ -2461,7 +2468,8 @@
                     name: p.descricao,
                     description: p.apresentacao || p.categoria || p.descricao,
                     price: Number(p.preco),
-                    imageUrl: p.imagem_url || (API_BASE + '/public/padrao.png')
+                    imageUrl: p.imagem_url || (API_BASE + '/public/padrao.png'),
+                    laboratorio: p.laboratorio
                 });
             });
             console.log('[DEBUG] Produtos carregados:', productsData.length);
