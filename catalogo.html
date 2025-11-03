@@ -2026,27 +2026,23 @@
         console.warn(`   URL original: ${img.src}`);
         
         // Evitar loop infinito
-        if (img.src.includes('padrao.png')) {
+        if (img.src.includes('local-image') || img.src.includes('padrao.png')) {
             console.error('❌ Imagem padrão também falhou!');
             img.style.display = 'none';
             return;
         }
         
-        // Tentar diferentes caminhos para a imagem padrão
-        const fallbackUrls = [
-            './public/padrao.png',
-            '/public/padrao.png',
-            `${API_BASE}/public/padrao.png`
-        ];
+        // Usar o novo endpoint de imagem local como fallback
+        const fallbackUrl = `${API_BASE}/api/local-image?path=padrao.png`;
         
         // Remover o handler para evitar loop
         img.onerror = null;
         
-        // Tentar o primeiro fallback
-        img.src = fallbackUrls[0];
+        // Usar o fallback local
+        img.src = fallbackUrl;
         img.classList.add('fallback-img');
         
-        console.log(`   Tentando fallback: ${fallbackUrls[0]}`);
+        console.log(`   🔄 Usando fallback local: ${fallbackUrl}`);
         
         // Se o primeiro fallback falhar, tentar os outros
         let fallbackIndex = 0;
@@ -2731,7 +2727,10 @@
             // Substitui os produtos locais pelos da sessão
             productsData.splice(0, productsData.length);
             data.produtos.forEach(p => {
-                const imageUrl = p.imagem_url || './public/padrao.png';
+                // Usar endpoint local como fallback quando imagem_url for nula/vazia
+                const imageUrl = p.imagem_url && p.imagem_url.trim() !== '' 
+                    ? p.imagem_url 
+                    : `${API_BASE}/api/local-image?path=padrao.png`;
                 console.log('[DEBUG] Produto:', p.descricao, '| imagem_url:', p.imagem_url, '| URL final:', imageUrl);
                 productsData.push({
                     id: String(p.id),
@@ -3426,7 +3425,7 @@
         
         // Função para criar banner baseado em imagem (apenas imagem, sem texto)
         function createImageBanner(banner, isActive, ctaInfo, div) {
-            // Usar diretamente a URL do MinIO (já resolve CORS)
+            // Usar diretamente a URL do MinIO, com fallback local se necessário
             const imageUrl = banner.imagem_url;
             
             div.innerHTML = `
@@ -3436,7 +3435,7 @@
                          alt="${banner.titulo || 'Banner promocional'}"
                          class="banner-image"
                          loading="lazy"
-                         onerror="this.style.display='none';"
+                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png'; console.log('🔄 Banner fallback:', this.src);"
                          onload="this.style.opacity='1'; this.classList.add('loaded');"
                          style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
                 </div>

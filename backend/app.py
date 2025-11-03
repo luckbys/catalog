@@ -659,6 +659,48 @@ async def minio_url(path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
+@app.get("/api/local-image")
+async def local_image(path: str = "padrao.png"):
+    """
+    Serve imagens locais como fallback quando MinIO não estiver disponível
+    """
+    try:
+        # Mapear caminhos seguros
+        safe_paths = {
+            "padrao.png": "../public/padrao.png",
+            "logo.png": "../public/logo.png",
+            "cart.png": "../public/cart.png"
+        }
+        
+        # Verificar se o path é seguro
+        if path not in safe_paths:
+            path = "padrao.png"  # Fallback para imagem padrão
+        
+        file_path = safe_paths[path]
+        
+        # Verificar se o arquivo existe
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail=f"Imagem local não encontrada: {path}")
+        
+        print(f"[LOCAL IMAGE] Servindo imagem local: {file_path}")
+        
+        return FileResponse(
+            file_path,
+            media_type="image/png",
+            headers={
+                "Cache-Control": "public, max-age=3600",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Headers": "*"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[LOCAL IMAGE] Erro interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
 @app.get("/api/produtos")
 def listar_produtos_demo():
     """Endpoint para demonstração - lista produtos de exemplo"""
