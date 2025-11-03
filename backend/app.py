@@ -778,19 +778,42 @@ def listar_produtos():
             # Garantir que todos os produtos tenham o campo laboratorio
             produtos_formatados = []
             for produto in result.data:
+                # Obter valores básicos
+                preco_raw = produto.get("preco") or produto.get("price", 0)
+                desconto_raw = produto.get("desconto_percentual", 0) or 0
+                
+                try:
+                    preco_atual = float(preco_raw)
+                    percentual_desconto = float(desconto_raw)
+                except (ValueError, TypeError) as e:
+                    print(f"[ERROR] Erro na conversão para produto {produto.get('id')}: {e}")
+                    preco_atual = 0.0
+                    percentual_desconto = 0.0
+                
+                valor_desconto = produto.get("desconto_valor")
+                
+                # Calcular preço original se há desconto percentual
+                preco_original = None
+                if percentual_desconto > 0:
+                    preco_original = preco_atual / (1 - percentual_desconto/100)
+                    # Debug específico para produtos com desconto
+                    if produto.get("id") == 2465302:
+                        print(f"[DEBUG] Produto {produto.get('id')} - {produto.get('descricao')}")
+                        print(f"[DEBUG] Preço: {preco_atual}, Desconto: {percentual_desconto}%, Original: {preco_original}")
+                
                 produto_formatado = {
                     "id": produto.get("id"),
                     "descricao": produto.get("descricao") or produto.get("nome") or produto.get("name"),
                     "apresentacao": produto.get("apresentacao") or produto.get("description"),
-                    "preco": produto.get("preco") or produto.get("price", 0),
+                    "preco": preco_atual,
                     "estoque": produto.get("estoque") or produto.get("stock", 0),
                     "imagem_url": produto.get("imagem_url") or produto.get("image_url"),
                     "categoria": produto.get("categoria") or produto.get("category"),
                     "laboratorio": produto.get("laboratorio") or produto.get("laboratory") or produto.get("brand"),
-                    # Campos de desconto do Supabase
-                    "preco_original": produto.get("preco_original"),
-                    "percentual_desconto": produto.get("desconto_percentual"),
-                    "valor_desconto": produto.get("desconto_valor")
+                    # Campos de desconto calculados corretamente
+                    "preco_original": preco_original,
+                    "percentual_desconto": percentual_desconto if percentual_desconto > 0 else None,
+                    "valor_desconto": float(valor_desconto) if valor_desconto else None
                 }
                 produtos_formatados.append(produto_formatado)
             

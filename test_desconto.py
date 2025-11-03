@@ -70,7 +70,7 @@ def criar_sessao_com_desconto():
     if response.status_code == 200:
         result = response.json()
         sessao_id = result["sessao_id"]
-        link = result["link"]
+        link = result["link_produtos"]
         print(f"✅ Sessão criada com sucesso!")
         print(f"📋 ID da Sessão: {sessao_id}")
         print(f"🔗 Link: {link}")
