@@ -4,20 +4,46 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List, Optional, Dict
 from dotenv import load_dotenv
+import base64
+import boto3
+from botocore.exceptions import ClientError
+from botocore.config import Config
 
-# Carregar variáveis de ambiente primeiro
+# Carregar variáveis de ambiente
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request, Depends
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
+import io
+from urllib.parse import urlparse
 from pydantic import BaseModel, Field
 from sqlalchemy import (
     create_engine, Column, Integer, String, DateTime, Numeric, ForeignKey
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+
+# Configurações do MinIO
+MINIO_SERVER_URL = "https://c4crm-minio.zv7gpn.easypanel.host"
+MINIO_ROOT_USER = "admin"
+MINIO_ROOT_PASSWORD = "Devs@0101"
+
+# Cliente S3 para MinIO
+try:
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=MINIO_SERVER_URL,
+        aws_access_key_id=MINIO_ROOT_USER,
+        aws_secret_access_key=MINIO_ROOT_PASSWORD,
+        config=Config(signature_version='s3v4'),
+        region_name='us-east-1'
+    )
+    print("[MINIO] Cliente S3 configurado com sucesso!")
+except Exception as e:
+    print(f"[MINIO] Erro ao configurar cliente S3: {e}")
+    s3_client = None
 
 # Importar order_processor no nível superior (compatível com execução local e via pacote backend)
 ORDER_PROCESSOR_AVAILABLE = False
@@ -41,7 +67,7 @@ CLIENT_BASE_URL = os.getenv("CLIENT_BASE_URL", "http://localhost:8010/catalogo.h
 SESSION_VALIDITY_HOURS = int(os.getenv("SESSION_VALIDITY_HOURS", "4"))
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGIN",
-    "http://localhost:5500,http://localhost:3000,http://localhost:8000,http://localhost:8010"
+    "http://localhost:5500,http://localhost:3000,http://localhost:8000,http://localhost:8010,http://localhost:8080"
 ).split(",")  # Permite origens comuns em dev/local
 N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
 
@@ -333,6 +359,305 @@ def get_order_status(order_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao buscar status: {str(e)}")
+
+@app.get("/api/banners")
+def listar_banners():
+    """Busca banners ativos do Supabase ordenados por posição"""
+    try:
+        # Temporariamente forçar uso dos banners de exemplo com imagem
+        # para demonstrar o layout apenas com imagem
+        return {
+            "banners": [
+                {
+                    "id": 1,
+                    "titulo": "Banner novo",
+                    "subtitulo": "SUPER OFERTA",
+                    "descricao": "Aproveite descontos incríveis em medicamentos essenciais",
+                    "badge_texto": "🏷️ SUPER OFERTA",
+                    "cor_primaria": "#10B981",
+                    "cor_secundaria": "#14B8A6",
+                    "icone": "pill",
+                    "tipo_promocao": "desconto_percentual",
+                    "percentual_desconto": 50,
+                    "posicao": 1,
+                    "ativo": True,
+                    "imagem_url": "http://localhost:8000/api/minio-image?path=banner_baner_novo_1762169544726.png"
+                }
+            ]
+        }
+        
+        # Código original comentado temporariamente
+        # if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+        #     # Fallback: retorna banners de exemplo se Supabase não estiver disponível
+        #     return {
+        #     "banners": [
+        #         {
+        #             "id": 1,
+        #             "titulo": "Banner novo",
+        #             "subtitulo": "SUPER OFERTA",
+        #             "descricao": "Aproveite descontos incríveis em medicamentos essenciais",
+        #             "badge_texto": "🏷️ SUPER OFERTA",
+        #             "cor_primaria": "#10B981",
+        #             "cor_secundaria": "#14B8A6",
+        #             "icone": "pill",
+        #             "tipo_promocao": "desconto_percentual",
+        #             "percentual_desconto": 50,
+        #             "posicao": 1,
+        #             "ativo": True,
+        #             "imagem_url": "http://localhost:8000/api/minio-image?path=banner_baner_novo_1762169544726.png"
+        #         },
+        #         {
+        #             "id": 2,
+        #             "titulo": "Vitaminas e Suplementos",
+        #             "subtitulo": "SAÚDE EM PRIMEIRO LUGAR",
+        #             "descricao": "Cuide da sua saúde com vitaminas e suplementos",
+        #             "badge_texto": "💊 VITAMINAS",
+        #             "cor_primaria": "#8B5CF6",
+        #             "cor_secundaria": "#A855F7",
+        #             "icone": "heart",
+        #             "tipo_promocao": "categoria",
+        #             "posicao": 2,
+        #             "ativo": True
+        #         },
+        #         {
+        #             "id": 3,
+        #             "titulo": "Entrega Grátis",
+        #             "subtitulo": "FRETE GRÁTIS",
+        #             "descricao": "Entrega rápida e gratuita em toda a cidade",
+        #             "badge_texto": "🚚 FRETE GRÁTIS",
+        #             "cor_primaria": "#3B82F6",
+        #             "cor_secundaria": "#06B6D4",
+        #             "icone": "truck",
+        #             "tipo_promocao": "frete_gratis",
+        #             "valor_minimo": 50,
+        #             "posicao": 3,
+        #             "ativo": True
+        #         }
+        #     ]
+        # }
+        
+        # # Buscar banners ativos do Supabase
+        # result = order_processor.supabase.table("banners").select("*").eq("ativo", True).order("posicao").execute()
+        
+        # if result.data:
+        #     return {"banners": result.data}
+        # else:
+        #     return {"banners": []}
+            
+    except Exception as e:
+        print(f"[ERROR] Erro ao buscar banners: {str(e)}")
+        # Em caso de erro, retorna banners de exemplo
+        return {
+            "banners": [
+                {
+                    "id": 1,
+                    "titulo": "Até 50% OFF em Medicamentos",
+                    "subtitulo": "SUPER OFERTA",
+                    "descricao": "Aproveite descontos incríveis em medicamentos essenciais",
+                    "badge_texto": "🏷️ SUPER OFERTA",
+                    "cor_primaria": "#10B981",
+                    "cor_secundaria": "#14B8A6",
+                    "icone": "pill",
+                    "tipo_promocao": "desconto_percentual",
+                    "percentual_desconto": 50,
+                    "posicao": 1,
+                    "ativo": True
+                }
+            ]
+        }
+
+@app.post("/api/fix-banner-image")
+def fix_banner_image():
+    """Endpoint temporário para corrigir a imagem problemática do banner ID 7"""
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            raise HTTPException(status_code=503, detail="Order processor não disponível")
+        
+        # Atualizar o banner ID 7 removendo a imagem problemática
+        result = order_processor.supabase.table('banners').update({
+            'imagem_url': None
+        }).eq('id', 7).execute()
+        
+        if result.data:
+            return {
+                "success": True,
+                "message": "Banner ID 7 corrigido - imagem removida",
+                "banner_id": 7
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Banner ID 7 não encontrado")
+            
+    except Exception as e:
+        print(f"[ERROR] Erro ao corrigir banner: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+@app.get("/api/proxy-image")
+async def proxy_image(url: str):
+    """
+    Proxy para imagens externas para resolver problemas de CORS
+    """
+    try:
+        # Validar URL
+        parsed_url = urlparse(url)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            raise HTTPException(status_code=400, detail="URL inválida")
+        
+        # Fazer requisição para a imagem
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'image/*,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10, stream=True)
+        response.raise_for_status()
+        
+        # Verificar se é uma imagem
+        content_type = response.headers.get('content-type', '')
+        if not content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="URL não é uma imagem válida")
+        
+        # Criar stream da imagem
+        def generate():
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
+        
+        return StreamingResponse(
+            generate(),
+            media_type=content_type,
+            headers={
+                "Cache-Control": "public, max-age=3600",  # Cache por 1 hora
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Headers": "*"
+            }
+        )
+        
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=404, detail=f"Erro ao carregar imagem: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+@app.get("/api/minio-image")
+async def minio_image(path: str):
+    """
+    Proxy específico para imagens do MinIO usando boto3 e URLs pré-assinadas
+    """
+    try:
+        if not s3_client:
+            raise HTTPException(status_code=503, detail="Cliente MinIO não disponível")
+        
+        # Limpar e processar o caminho
+        path = path.strip('/')
+        
+        # Tentar diferentes buckets
+        buckets_to_try = ['produtos', 'crm-media-files']
+        
+        for bucket in buckets_to_try:
+            try:
+                print(f"[MINIO] Tentando bucket '{bucket}' com arquivo '{path}'")
+                
+                # Verificar se o objeto existe
+                s3_client.head_object(Bucket=bucket, Key=path)
+                
+                # Gerar URL pré-assinada
+                presigned_url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': bucket, 'Key': path},
+                    ExpiresIn=3600  # 1 hora
+                )
+                
+                print(f"[MINIO] Sucesso! URL gerada para {bucket}/{path}")
+                
+                # Fazer requisição para a URL pré-assinada
+                response = requests.get(presigned_url, timeout=15, stream=True)
+                response.raise_for_status()
+                
+                # Verificar content-type
+                content_type = response.headers.get('content-type', 'image/png')
+                if not content_type.startswith('image/'):
+                    content_type = 'image/png'
+                
+                # Criar stream da imagem
+                def generate():
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            yield chunk
+                
+                return StreamingResponse(
+                    generate(),
+                    media_type=content_type,
+                    headers={
+                        "Cache-Control": "public, max-age=3600",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET",
+                        "Access-Control-Allow-Headers": "*"
+                    }
+                )
+                
+            except ClientError as e:
+                error_code = e.response['Error']['Code']
+                if error_code == 'NoSuchKey':
+                    print(f"[MINIO] Arquivo não encontrado em {bucket}: {path}")
+                    continue
+                else:
+                    print(f"[MINIO] Erro no bucket {bucket}: {e}")
+                    continue
+            except Exception as e:
+                print(f"[MINIO] Erro geral no bucket {bucket}: {e}")
+                continue
+        
+        # Se chegou aqui, não encontrou em nenhum bucket
+        raise HTTPException(status_code=404, detail=f"Imagem não encontrada: {path}")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[MINIO] Erro interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+@app.get("/api/minio-url")
+async def minio_url(path: str):
+    """
+    Gera URL pré-assinada para imagem do MinIO (para debug)
+    """
+    try:
+        if not s3_client:
+            raise HTTPException(status_code=503, detail="Cliente MinIO não disponível")
+        
+        path = path.strip('/')
+        buckets_to_try = ['produtos', 'crm-media-files']
+        
+        for bucket in buckets_to_try:
+            try:
+                s3_client.head_object(Bucket=bucket, Key=path)
+                
+                presigned_url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': bucket, 'Key': path},
+                    ExpiresIn=3600
+                )
+                
+                return {
+                    "success": True,
+                    "bucket": bucket,
+                    "key": path,
+                    "presigned_url": presigned_url
+                }
+                
+            except ClientError as e:
+                if e.response['Error']['Code'] != 'NoSuchKey':
+                    continue
+        
+        raise HTTPException(status_code=404, detail=f"Imagem não encontrada: {path}")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 @app.get("/api/produtos")
 def listar_produtos_demo():

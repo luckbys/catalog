@@ -29,8 +29,168 @@
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             line-height: 1.6;
         }
+         
+         /* Animações personalizadas para banners */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) skewX(-12deg); }
+            100% { transform: translateX(200%) skewX(-12deg); }
+        }
         
-        /* Typography Scale for Mobile */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); }
+        }
+        
+        .animate-shimmer {
+            animation: shimmer 2s infinite;
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        /* Melhorias no carrossel */
+        .carousel-container {
+            position: relative;
+        }
+        
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+        }
+        
+        .carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+        
+        .carousel-indicator.active {
+            background: white;
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        
+        .carousel-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10B981, #06B6D4);
+            transition: width 0.1s ease;
+            z-index: 20;
+        }
+        
+        /* Efeitos hover melhorados */
+        .banner-slide:hover .animate-pulse {
+            animation-duration: 0.5s;
+        }
+        
+        .banner-slide:hover .animate-bounce {
+            animation-duration: 0.3s;
+        }
+        
+        /* Melhorias na tipografia e hierarquia visual */
+        .banner-title {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 900;
+            letter-spacing: -0.025em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .banner-description {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 500;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .banner-badge {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cta-primary {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            text-shadow: none;
+        }
+        
+        .cta-secondary {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsividade aprimorada */
+        @media (max-width: 640px) {
+            .banner-title {
+                font-size: 1.5rem !important;
+                line-height: 1.2;
+            }
+            
+            .banner-description {
+                font-size: 0.875rem !important;
+                line-height: 1.5;
+            }
+            
+            .carousel-indicators {
+                bottom: 10px;
+                gap: 6px;
+            }
+            
+            .carousel-indicator {
+                width: 8px;
+                height: 8px;
+            }
+            
+            .cta-primary, .cta-secondary {
+                font-size: 0.875rem !important;
+                padding: 0.75rem 1.5rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .banner-slide {
+                padding: 1rem !important;
+            }
+            
+            .banner-title {
+                font-size: 1.25rem !important;
+            }
+            
+            .banner-description {
+                font-size: 0.8rem !important;
+            }
+        }
         h1, .text-4xl {
             font-size: 2.25rem;
             line-height: 1.2;
@@ -148,7 +308,7 @@
             opacity: 1 !important;
         }
         
-        /* Estilos do Carrossel de Banners */
+        /* Estilos do Carrossel de Banners - Apenas Imagem */
         .banner-carousel-section {
             position: relative;
             z-index: 10;
@@ -158,6 +318,9 @@
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            aspect-ratio: 1920/560; /* Proporção exata 1920x560px */
+            overflow: hidden;
+            position: relative;
         }
         
         .banner-slide.active {
@@ -167,6 +330,51 @@
         
         .banner-slide.prev {
             transform: translateX(-100%);
+        }
+        
+        /* Banner apenas com imagem - sem texto */
+        .banner-slide img {
+            object-fit: cover;
+            object-position: center center;
+            width: 100%;
+            height: 100%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+            border-radius: inherit;
+        }
+        
+        .banner-slide:hover img {
+            transform: scale(1.02);
+        }
+        
+        /* Container da imagem limpo */
+        .banner-image-container {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        }
+        
+        /* Animação de carregamento de imagem */
+        @keyframes fadeInImage {
+            from {
+                opacity: 0;
+                filter: blur(4px);
+            }
+            to {
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+        
+        /* Animação suave para carregamento de imagem */
+        .banner-slide img[style*="opacity: 0"] {
+            animation: fadeInImage 0.5s ease-in-out forwards;
+        }
+        
+        @keyframes fadeInImage {
+            from { opacity: 0; transform: scale(1.05); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         /* Animações de Remoção de Itens do Carrinho */
@@ -364,6 +572,20 @@
                 opacity: 0;
                 transform: scale(0.9) translateY(-20px);
             }
+        }
+        
+        /* Garantir visibilidade do botão de acompanhamento */
+        #trackDeliveryLink {
+            display: inline-flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 10 !important;
+        }
+        
+        #trackDeliveryLink svg {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         /* Estilos do Badge do Toast */
@@ -1100,14 +1322,58 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
+        /* Otimizações para imagens de banner */
+        .banner-image {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            will-change: opacity, transform;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            object-fit: cover;
+            object-position: center center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .banner-image.loaded {
+            animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(1.1) translateZ(0);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateZ(0);
+                filter: blur(0);
+            }
+        }
+        
+        /* Melhor controle de aspect ratio para diferentes telas */
+        .banner-carousel-container {
+            aspect-ratio: 1920/560; /* Proporção exata 1920x560px */
+            min-height: 200px;
+            max-height: 600px;
+            width: 100%;
+        }
+        
         /* Small mobile devices */
         @media (max-width: 480px) {
             .banner-carousel-section {
                 padding: 0.5rem 0;
             }
             
+            .banner-carousel-container {
+                aspect-ratio: 1920/560; /* Mantém proporção mesmo no mobile */
+                min-height: 120px;
+                max-height: 200px;
+            }
+            
             #bannerCarousel {
-                height: 11rem;
+                height: auto;
             }
             
             .product-card {
@@ -1337,81 +1603,14 @@
     <!-- Carrossel de Banners de Promoções -->
     <section class="banner-carousel-section bg-gradient-to-r from-slate-50 to-white py-4 md:py-6">
         <div class="container mx-auto px-3 md:px-4 lg:px-6">
-            <div class="relative overflow-hidden rounded-xl md:rounded-2xl shadow-xl md:shadow-2xl">
+            <div class="banner-carousel-container relative overflow-hidden rounded-xl md:rounded-2xl shadow-xl md:shadow-2xl">
                 <!-- Carrossel Container -->
-                <div id="bannerCarousel" class="relative h-48 sm:h-56 md:h-80 lg:h-96 touch-pan-y">
-                    <!-- Banner 1 - Desconto Medicamentos -->
-                    <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
-                        <div class="text-white max-w-full sm:max-w-lg flex-1">
-                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4">
-                                <span class="text-xs sm:text-sm font-semibold">🏷️ SUPER OFERTA</span>
-                            </div>
-                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 leading-tight">
-                                Até <span class="text-yellow-300">50% OFF</span><br class="hidden sm:block">
-                                <span class="sm:hidden"> </span>em Medicamentos
-                            </h3>
-                            <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-6 text-green-100 leading-relaxed">
-                                Aproveite descontos incríveis em medicamentos essenciais
-                            </p>
-                        </div>
-                        <div class="hidden lg:block flex-shrink-0 ml-4">
-                            <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                                    <path d="M4.5 16.5c-1.5 1.5-1.5 4.5 0 6s4.5 1.5 6 0c.5-.5 1.5-1 2.5-1s2 .5 2.5 1c1.5 1.5 4.5 1.5 6 0s1.5-4.5 0-6c-.5-.5-1-1.5-1-2.5s.5-2 1-2.5c1.5-1.5 1.5-4.5 0-6s-4.5-1.5-6 0c-.5.5-1.5 1-2.5 1s-2-.5-2.5-1c-1.5-1.5-4.5-1.5-6 0s-1.5 4.5 0 6c.5.5 1 1.5 1 2.5s-.5 2-1 2.5z"></path>
-                                    <path d="M9 12l2 2 4-4"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Banner 2 - Vitaminas -->
-                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
-                        <div class="text-white max-w-full sm:max-w-lg flex-1">
-                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4">
-                                <span class="text-xs sm:text-sm font-semibold">💊 VITAMINAS</span>
-                            </div>
-                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 leading-tight">
-                                <span class="text-yellow-300">Vitaminas</span><br class="hidden sm:block">
-                                <span class="sm:hidden"> </span>e Suplementos
-                            </h3>
-                            <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-6 text-purple-100 leading-relaxed">
-                                Cuide da sua saúde com vitaminas e suplementos
-                            </p>
-                        </div>
-                        <div class="hidden lg:block flex-shrink-0 ml-4">
-                            <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <circle cx="9" cy="9" r="2"></circle>
-                                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Banner 3 - Entrega Grátis -->
-                    <div class="banner-slide absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
-                        <div class="text-white max-w-full sm:max-w-lg flex-1">
-                            <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4">
-                                <span class="text-xs sm:text-sm font-semibold">🚚 FRETE GRÁTIS</span>
-                            </div>
-                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4 leading-tight">
-                                <span class="text-yellow-300">Entrega Grátis</span><br class="hidden sm:block">
-                                <span class="sm:hidden"> </span>em Compras Acima de R$ 99
-                            </h3>
-                            <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-6 text-blue-100 leading-relaxed">
-                                Receba seus medicamentos sem pagar frete
-                            </p>
-                        </div>
-                        <div class="hidden lg:block flex-shrink-0 ml-4">
-                            <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                                    <rect x="1" y="3" width="15" height="13"></rect>
-                                    <polygon points="16,8 20,8 23,11 23,16 16,16 16,8"></polygon>
-                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                </svg>
-                            </div>
+                <div id="bannerCarousel" class="relative h-full touch-pan-y">
+                    <!-- Os banners serão inseridos aqui dinamicamente pelo JavaScript -->
+                    <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-500 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                            <p class="text-lg font-semibold">Carregando banners...</p>
                         </div>
                     </div>
                 </div>
@@ -1640,8 +1839,10 @@
             <!-- Action Buttons -->
             <div class="space-y-3">
                 <a id="trackDeliveryLink" href="#" class="group inline-flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 w-full shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5 transition-transform group-hover:scale-110">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h13l3 5H8l-5-5Zm0 0v10h14M10 12v5m4-5v5"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:scale-110">
+                        <path d="M9 12l2 2 4-4"></path>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                        <path d="M3 5v6c0 1.66 4 3 9 3s9-1.34 9-3V5c0-1.66-4-3-9-3S3 3.34 3 5"></path>
                     </svg>
                     <span>Acompanhar entrega</span>
                 </a>
@@ -1819,6 +2020,49 @@
         ? 'http://localhost:8000' 
         : window.location.origin; // Usa o mesmo domínio com proxy reverso
 
+    // Função para tratar erros de carregamento de imagem
+    function handleImageError(img, productName) {
+        console.warn(`⚠️ Falha ao carregar imagem para: ${productName}`);
+        console.warn(`   URL original: ${img.src}`);
+        
+        // Evitar loop infinito
+        if (img.src.includes('padrao.png')) {
+            console.error('❌ Imagem padrão também falhou!');
+            img.style.display = 'none';
+            return;
+        }
+        
+        // Tentar diferentes caminhos para a imagem padrão
+        const fallbackUrls = [
+            './public/padrao.png',
+            '/public/padrao.png',
+            `${API_BASE}/public/padrao.png`
+        ];
+        
+        // Remover o handler para evitar loop
+        img.onerror = null;
+        
+        // Tentar o primeiro fallback
+        img.src = fallbackUrls[0];
+        img.classList.add('fallback-img');
+        
+        console.log(`   Tentando fallback: ${fallbackUrls[0]}`);
+        
+        // Se o primeiro fallback falhar, tentar os outros
+        let fallbackIndex = 0;
+        img.onerror = function() {
+            fallbackIndex++;
+            if (fallbackIndex < fallbackUrls.length) {
+                console.log(`   Tentando fallback ${fallbackIndex + 1}: ${fallbackUrls[fallbackIndex]}`);
+                this.src = fallbackUrls[fallbackIndex];
+            } else {
+                console.error('❌ Todos os fallbacks falharam');
+                this.style.display = 'none';
+                this.onerror = null;
+            }
+        };
+    }
+
     function formatCurrency(value) {
         return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
@@ -1874,7 +2118,7 @@
                          loading="lazy" 
                          decoding="async" 
                          fetchpriority="low"
-                         onerror="this.onerror=null; this.src='/public/padrao.png'; this.classList.add('fallback-img');" 
+                         onerror="handleImageError(this, '${product.name}')" 
                          onload="this.closest('.product-img-wrapper')?.classList.add('loaded'); this.classList.add('loaded-img');">
                     
                     <!-- Badge Promocional -->
@@ -2217,7 +2461,7 @@
         // Buscar mini-resumo do pedido (itens/total) se disponível
         if (summaryBox && orderId && orderId !== 'N/A') {
             try {
-                const res = await fetch(`/api/order-status?order_id=${orderId}`);
+                const res = await fetch(`${API_BASE}/api/order-status?order_id=${orderId}`);
                 if (res.ok) {
                     const data = await res.json();
                     summaryItemsCount.textContent = Array.isArray(data.items) ? data.items.length : 0;
@@ -2487,16 +2731,19 @@
             // Substitui os produtos locais pelos da sessão
             productsData.splice(0, productsData.length);
             data.produtos.forEach(p => {
+                const imageUrl = p.imagem_url || './public/padrao.png';
+                console.log('[DEBUG] Produto:', p.descricao, '| imagem_url:', p.imagem_url, '| URL final:', imageUrl);
                 productsData.push({
                     id: String(p.id),
                     name: p.descricao,
                     description: p.apresentacao || p.categoria || p.descricao,
                     price: Number(p.preco),
-                    imageUrl: p.imagem_url || (API_BASE + '/public/padrao.png'),
+                    imageUrl: imageUrl,
                     laboratorio: p.laboratorio
                 });
             });
             console.log('[DEBUG] Produtos carregados:', productsData.length);
+            console.log('[DEBUG] Exemplo de produto:', productsData[0]);
         } catch (e) {
             console.error('[ERROR] Falha ao carregar sessao:', e);
         }
@@ -3083,42 +3330,541 @@
             headerSearchInputEl.addEventListener('input', handleHeaderSearch);
         }
         
-        // --- FUNCIONALIDADE DO CARROSSEL DE BANNERS ---
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.banner-slide');
-        const totalSlides = slides.length;
-        let autoSlideInterval;
+        // --- FUNCIONALIDADE PARA CARREGAR BANNERS DINAMICAMENTE ---
+        let bannersData = [];
         
-        // Função para mostrar slide específico
-        function showSlide(index) {
-            // Remove classes ativas de todos os slides
-            slides.forEach((slide, i) => {
-                slide.classList.remove('active', 'prev');
-                if (i === index) {
-                    slide.classList.add('active');
-                } else if (i < index) {
-                    slide.classList.add('prev');
+        // Função para buscar banners do backend
+        async function loadBanners() {
+            try {
+                console.log('🎯 Carregando banners do Supabase...');
+                const response = await fetch(`${API_BASE}/api/banners`);
+                const data = await response.json();
+                
+                if (data.banners && data.banners.length > 0) {
+                    // Filtrar apenas banners que têm imagem válida
+                    const bannersComImagem = data.banners.filter(banner => 
+                        banner.imagem_url && banner.imagem_url.trim() !== '' && banner.imagem_url !== null
+                    );
+                    
+                    if (bannersComImagem.length > 0) {
+                        bannersData = bannersComImagem;
+                        renderBanners();
+                        console.log(`✅ ${bannersComImagem.length} banners com imagem carregados com sucesso!`);
+                    } else {
+                        console.log('⚠️ Nenhum banner com imagem encontrado, usando banners padrão');
+                        renderFallbackBanners();
+                    }
+                } else {
+                    console.log('⚠️ Nenhum banner encontrado, usando banners padrão');
+                    renderFallbackBanners();
                 }
+            } catch (error) {
+                console.error('❌ Erro ao carregar banners:', error);
+                renderFallbackBanners();
+            }
+        }
+        
+        // Função para renderizar banners do Supabase
+        function renderBanners() {
+            const carousel = document.getElementById('bannerCarousel');
+            if (!carousel) {
+                console.error('❌ Elemento bannerCarousel não encontrado!');
+                return;
+            }
+            
+            // Limpar conteúdo atual
+            carousel.innerHTML = '';
+            
+            bannersData.forEach((banner, index) => {
+                const bannerElement = createBannerElement(banner, index === 0);
+                carousel.appendChild(bannerElement);
             });
             
-            currentSlide = index;
+            // Adicionar indicadores de progresso
+            const indicatorsContainer = document.createElement('div');
+            indicatorsContainer.className = 'carousel-indicators';
+            
+            bannersData.forEach((_, index) => {
+                const indicator = document.createElement('div');
+                indicator.className = `carousel-indicator ${index === 0 ? 'active' : ''}`;
+                indicator.onclick = () => showSlide(index);
+                indicatorsContainer.appendChild(indicator);
+            });
+            
+            carousel.appendChild(indicatorsContainer);
+            
+            // Adicionar barra de progresso
+            const progressBar = document.createElement('div');
+            progressBar.className = 'carousel-progress';
+            progressBar.style.width = '0%';
+            carousel.appendChild(progressBar);
+            
+            // Reinicializar carrossel
+            initializeCarousel();
         }
         
-        // Função para próximo slide
-        function nextSlide() {
-            const next = (currentSlide + 1) % totalSlides;
-            showSlide(next);
+        // Função para criar elemento de banner (suporta imagem e layout texto)
+        function createBannerElement(banner, isActive = false) {
+            const div = document.createElement('div');
+            div.className = `banner-slide ${isActive ? 'active' : ''} absolute inset-0 overflow-hidden`;
+            
+            // Determinar CTA baseado no tipo de promoção
+            const ctaInfo = getCTAInfo(banner);
+            
+            // Verificar se tem imagem para usar layout baseado em imagem
+            if (banner.imagem_url && banner.imagem_url.trim() !== '') {
+                try {
+                    return createImageBanner(banner, isActive, ctaInfo, div);
+                } catch (error) {
+                    console.error('❌ Erro ao criar banner de imagem, usando fallback de texto:', error);
+                    return createTextBanner(banner, isActive, ctaInfo, div);
+                }
+            } else {
+                return createTextBanner(banner, isActive, ctaInfo, div);
+            }
         }
         
-        // Função para slide anterior
-        function prevSlide() {
-            const prev = (currentSlide - 1 + totalSlides) % totalSlides;
-            showSlide(prev);
+        // Função para criar banner baseado em imagem (apenas imagem, sem texto)
+        function createImageBanner(banner, isActive, ctaInfo, div) {
+            // Usar diretamente a URL do MinIO (já resolve CORS)
+            const imageUrl = banner.imagem_url;
+            
+            div.innerHTML = `
+                <!-- Container da imagem limpo - apenas a imagem -->
+                <div class="banner-image-container">
+                    <img src="${imageUrl}" 
+                         alt="${banner.titulo || 'Banner promocional'}"
+                         class="banner-image"
+                         loading="lazy"
+                         onerror="this.style.display='none';"
+                         onload="this.style.opacity='1'; this.classList.add('loaded');"
+                         style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                </div>
+            `;
+            
+            return div;
         }
+        
+        // Função para criar banner baseado em texto (layout original como fallback)
+        function createTextBanner(banner, isActive, ctaInfo, div) {
+            div.className += ' flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12';
+            
+            // Aplicar cores do banner
+            const corPrimaria = banner.cor_primaria || '#4F46E5';
+            const corSecundaria = banner.cor_secundaria || '#06B6D4';
+            div.style.background = `linear-gradient(135deg, ${corPrimaria} 0%, ${corSecundaria} 100%)`;
+            
+            // Criar ícone baseado no tipo
+            const iconSvg = getIconSvg(banner.icone || 'pill');
+            
+            div.innerHTML = `
+                <!-- Efeito de partículas de fundo -->
+                <div class="absolute inset-0 opacity-10">
+                    <div class="absolute top-10 left-10 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <div class="absolute top-20 right-20 w-1 h-1 bg-white rounded-full animate-ping"></div>
+                    <div class="absolute bottom-20 left-20 w-3 h-3 bg-white rounded-full animate-bounce"></div>
+                    <div class="absolute bottom-10 right-10 w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                </div>
+                
+                <!-- Conteúdo principal -->
+                <div class="text-white max-w-full sm:max-w-lg flex-1 z-10 relative">
+                    <!-- Badge com animação -->
+                     <div class="inline-block bg-white/25 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4 border border-white/20 animate-pulse">
+                         <span class="banner-badge text-xs sm:text-sm tracking-wide">${banner.badge_texto || '🏷️ OFERTA'}</span>
+                     </div>
+                     
+                     <!-- Título com destaque -->
+                     <h3 class="banner-title text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-2 sm:mb-4 leading-tight drop-shadow-lg">
+                         ${formatBannerTitle(banner)}
+                     </h3>
+                     
+                     <!-- Descrição melhorada -->
+                     <p class="banner-description text-sm sm:text-base md:text-lg mb-4 sm:mb-6 text-white/95 leading-relaxed">
+                         ${banner.descricao || 'Aproveite esta oferta especial!'}
+                     </p>
+                    
+                    <!-- Elementos de urgência -->
+                    ${createUrgencyElements(banner)}
+                    
+                    <!-- Botões de CTA -->
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6">
+                        <button onclick="handleBannerCTA('${banner.tipo_promocao}', ${banner.id})" 
+                                class="cta-primary group bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full text-sm sm:text-base 
+                                       hover:bg-yellow-300 transform hover:scale-105 transition-all duration-300 
+                                       shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 
+                                       animate-bounce hover:animate-none">
+                            <span>${ctaInfo.primary}</span>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </button>
+                        
+                        <button onclick="handleBannerSecondary('${banner.tipo_promocao}', ${banner.id})" 
+                                class="cta-secondary group border-2 border-white/50 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-full 
+                                       text-sm hover:bg-white/10 hover:border-white transition-all duration-300 
+                                       backdrop-blur-sm flex items-center justify-center gap-2">
+                            <span>${ctaInfo.secondary}</span>
+                            <svg class="w-4 h-4 group-hover:rotate-12 transition-transform" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Ícone melhorado com animações -->
+                <div class="hidden lg:block flex-shrink-0 ml-4 z-10">
+                    <div class="relative">
+                        <!-- Círculo de fundo com pulso -->
+                        <div class="w-32 h-32 xl:w-48 xl:h-48 bg-white/15 backdrop-blur-sm rounded-full 
+                                    flex items-center justify-center relative overflow-hidden
+                                    animate-pulse hover:animate-spin hover:bg-white/20 transition-all duration-500">
+                            <!-- Efeito de brilho rotativo -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+                                        transform -skew-x-12 animate-shimmer"></div>
+                            ${iconSvg}
+                        </div>
+                        
+                        <!-- Indicador de desconto flutuante -->
+                        ${banner.percentual_desconto ? `
+                            <div class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold 
+                                        px-2 py-1 rounded-full animate-bounce shadow-lg">
+                                -${banner.percentual_desconto}%
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        // Função para criar elementos de urgência
+        function createUrgencyElements(banner) {
+            let urgencyHtml = '';
+            
+            // Contador regressivo simulado para ofertas
+            if (banner.tipo_promocao === 'promocional' || banner.percentual_desconto) {
+                urgencyHtml += `
+                    <div class="flex items-center gap-2 mb-3 text-yellow-300">
+                        <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm font-semibold">⏰ Oferta por tempo limitado!</span>
+                    </div>
+                `;
+            }
+            
+            // Indicador de economia
+            if (banner.valor_desconto || banner.percentual_desconto) {
+                const economia = banner.valor_desconto ? `R$ ${banner.valor_desconto}` : `${banner.percentual_desconto}%`;
+                urgencyHtml += `
+                    <div class="inline-flex items-center gap-2 bg-green-500/20 border border-green-400/30 
+                                rounded-full px-3 py-1 mb-3 backdrop-blur-sm">
+                        <span class="text-green-300 text-xs font-bold">💰 ECONOMIZE ${economia}</span>
+                    </div>
+                `;
+            }
+            
+            return urgencyHtml;
+        }
+        
+        // Funções para manipular CTAs dos banners
+        function handleBannerCTA(tipoBanner, bannerId) {
+            // Analytics tracking
+            console.log(`🎯 CTA Principal clicado: ${tipoBanner} (ID: ${bannerId})`);
+            
+            // Efeito visual de feedback
+            showCTAFeedback('primary');
+            
+            // Ações baseadas no tipo de banner
+            switch(tipoBanner) {
+                case 'promocional':
+                    // Redirecionar para produtos em promoção
+                    scrollToSection('produtos-promocionais');
+                    break;
+                case 'desconto_percentual':
+                case 'desconto_fixo':
+                    // Aplicar filtro de produtos com desconto
+                    filterProductsByDiscount();
+                    break;
+                case 'frete_gratis':
+                    // Mostrar produtos elegíveis para frete grátis
+                    showFreeShippingProducts();
+                    break;
+                default:
+                    // Ação padrão - scroll para produtos
+                    scrollToSection('produtos');
+            }
+        }
+        
+        function handleBannerSecondary(tipoBanner, bannerId) {
+            console.log(`ℹ️ CTA Secundário clicado: ${tipoBanner} (ID: ${bannerId})`);
+            
+            showCTAFeedback('secondary');
+            
+            // Mostrar modal com detalhes da promoção
+            showPromotionDetails(bannerId);
+        }
+        
+        function showCTAFeedback(type) {
+            // Criar elemento de feedback visual
+            const feedback = document.createElement('div');
+            feedback.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white font-semibold 
+                                 transform translate-x-full transition-transform duration-300 shadow-lg`;
+            feedback.style.backgroundColor = type === 'primary' ? '#10B981' : '#3B82F6';
+            feedback.textContent = type === 'primary' ? '✅ Redirecionando...' : 'ℹ️ Carregando detalhes...';
+            
+            document.body.appendChild(feedback);
+            
+            // Animar entrada
+            setTimeout(() => {
+                feedback.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remover após 3 segundos
+            setTimeout(() => {
+                feedback.style.transform = 'translateX(full)';
+                setTimeout(() => feedback.remove(), 300);
+            }, 3000);
+        }
+        
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId) || document.querySelector('.produtos-grid');
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Destacar seção temporariamente
+                section.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+                setTimeout(() => {
+                    section.style.boxShadow = '';
+                }, 2000);
+            }
+        }
+        
+        function filterProductsByDiscount() {
+            // Simular filtro de produtos com desconto
+            scrollToSection('produtos');
+            showCTAFeedback('primary');
+        }
+        
+        function showFreeShippingProducts() {
+            // Simular mostrar produtos com frete grátis
+            scrollToSection('produtos');
+            showCTAFeedback('primary');
+        }
+        
+        function showPromotionDetails(bannerId) {
+            // Criar modal simples com detalhes
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md w-full transform scale-95 transition-transform duration-300">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">📋 Detalhes da Promoção</h3>
+                    <p class="text-gray-600 mb-4">Esta é uma promoção especial! Aproveite enquanto durarem os estoques.</p>
+                    <div class="flex gap-3">
+                        <button onclick="this.closest('.fixed').remove()" 
+                                class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                            Fechar
+                        </button>
+                        <button onclick="this.closest('.fixed').remove(); scrollToSection('produtos')" 
+                                class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            Ver Produtos
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Animar entrada
+            setTimeout(() => {
+                modal.querySelector('div').style.transform = 'scale(1)';
+            }, 100);
+            
+            // Fechar ao clicar fora
+            modal.addEventListener('click', (e) => {
+                 if (e.target === modal) modal.remove();
+             });
+         }
+         
+         // Função para obter informações do CTA baseado no tipo
+         function getCTAInfo(banner) {
+             const ctas = {
+                 'promocional': {
+                     primary: '🛒 Aproveitar Oferta',
+                     secondary: '📋 Ver Detalhes'
+                 },
+                 'desconto_percentual': {
+                     primary: '💸 Economizar Agora',
+                     secondary: '🔍 Ver Produtos'
+                 },
+                 'desconto_fixo': {
+                     primary: '🎁 Resgatar Desconto',
+                     secondary: '📖 Saiba Mais'
+                 },
+                 'frete_gratis': {
+                     primary: '🚚 Frete Grátis',
+                     secondary: '📦 Ver Condições'
+                 }
+             };
+             
+             return ctas[banner.tipo_promocao] || ctas['promocional'];
+         }
+        
+        // Função para formatar título do banner
+        function formatBannerTitle(banner) {
+            let title = banner.titulo || 'Oferta Especial';
+            
+            // Destacar percentual de desconto se existir
+            if (banner.percentual_desconto) {
+                title = title.replace(/(\d+%)/g, '<span class="text-yellow-300">$1</span>');
+            }
+            
+            // Quebrar linha em títulos longos para mobile
+            if (title.length > 20) {
+                const words = title.split(' ');
+                const midPoint = Math.ceil(words.length / 2);
+                const firstLine = words.slice(0, midPoint).join(' ');
+                const secondLine = words.slice(midPoint).join(' ');
+                return `${firstLine}<br class="hidden sm:block"><span class="sm:hidden"> </span>${secondLine}`;
+            }
+            
+            return title;
+        }
+        
+        // Função para obter SVG do ícone
+        function getIconSvg(iconType) {
+            const icons = {
+                pill: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                    <path d="M4.5 16.5c-1.5 1.5-1.5 4.5 0 6s4.5 1.5 6 0c.5-.5 1.5-1 2.5-1s2 .5 2.5 1c1.5 1.5 4.5 1.5 6 0s1.5-4.5 0-6c-.5-.5-1-1.5-1-2.5s.5-2 1-2.5c1.5-1.5 1.5-4.5 0-6s-4.5-1.5-6 0c-.5.5-1.5 1-2.5 1s-2-.5-2.5-1c-1.5-1.5-4.5-1.5-6 0s-1.5 4.5 0 6c.5.5 1 1.5 1 2.5s-.5 2-1 2.5z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>`,
+                heart: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>`,
+                truck: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16,8 20,8 23,11 23,16 16,16 16,8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>`,
+                gift: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                    <polyline points="20,12 20,22 4,22 4,12"></polyline>
+                    <rect x="2" y="7" width="20" height="5"></rect>
+                    <line x1="12" y1="22" x2="12" y2="7"></line>
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                </svg>`,
+                star: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" class="xl:w-20 xl:h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"></polygon>
+                </svg>`
+            };
+            
+            return icons[iconType] || icons.pill;
+        }
+        
+        // Função para renderizar banners de fallback
+        function renderFallbackBanners() {
+            const fallbackBanners = [
+                {
+                    id: 1,
+                    titulo: "Até 50% OFF em Medicamentos",
+                    subtitulo: "SUPER OFERTA",
+                    descricao: "Aproveite descontos incríveis em medicamentos essenciais",
+                    badge_texto: "🏷️ SUPER OFERTA",
+                    cor_primaria: "#10B981",
+                    cor_secundaria: "#14B8A6",
+                    icone: "pill",
+                    percentual_desconto: 50
+                }
+            ];
+            
+            bannersData = fallbackBanners;
+            renderBanners();
+        }
+        
+        // Função para inicializar o carrossel
+        function initializeCarousel() {
+            // Atualizar referências dos slides
+            const newSlides = document.querySelectorAll('.banner-slide');
+            
+            if (newSlides.length === 0) return;
+            
+            // Resetar variáveis do carrossel
+            currentSlide = 0;
+            
+            // Reinicializar funcionalidades do carrossel
+            setupCarouselControls(newSlides);
+            
+            // Iniciar auto-play
+            if (newSlides.length > 1) {
+                startAutoSlide();
+            }
+        }
+        
+        // Função para configurar controles do carrossel
+        function setupCarouselControls(slides) {
+            // Função para mostrar slide específico
+            window.showSlide = function(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('active', 'prev');
+                    if (i === index) {
+                        slide.classList.add('active');
+                    } else if (i < index) {
+                        slide.classList.add('prev');
+                    }
+                });
+                
+                // Atualizar indicadores
+                const indicators = document.querySelectorAll('.carousel-indicator');
+                indicators.forEach((indicator, i) => {
+                    indicator.classList.toggle('active', i === index);
+                });
+                
+                // Atualizar barra de progresso
+                const progressBar = document.querySelector('.carousel-progress');
+                if (progressBar && slides.length > 0) {
+                    const progressPercent = ((index + 1) / slides.length) * 100;
+                    progressBar.style.width = `${progressPercent}%`;
+                }
+                
+                currentSlide = index;
+                
+                // Reiniciar timer do auto-slide
+                if (autoSlideInterval) {
+                    clearInterval(autoSlideInterval);
+                    startAutoSlide();
+                }
+            };
+            
+            // Função para próximo slide
+            window.nextSlide = function() {
+                const next = (currentSlide + 1) % slides.length;
+                showSlide(next);
+            };
+            
+            // Função para slide anterior
+            window.prevSlide = function() {
+                const prev = (currentSlide - 1 + slides.length) % slides.length;
+                showSlide(prev);
+            };
+        }
+
+        // --- FUNCIONALIDADE DO CARROSSEL DE BANNERS ---
+        let currentSlide = 0;
+        let autoSlideInterval;
         
         // Auto-play do carrossel
         function startAutoSlide() {
-            autoSlideInterval = setInterval(nextSlide, 5000); // Muda a cada 5 segundos
+            const slides = document.querySelectorAll('.banner-slide');
+            if (slides.length > 1) {
+                autoSlideInterval = setInterval(() => {
+                    const next = (currentSlide + 1) % slides.length;
+                    showSlide(next);
+                }, 5000); // Muda a cada 5 segundos
+            }
         }
         
         function stopAutoSlide() {
@@ -3134,7 +3880,11 @@
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
                 stopAutoSlide();
-                nextSlide();
+                const slides = document.querySelectorAll('.banner-slide');
+                if (slides.length > 0) {
+                    const next = (currentSlide + 1) % slides.length;
+                    showSlide(next);
+                }
                 startAutoSlide(); // Reinicia o auto-play
             });
         }
@@ -3142,7 +3892,11 @@
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
                 stopAutoSlide();
-                prevSlide();
+                const slides = document.querySelectorAll('.banner-slide');
+                if (slides.length > 0) {
+                    const prev = (currentSlide - 1 + slides.length) % slides.length;
+                    showSlide(prev);
+                }
                 startAutoSlide(); // Reinicia o auto-play
             });
         }
@@ -3158,11 +3912,19 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') {
                 stopAutoSlide();
-                prevSlide();
+                const slides = document.querySelectorAll('.banner-slide');
+                if (slides.length > 0) {
+                    const prev = (currentSlide - 1 + slides.length) % slides.length;
+                    showSlide(prev);
+                }
                 startAutoSlide();
             } else if (e.key === 'ArrowRight') {
                 stopAutoSlide();
-                nextSlide();
+                const slides = document.querySelectorAll('.banner-slide');
+                if (slides.length > 0) {
+                    const next = (currentSlide + 1) % slides.length;
+                    showSlide(next);
+                }
                 startAutoSlide();
             }
         });
@@ -3188,20 +3950,25 @@
             
             if (Math.abs(diff) > swipeThreshold) {
                 stopAutoSlide();
-                if (diff > 0) {
-                    nextSlide(); // Swipe left - próximo slide
-                } else {
-                    prevSlide(); // Swipe right - slide anterior
+                const slides = document.querySelectorAll('.banner-slide');
+                if (slides.length > 0) {
+                    if (diff > 0) {
+                        // Swipe left - próximo slide
+                        const next = (currentSlide + 1) % slides.length;
+                        showSlide(next);
+                    } else {
+                        // Swipe right - slide anterior
+                        const prev = (currentSlide - 1 + slides.length) % slides.length;
+                        showSlide(prev);
+                    }
                 }
                 startAutoSlide();
             }
         }
         
-        // Inicializar carrossel
-        if (slides.length > 0) {
-            showSlide(0);
-            startAutoSlide();
-        }
+        // Inicializar carrossel dinamicamente
+        console.log('🚀 Inicializando catálogo...');
+        loadBanners(); // Carregar banners do Supabase
         
         
         // --- FUNCIONALIDADE DO SEARCH MOBILE ---

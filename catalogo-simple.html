@@ -53,7 +53,7 @@
                         name: p.descricao,
                         description: p.apresentacao || p.categoria || p.descricao,
                         price: Number(p.preco),
-                        imageUrl: p.imagem_url || (API_BASE + '/public/padrao.png'),
+                        imageUrl: p.imagem_url || './public/padrao.png',
                         laboratorio: p.laboratorio
                     });
                 });
@@ -87,7 +87,7 @@
                     ${product.laboratorio ? `<p style="color: #2563eb; font-weight: 500; font-size: 0.875rem; margin: 5px 0;">🧪 ${product.laboratorio}</p>` : ''}
                     <p>${product.description}</p>
                     <p>Preço: R$ ${product.price.toFixed(2)}</p>
-                    <img src="${product.imageUrl}" alt="${product.name}" style="max-width: 100px;">
+                    <img src="${product.imageUrl}" alt="${product.name}" style="max-width: 100px;" onerror="this.onerror=null; this.src='./public/padrao.png';">
                 </div>
             `).join('');
             

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Banners com Imagens - Catálogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos dos banners melhorados */
+        .banner-slide {
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+        
+        .banner-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .banner-slide img {
+            object-fit: cover;
+            object-position: center center;
+            width: 100%;
+            height: 100%;
+            filter: brightness(0.85) contrast(1.15) saturate(1.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, filter;
+        }
+        
+        .banner-slide:hover img {
+            filter: brightness(0.95) contrast(1.25) saturate(1.2);
+            transform: scale(1.05);
+        }
+        
+        .banner-image-container {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .text-shadow-lg {
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9), 
+                         0 0 20px rgba(0, 0, 0, 0.7),
+                         1px 1px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .banner-overlay {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.5) 100%
+            );
+            backdrop-filter: blur(1px);
+            transition: background 0.3s ease;
+        }
+        
+        .banner-slide:hover .banner-overlay {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.3) 0%,
+                rgba(0, 0, 0, 0.1) 50%,
+                rgba(0, 0, 0, 0.4) 100%
+            );
+        }
+        
+        .banner-image {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            will-change: opacity, transform;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            object-fit: cover;
+            object-position: center center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .banner-image.loaded {
+            animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(1.1) translateZ(0);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateZ(0);
+                filter: blur(0);
+            }
+        }
+        
+        .banner-carousel-container {
+            aspect-ratio: 16/9;
+            min-height: 200px;
+            max-height: 500px;
+        }
+        
+        @media (max-width: 768px) {
+            .banner-overlay {
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 0, 0, 0.6) 0%,
+                    rgba(0, 0, 0, 0.4) 50%,
+                    rgba(0, 0, 0, 0.7) 100%
+                ) !important;
+            }
+            
+            .text-shadow-lg {
+                text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.95), 
+                             0 0 24px rgba(0, 0, 0, 0.8);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .banner-carousel-container {
+                aspect-ratio: 4/3;
+                min-height: 180px;
+                max-height: 240px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">🎨 Teste de Banners com Imagens Ajustadas</h1>
+        
+        <!-- Banner 1: Farmácia -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">📋 Banner 1: Farmácia</h2>
+            <div class="banner-carousel-container relative overflow-hidden rounded-xl shadow-xl">
+                <div class="banner-slide active absolute inset-0">
+                    <div class="banner-image-container">
+                        <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=1200&h=600&fit=crop&crop=center" 
+                             alt="Farmácia moderna"
+                             class="banner-image"
+                             onload="this.style.opacity='1'; this.classList.add('loaded');"
+                             style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                    </div>
+                    <div class="banner-overlay absolute inset-0"></div>
+                    <div class="relative z-10 h-full flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white max-w-full sm:max-w-lg flex-1">
+                            <div class="inline-block bg-white/25 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4 border border-white/20">
+                                <span class="text-xs sm:text-sm tracking-wide">💊 FARMÁCIA</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-2 sm:mb-4 leading-tight text-shadow-lg font-bold">
+                                Medicamentos com 20% OFF
+                            </h3>
+                            <p class="text-sm sm:text-base md:text-lg mb-4 sm:mb-6 text-white/95 leading-relaxed text-shadow-lg">
+                                Aproveite nossa promoção especial em medicamentos selecionados!
+                            </p>
+                            <button class="bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full text-sm sm:text-base hover:bg-yellow-300 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+                                Ver Ofertas 🛒
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Banner 2: Produtos de Saúde -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">🏥 Banner 2: Produtos de Saúde</h2>
+            <div class="banner-carousel-container relative overflow-hidden rounded-xl shadow-xl">
+                <div class="banner-slide active absolute inset-0">
+                    <div class="banner-image-container">
+                        <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&h=600&fit=crop&crop=center" 
+                             alt="Produtos de saúde"
+                             class="banner-image"
+                             onload="this.style.opacity='1'; this.classList.add('loaded');"
+                             style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                    </div>
+                    <div class="banner-overlay absolute inset-0"></div>
+                    <div class="relative z-10 h-full flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white max-w-full sm:max-w-lg flex-1">
+                            <div class="inline-block bg-white/25 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4 border border-white/20">
+                                <span class="text-xs sm:text-sm tracking-wide">🩺 SAÚDE</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-2 sm:mb-4 leading-tight text-shadow-lg font-bold">
+                                Cuidados Essenciais
+                            </h3>
+                            <p class="text-sm sm:text-base md:text-lg mb-4 sm:mb-6 text-white/95 leading-relaxed text-shadow-lg">
+                                Tudo que você precisa para manter sua saúde em dia!
+                            </p>
+                            <button class="bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full text-sm sm:text-base hover:bg-green-300 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+                                Explorar 🔍
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Banner 3: Vitaminas -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">💊 Banner 3: Vitaminas</h2>
+            <div class="banner-carousel-container relative overflow-hidden rounded-xl shadow-xl">
+                <div class="banner-slide active absolute inset-0">
+                    <div class="banner-image-container">
+                        <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&h=600&fit=crop&crop=center" 
+                             alt="Vitaminas e suplementos"
+                             class="banner-image"
+                             onload="this.style.opacity='1'; this.classList.add('loaded');"
+                             style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                    </div>
+                    <div class="banner-overlay absolute inset-0"></div>
+                    <div class="relative z-10 h-full flex items-center justify-between p-4 sm:p-6 md:p-8 lg:p-12">
+                        <div class="text-white max-w-full sm:max-w-lg flex-1">
+                            <div class="inline-block bg-white/25 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-2 mb-2 sm:mb-4 border border-white/20">
+                                <span class="text-xs sm:text-sm tracking-wide">⚡ ENERGIA</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-2 sm:mb-4 leading-tight text-shadow-lg font-bold">
+                                Vitaminas & Suplementos
+                            </h3>
+                            <p class="text-sm sm:text-base md:text-lg mb-4 sm:mb-6 text-white/95 leading-relaxed text-shadow-lg">
+                                Fortaleça sua imunidade com nossos produtos premium!
+                            </p>
+                            <button class="bg-white text-gray-900 px-6 py-3 sm:px-8 sm:py-4 rounded-full text-sm sm:text-base hover:bg-orange-300 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+                                Comprar Agora 💪
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="text-center mt-12 p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">✅ Melhorias Implementadas:</h3>
+            <ul class="text-left text-gray-600 space-y-1">
+                <li>🎯 <strong>Aspect Ratio Consistente:</strong> 16:9 para desktop, 4:3 para mobile</li>
+                <li>🖼️ <strong>Object-fit Cover:</strong> Imagens sempre bem proporcionais</li>
+                <li>🌈 <strong>Overlay Inteligente:</strong> Gradiente que melhora a legibilidade</li>
+                <li>📱 <strong>Responsividade:</strong> Ajustes automáticos para diferentes telas</li>
+                <li>✨ <strong>Animações Suaves:</strong> Transições e efeitos hover melhorados</li>
+                <li>🎨 <strong>Filtros de Imagem:</strong> Contraste e saturação otimizados</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

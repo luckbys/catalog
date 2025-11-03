@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Imagens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .image-test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .image-test h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .image-test img {
+            max-width: 200px;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .url-info {
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 Teste de Carregamento de Imagens</h1>
+        <p>Este teste verifica se as imagens dos produtos estão carregando corretamente.</p>
+        
+        <div id="tests"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        const testImages = [
+            {
+                name: 'Imagem Padrão (Relativa)',
+                url: './public/padrao.png'
+            },
+            {
+                name: 'Imagem Padrão (Absoluta)',
+                url: '/public/padrao.png'
+            },
+            {
+                name: 'Imagem Padrão (API)',
+                url: API_BASE + '/public/padrao.png'
+            },
+            {
+                name: 'Placeholder Externo',
+                url: 'https://placehold.co/300x300/e0f2fe/0284c7?text=Teste'
+            },
+            {
+                name: 'Unsplash (Exemplo)',
+                url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400'
+            }
+        ];
+
+        const testsContainer = document.getElementById('tests');
+
+        testImages.forEach((test, index) => {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'image-test';
+            testDiv.innerHTML = `
+                <h3>${index + 1}. ${test.name}</h3>
+                <div class="url-info">URL: ${test.url}</div>
+                <img id="img-${index}" src="${test.url}" alt="${test.name}">
+                <div id="status-${index}" class="status">⏳ Carregando...</div>
+            `;
+            testsContainer.appendChild(testDiv);
+
+            const img = document.getElementById(`img-${index}`);
+            const status = document.getElementById(`status-${index}`);
+
+            img.onload = () => {
+                status.className = 'status success';
+                status.textContent = '✅ Imagem carregada com sucesso!';
+            };
+
+            img.onerror = () => {
+                status.className = 'status error';
+                status.textContent = '❌ Falha ao carregar imagem';
+            };
+        });
+
+        // Teste adicional: buscar produtos da API
+        async function testAPIProducts() {
+            const params = new URLSearchParams(window.location.search);
+            const sessionId = params.get('sessao_id');
+            
+            if (!sessionId) {
+                console.log('⚠️ Sem sessao_id na URL. Adicione ?sessao_id=XXX para testar produtos da API');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/produtos/${sessionId}`);
+                if (!res.ok) {
+                    console.error('❌ Erro ao buscar produtos:', res.status);
+                    return;
+                }
+
+                const data = await res.json();
+                console.log('📦 Produtos da API:', data);
+
+                if (data.produtos && data.produtos.length > 0) {
+                    const apiTestDiv = document.createElement('div');
+                    apiTestDiv.className = 'image-test';
+                    apiTestDiv.innerHTML = `
+                        <h3>Produtos da API (sessao_id: ${sessionId})</h3>
+                        <div id="api-products"></div>
+                    `;
+                    testsContainer.appendChild(apiTestDiv);
+
+                    const apiProductsDiv = document.getElementById('api-products');
+                    data.produtos.slice(0, 3).forEach((produto, idx) => {
+                        const imageUrl = produto.imagem_url || './public/padrao.png';
+                        const prodDiv = document.createElement('div');
+                        prodDiv.style.marginTop = '15px';
+                        prodDiv.innerHTML = `
+                            <h4>${produto.descricao}</h4>
+                            <div class="url-info">URL: ${imageUrl}</div>
+                            <img id="api-img-${idx}" src="${imageUrl}" alt="${produto.descricao}">
+                            <div id="api-status-${idx}" class="status">⏳ Carregando...</div>
+                        `;
+                        apiProductsDiv.appendChild(prodDiv);
+
+                        const img = document.getElementById(`api-img-${idx}`);
+                        const status = document.getElementById(`api-status-${idx}`);
+
+                        img.onload = () => {
+                            status.className = 'status success';
+                            status.textContent = '✅ Imagem carregada com sucesso!';
+                        };
+
+                        img.onerror = () => {
+                            status.className = 'status error';
+                            status.textContent = '❌ Falha ao carregar imagem';
+                            // Tentar fallback
+                            img.src = './public/padrao.png';
+                        };
+                    });
+                }
+            } catch (e) {
+                console.error('❌ Erro ao testar API:', e);
+            }
+        }
+
+        // Executar teste da API após carregar a página
+        window.addEventListener('load', testAPIProducts);
+    </script>
+</body>
+</html>
