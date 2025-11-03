@@ -1,0 +1,26 @@
+{
+  "cliente": {
+    "nome": "João Silva",
+    "telefone": "11999999999"
+  },
+  "entrega": {
+    "endereco": "Rua das Flores",
+    "numero": "123",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "cep": "01234-567"
+  },
+  "pagamento": {
+    "forma": "pix",
+    "valor_total": 50.00
+  },
+  "produtos": [
+    {
+      "nome": "Dipirona",
+      "codigo": "DIP001",
+      "preco_unitario": 10.00,
+      "quantidade": 2,
+      "subtotal": 20.00
+    }
+  ]
+}
