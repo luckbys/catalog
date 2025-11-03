@@ -96,6 +96,9 @@ class ProdutoSessao(Base):
     produto_id = Column(Integer, nullable=False)
     descricao = Column(String, nullable=False)
     preco = Column(Numeric(10, 2), nullable=False)
+    preco_original = Column(Numeric(10, 2), nullable=True)  # Preço original (antes do desconto)
+    percentual_desconto = Column(Numeric(5, 2), nullable=True)  # Percentual de desconto (ex: 15.50 para 15.5%)
+    valor_desconto = Column(Numeric(10, 2), nullable=True)  # Valor fixo de desconto
     estoque = Column(Integer, nullable=False)
     imagem_url = Column(String, nullable=True)
     categoria = Column(String, nullable=True)
@@ -123,6 +126,9 @@ class ProdutoIn(BaseModel):
     id: int
     descricao: str
     preco: Decimal
+    preco_original: Optional[Decimal] = None  # Preço original (antes do desconto)
+    percentual_desconto: Optional[Decimal] = None  # Percentual de desconto
+    valor_desconto: Optional[Decimal] = None  # Valor fixo de desconto
     estoque: int
     imagem_url: Optional[str] = None
     categoria: Optional[str] = None
@@ -780,7 +786,11 @@ def listar_produtos():
                     "estoque": produto.get("estoque") or produto.get("stock", 0),
                     "imagem_url": produto.get("imagem_url") or produto.get("image_url"),
                     "categoria": produto.get("categoria") or produto.get("category"),
-                    "laboratorio": produto.get("laboratorio") or produto.get("laboratory") or produto.get("brand")
+                    "laboratorio": produto.get("laboratorio") or produto.get("laboratory") or produto.get("brand"),
+                    # Campos de desconto do Supabase
+                    "preco_original": produto.get("preco_original"),
+                    "percentual_desconto": produto.get("desconto_percentual"),
+                    "valor_desconto": produto.get("desconto_valor")
                 }
                 produtos_formatados.append(produto_formatado)
             
@@ -904,6 +914,9 @@ def criar_sessao(request: Request, payload: CriarSessaoPayload, _: None = Depend
                     produto_id=p.id,
                     descricao=p.descricao,
                     preco=Decimal(p.preco),
+                    preco_original=Decimal(p.preco_original) if p.preco_original else None,
+                    percentual_desconto=Decimal(p.percentual_desconto) if p.percentual_desconto else None,
+                    valor_desconto=Decimal(p.valor_desconto) if p.valor_desconto else None,
                     estoque=p.estoque,
                     imagem_url=p.imagem_url,
                     categoria=p.categoria,
@@ -942,6 +955,9 @@ def criar_sessao(request: Request, payload: CriarSessaoPayload, _: None = Depend
                 produto_id=p.id,
                 descricao=p.descricao,
                 preco=Decimal(p.preco),
+                preco_original=Decimal(p.preco_original) if p.preco_original else None,
+                percentual_desconto=Decimal(p.percentual_desconto) if p.percentual_desconto else None,
+                valor_desconto=Decimal(p.valor_desconto) if p.valor_desconto else None,
                 estoque=p.estoque,
                 imagem_url=p.imagem_url,
                 categoria=p.categoria,
@@ -982,6 +998,9 @@ def obter_sessao(sessao_id: str, _: None = Depends(rate_limit_dep)):
                     "id": p.produto_id,
                     "descricao": p.descricao,
                     "preco": float(p.preco),
+                    "preco_original": float(p.preco_original) if p.preco_original else None,
+                    "percentual_desconto": float(p.percentual_desconto) if p.percentual_desconto else None,
+                    "valor_desconto": float(p.valor_desconto) if p.valor_desconto else None,
                     "estoque": p.estoque,
                     "imagem_url": p.imagem_url,
                     "categoria": p.categoria,
