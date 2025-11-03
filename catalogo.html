@@ -3425,8 +3425,17 @@
         
         // Função para criar banner baseado em imagem (apenas imagem, sem texto)
         function createImageBanner(banner, isActive, ctaInfo, div) {
-            // Usar diretamente a URL do MinIO, com fallback local se necessário
-            const imageUrl = banner.imagem_url;
+            // Usar proxy do MinIO para evitar problemas de CORS
+            let imageUrl = banner.imagem_url;
+            
+            // Se a URL é do MinIO, usar o proxy do backend
+            if (imageUrl && imageUrl.includes('c4crm-minio.zv7gpn.easypanel.host')) {
+                // Extrair apenas o nome do arquivo da URL do MinIO
+                const urlParts = imageUrl.split('/');
+                const fileName = urlParts[urlParts.length - 1];
+                imageUrl = `${API_BASE}/api/minio-image?path=${fileName}`;
+                console.log('🔄 Usando proxy MinIO para banner:', fileName);
+            }
             
             div.innerHTML = `
                 <!-- Container da imagem limpo - apenas a imagem -->

@@ -364,85 +364,66 @@ def get_order_status(order_id: int):
 def listar_banners():
     """Busca banners ativos do Supabase ordenados por posição"""
     try:
-        # Temporariamente forçar uso dos banners de exemplo com imagem
-        # para demonstrar o layout apenas com imagem
-        return {
-            "banners": [
-                {
-                    "id": 1,
-                    "titulo": "Banner novo",
-                    "subtitulo": "SUPER OFERTA",
-                    "descricao": "Aproveite descontos incríveis em medicamentos essenciais",
-                    "badge_texto": "🏷️ SUPER OFERTA",
-                    "cor_primaria": "#10B981",
-                    "cor_secundaria": "#14B8A6",
-                    "icone": "pill",
-                    "tipo_promocao": "desconto_percentual",
-                    "percentual_desconto": 50,
-                    "posicao": 1,
-                    "ativo": True,
-                    "imagem_url": "http://localhost:8000/api/minio-image?path=banner_baner_novo_1762169544726.png"
-                }
-            ]
-        }
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            print("[BANNERS] Order processor não disponível, usando banners de exemplo")
+            # Fallback: retorna banners de exemplo se Supabase não estiver disponível
+            return {
+                "banners": [
+                    {
+                        "id": 1,
+                        "titulo": "Banner novo",
+                        "subtitulo": "SUPER OFERTA",
+                        "descricao": "Aproveite descontos incríveis em medicamentos essenciais",
+                        "badge_texto": "🏷️ SUPER OFERTA",
+                        "cor_primaria": "#10B981",
+                        "cor_secundaria": "#14B8A6",
+                        "icone": "pill",
+                        "tipo_promocao": "desconto_percentual",
+                        "percentual_desconto": 50,
+                        "posicao": 1,
+                        "ativo": True,
+                        "imagem_url": "http://localhost:8000/api/local-image?path=padrao.png"
+                    },
+                    {
+                        "id": 2,
+                        "titulo": "Vitaminas e Suplementos",
+                        "subtitulo": "SAÚDE EM PRIMEIRO LUGAR",
+                        "descricao": "Cuide da sua saúde com vitaminas e suplementos",
+                        "badge_texto": "💊 VITAMINAS",
+                        "cor_primaria": "#8B5CF6",
+                        "cor_secundaria": "#A855F7",
+                        "icone": "heart",
+                        "tipo_promocao": "categoria",
+                        "posicao": 2,
+                        "ativo": True
+                    },
+                    {
+                        "id": 3,
+                        "titulo": "Entrega Grátis",
+                        "subtitulo": "FRETE GRÁTIS",
+                        "descricao": "Entrega rápida e gratuita em toda a cidade",
+                        "badge_texto": "🚚 FRETE GRÁTIS",
+                        "cor_primaria": "#3B82F6",
+                        "cor_secundaria": "#06B6D4",
+                        "icone": "truck",
+                        "tipo_promocao": "frete_gratis",
+                        "valor_minimo": 50,
+                        "posicao": 3,
+                        "ativo": True
+                    }
+                ]
+            }
         
-        # Código original comentado temporariamente
-        # if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
-        #     # Fallback: retorna banners de exemplo se Supabase não estiver disponível
-        #     return {
-        #     "banners": [
-        #         {
-        #             "id": 1,
-        #             "titulo": "Banner novo",
-        #             "subtitulo": "SUPER OFERTA",
-        #             "descricao": "Aproveite descontos incríveis em medicamentos essenciais",
-        #             "badge_texto": "🏷️ SUPER OFERTA",
-        #             "cor_primaria": "#10B981",
-        #             "cor_secundaria": "#14B8A6",
-        #             "icone": "pill",
-        #             "tipo_promocao": "desconto_percentual",
-        #             "percentual_desconto": 50,
-        #             "posicao": 1,
-        #             "ativo": True,
-        #             "imagem_url": "http://localhost:8000/api/minio-image?path=banner_baner_novo_1762169544726.png"
-        #         },
-        #         {
-        #             "id": 2,
-        #             "titulo": "Vitaminas e Suplementos",
-        #             "subtitulo": "SAÚDE EM PRIMEIRO LUGAR",
-        #             "descricao": "Cuide da sua saúde com vitaminas e suplementos",
-        #             "badge_texto": "💊 VITAMINAS",
-        #             "cor_primaria": "#8B5CF6",
-        #             "cor_secundaria": "#A855F7",
-        #             "icone": "heart",
-        #             "tipo_promocao": "categoria",
-        #             "posicao": 2,
-        #             "ativo": True
-        #         },
-        #         {
-        #             "id": 3,
-        #             "titulo": "Entrega Grátis",
-        #             "subtitulo": "FRETE GRÁTIS",
-        #             "descricao": "Entrega rápida e gratuita em toda a cidade",
-        #             "badge_texto": "🚚 FRETE GRÁTIS",
-        #             "cor_primaria": "#3B82F6",
-        #             "cor_secundaria": "#06B6D4",
-        #             "icone": "truck",
-        #             "tipo_promocao": "frete_gratis",
-        #             "valor_minimo": 50,
-        #             "posicao": 3,
-        #             "ativo": True
-        #         }
-        #     ]
-        # }
+        # Buscar banners ativos do Supabase
+        print("[BANNERS] Buscando banners do Supabase...")
+        result = order_processor.supabase.table("banners").select("*").eq("ativo", True).order("posicao").execute()
         
-        # # Buscar banners ativos do Supabase
-        # result = order_processor.supabase.table("banners").select("*").eq("ativo", True).order("posicao").execute()
-        
-        # if result.data:
-        #     return {"banners": result.data}
-        # else:
-        #     return {"banners": []}
+        if result.data:
+            print(f"[BANNERS] Encontrados {len(result.data)} banners no Supabase")
+            return {"banners": result.data}
+        else:
+            print("[BANNERS] Nenhum banner encontrado no Supabase, usando fallback")
+            return {"banners": []}
             
     except Exception as e:
         print(f"[ERROR] Erro ao buscar banners: {str(e)}")
