@@ -682,72 +682,144 @@ async def local_image(path: str = "padrao.png"):
         print(f"[LOCAL IMAGE] Erro interno: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
+@app.get("/api/debug/supabase-status")
+def debug_supabase_status():
+    """Endpoint para debug - verifica status da conexão Supabase"""
+    return {
+        "ORDER_PROCESSOR_AVAILABLE": ORDER_PROCESSOR_AVAILABLE,
+        "order_processor_exists": order_processor is not None,
+        "order_processor_type": str(type(order_processor)) if order_processor else None
+    }
+
 @app.get("/api/produtos")
-def listar_produtos_demo():
-    """Endpoint para demonstração - lista produtos de exemplo"""
-    produtos_demo = [
-        {
-            "id": 1,
-            "descricao": "Smartphone Galaxy S24",
-            "apresentacao": "Smartphone premium com câmera de 200MP, tela AMOLED 6.8\" e processador Snapdragon 8 Gen 3",
-            "preco": 2499.99,
-            "estoque": 15,
-            "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
-            "categoria": "Eletrônicos",
-            "laboratorio": "Samsung Electronics"
-        },
-        {
-            "id": 2,
-            "descricao": "Notebook Dell Inspiron",
-            "apresentacao": "Notebook para trabalho e estudos com Intel Core i5, 8GB RAM, SSD 256GB e tela 15.6\"",
-            "preco": 3299.99,
-            "estoque": 8,
-            "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
-            "categoria": "Informática",
-            "laboratorio": "Dell Technologies"
-        },
-        {
-            "id": 3,
-            "descricao": "Fone Bluetooth Sony",
-            "apresentacao": "Fone sem fio com cancelamento de ruído ativo, bateria de 30h e qualidade de áudio Hi-Res",
-            "preco": 299.99,
-            "estoque": 25,
-            "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
-            "categoria": "Áudio",
-            "laboratorio": "Sony Corporation"
-        },
-        {
-            "id": 4,
-            "descricao": "Smart TV 55\" 4K",
-            "apresentacao": "Smart TV LED 55 polegadas com resolução 4K UHD, HDR10+ e sistema operacional Android TV",
-            "preco": 1899.99,
-            "estoque": 12,
-            "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400",
-            "categoria": "TV & Vídeo",
-            "laboratorio": "LG Electronics"
-        },
-        {
-            "id": 5,
-            "descricao": "Câmera Canon EOS",
-            "apresentacao": "Câmera DSLR profissional com sensor APS-C 24.1MP, gravação 4K e lente 18-55mm incluída",
-            "preco": 4599.99,
-            "estoque": 5,
-            "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
-            "categoria": "Fotografia",
-            "laboratorio": "Canon Inc."
-        },
-        {
-            "id": 6,
-            "descricao": "Tablet iPad Air",
-            "apresentacao": "Tablet Apple com chip M1, tela Liquid Retina 10.9\", 64GB de armazenamento e suporte ao Apple Pencil",
-            "preco": 3799.99,
-            "estoque": 10,
-            "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
-            "categoria": "Tablets",
-            "laboratorio": "Apple Inc."
+def listar_produtos():
+    """Busca produtos do Supabase ou retorna dados de exemplo como fallback"""
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            print("[PRODUTOS] Order processor não disponível, usando produtos de exemplo")
+            # Fallback: retorna produtos de exemplo se Supabase não estiver disponível
+            return {
+                "produtos": [
+                    {
+                        "id": 1,
+                        "descricao": "Smartphone Galaxy S24",
+                        "apresentacao": "Smartphone premium com câmera de 200MP, tela AMOLED 6.8\" e processador Snapdragon 8 Gen 3",
+                        "preco": 2499.99,
+                        "estoque": 15,
+                        "imagem_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+                        "categoria": "Eletrônicos",
+                        "laboratorio": "Samsung Electronics"
+                    },
+                    {
+                        "id": 2,
+                        "descricao": "Notebook Dell Inspiron",
+                        "apresentacao": "Notebook para trabalho e estudos com Intel Core i5, 8GB RAM, SSD 256GB e tela 15.6\"",
+                        "preco": 3299.99,
+                        "estoque": 8,
+                        "imagem_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
+                        "categoria": "Informática",
+                        "laboratorio": "Dell Technologies"
+                    },
+                    {
+                        "id": 3,
+                        "descricao": "Fone Bluetooth Sony",
+                        "apresentacao": "Fone sem fio com cancelamento de ruído ativo, bateria de 30h e qualidade de áudio Hi-Res",
+                        "preco": 299.99,
+                        "estoque": 25,
+                        "imagem_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+                        "categoria": "Áudio",
+                        "laboratorio": "Sony Corporation"
+                    },
+                    {
+                        "id": 4,
+                        "descricao": "Smart TV 55\" 4K",
+                        "apresentacao": "Smart TV LED 55 polegadas com resolução 4K UHD, HDR10+ e sistema operacional Android TV",
+                        "preco": 1899.99,
+                        "estoque": 12,
+                        "imagem_url": "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400",
+                        "categoria": "TV & Vídeo",
+                        "laboratorio": "LG Electronics"
+                    },
+                    {
+                        "id": 5,
+                        "descricao": "Câmera Canon EOS",
+                        "apresentacao": "Câmera DSLR profissional com sensor APS-C 24.1MP, gravação 4K e lente 18-55mm incluída",
+                        "preco": 4599.99,
+                        "estoque": 5,
+                        "imagem_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
+                        "categoria": "Fotografia",
+                        "laboratorio": "Canon Inc."
+                    },
+                    {
+                        "id": 6,
+                        "descricao": "Tablet iPad Air",
+                        "apresentacao": "Tablet Apple com chip M1, tela Liquid Retina 10.9\", 64GB de armazenamento e suporte ao Apple Pencil",
+                        "preco": 3799.99,
+                        "estoque": 10,
+                        "imagem_url": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
+                        "categoria": "Tablets",
+                        "laboratorio": "Apple Inc."
+                    }
+                ]
+            }
+        
+        # Buscar produtos do Supabase
+        print("[PRODUTOS] Buscando produtos do Supabase...")
+        result = order_processor.supabase.table("produtos").select("*").execute()
+        
+        if result.data:
+            print(f"[PRODUTOS] Encontrados {len(result.data)} produtos no Supabase")
+            # Garantir que todos os produtos tenham o campo laboratorio
+            produtos_formatados = []
+            for produto in result.data:
+                produto_formatado = {
+                    "id": produto.get("id"),
+                    "descricao": produto.get("descricao") or produto.get("nome") or produto.get("name"),
+                    "apresentacao": produto.get("apresentacao") or produto.get("description"),
+                    "preco": produto.get("preco") or produto.get("price", 0),
+                    "estoque": produto.get("estoque") or produto.get("stock", 0),
+                    "imagem_url": produto.get("imagem_url") or produto.get("image_url"),
+                    "categoria": produto.get("categoria") or produto.get("category"),
+                    "laboratorio": produto.get("laboratorio") or produto.get("laboratory") or produto.get("brand")
+                }
+                produtos_formatados.append(produto_formatado)
+            
+            return {"produtos": produtos_formatados}
+        else:
+            print("[PRODUTOS] Nenhum produto encontrado no Supabase, usando fallback")
+            # Em caso de erro, retorna produtos de exemplo
+            return {
+                "produtos": [
+                    {
+                        "id": 1,
+                        "descricao": "Produto de Exemplo",
+                        "apresentacao": "Este é um produto de exemplo quando não há dados no Supabase",
+                        "preco": 99.99,
+                        "estoque": 10,
+                        "imagem_url": "/api/local-image?path=padrao.png",
+                        "categoria": "Exemplo",
+                        "laboratorio": "Laboratório Exemplo"
+                    }
+                ]
+            }
+            
+    except Exception as e:
+        print(f"[PRODUTOS] Erro ao buscar produtos: {str(e)}")
+        # Em caso de erro, retorna produtos de exemplo
+        return {
+            "produtos": [
+                {
+                    "id": 1,
+                    "descricao": "Produto de Exemplo (Erro)",
+                    "apresentacao": f"Erro ao carregar produtos: {str(e)}",
+                    "preco": 99.99,
+                    "estoque": 10,
+                    "imagem_url": "/api/local-image?path=padrao.png",
+                    "categoria": "Erro",
+                    "laboratorio": "Sistema"
+                }
+            ]
         }
-    ]
-    return {"produtos": produtos_demo}
 
 @app.post("/api/demo/criar-sessao")
 def criar_sessao_demo(request: Request):

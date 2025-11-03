@@ -2728,9 +2728,19 @@
             productsData.splice(0, productsData.length);
             data.produtos.forEach(p => {
                 // Usar endpoint local como fallback quando imagem_url for nula/vazia
-                const imageUrl = p.imagem_url && p.imagem_url.trim() !== '' 
+                let imageUrl = p.imagem_url && p.imagem_url.trim() !== '' 
                     ? p.imagem_url 
                     : `${API_BASE}/api/local-image?path=padrao.png`;
+                
+                // Se a URL é do MinIO, usar o proxy do backend (mesmo que nos banners)
+                if (imageUrl && imageUrl.includes('c4crm-minio.zv7gpn.easypanel.host')) {
+                    // Extrair apenas o nome do arquivo da URL do MinIO
+                    const urlParts = imageUrl.split('/');
+                    const fileName = urlParts[urlParts.length - 1];
+                    imageUrl = `${API_BASE}/api/minio-image?path=${fileName}`;
+                    console.log('🔄 Usando proxy MinIO para produto:', p.descricao, '| arquivo:', fileName);
+                }
+                
                 console.log('[DEBUG] Produto:', p.descricao, '| imagem_url:', p.imagem_url, '| URL final:', imageUrl);
                 productsData.push({
                     id: String(p.id),
