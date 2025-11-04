@@ -104,94 +104,7 @@
             z-index: 20;
         }
 
-        /* Controles de Navegação Modernos */
-        .banner-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 52px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.95);
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 20;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 
-                0 10px 15px -3px rgba(0, 0, 0, 0.1),
-                0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        .banner-nav svg {
-            width: 24px;
-            height: 24px;
-            color: #1f2937;
-            transition: transform 0.3s ease;
-        }
-        
-        .banner-nav:hover {
-            background: white;
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 
-                0 20px 25px -5px rgba(0, 0, 0, 0.15),
-                0 10px 10px -5px rgba(0, 0, 0, 0.08);
-        }
-        
-        .banner-nav:hover svg {
-            transform: scale(1.1);
-        }
-        
-        .banner-nav:active {
-            transform: translateY(-50%) scale(0.95);
-        }
-        
-        .banner-nav-prev {
-            left: 1.5rem;
-        }
-        
-        .banner-nav-next {
-            right: 1.5rem;
-        }
-        
-        /* Indicadores de Slide */
-        .banner-indicators {
-            position: absolute;
-            bottom: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 0.5rem;
-            z-index: 20;
-            padding: 0.75rem 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(12px);
-            border-radius: 9999px;
-        }
-        
-        .banner-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: none;
-            padding: 0;
-        }
-        
-        .banner-indicator.active {
-            width: 24px;
-            border-radius: 4px;
-            background: white;
-        }
-        
-        .banner-indicator:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.8);
-            transform: scale(1.2);
-        }
+        /* Controles removidos - apenas imagens */
 
         /* Skeleton shimmer enquanto a imagem carrega */
         .banner-image-container::before {
@@ -662,40 +575,6 @@
             .banner-carousel {
                 aspect-ratio: 4/3;
             }
-            
-            .banner-nav {
-                width: 40px;
-                height: 40px;
-                opacity: 0.9;
-            }
-            
-            .banner-nav svg {
-                width: 18px;
-                height: 18px;
-            }
-            
-            .banner-nav-prev {
-                left: 0.75rem;
-            }
-            
-            .banner-nav-next {
-                right: 0.75rem;
-            }
-            
-            .banner-indicators {
-                bottom: 1rem;
-                padding: 0.5rem 0.75rem;
-                gap: 0.375rem;
-            }
-            
-            .banner-indicator {
-                width: 6px;
-                height: 6px;
-            }
-            
-            .banner-indicator.active {
-                width: 18px;
-            }
         }
         
         /* Mobile muito pequeno */
@@ -706,24 +585,6 @@
             
             .banner-carousel-wrapper {
                 border-radius: 0.75rem;
-            }
-            
-            .banner-nav {
-                width: 36px;
-                height: 36px;
-            }
-            
-            .banner-nav svg {
-                width: 16px;
-                height: 16px;
-            }
-            
-            .banner-nav-prev {
-                left: 0.5rem;
-            }
-            
-            .banner-nav-next {
-                right: 0.5rem;
             }
         }
         
@@ -738,10 +599,6 @@
         @media (min-width: 1024px) {
             .banner-carousel {
                 aspect-ratio: 2.5/1;
-            }
-            
-            .banner-nav:not(:hover) {
-                opacity: 0.7;
             }
         }
         
@@ -2155,7 +2012,7 @@
         </div>
     </header>
 
-    <!-- Carrossel de Banners de Promoções - Design Moderno -->
+    <!-- Carrossel de Banners - Apenas Imagens -->
     <section class="banner-carousel-section">
         <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div class="banner-carousel-wrapper">
@@ -2168,23 +2025,6 @@
                             <p class="loading-text">Carregando ofertas...</p>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Controles de Navegação Modernos -->
-                <button id="prevBanner" class="banner-nav banner-nav-prev" aria-label="Banner anterior">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-                <button id="nextBanner" class="banner-nav banner-nav-next" aria-label="Próximo banner">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-                
-                <!-- Indicadores de Slide -->
-                <div class="banner-indicators" id="bannerIndicators">
-                    <!-- Serão inseridos dinamicamente -->
                 </div>
             </div>
         </div>
@@ -3968,10 +3808,9 @@
             }
         }
         
-        // Função para renderizar banners - REFATORADA
+        // Função para renderizar banners - Apenas imagens
         function renderBanners() {
             const carousel = document.getElementById('bannerCarousel');
-            const indicatorsContainer = document.getElementById('bannerIndicators');
             
             if (!carousel) {
                 console.error('❌ Elemento bannerCarousel não encontrado!');
@@ -3980,23 +3819,11 @@
             
             // Limpar conteúdo atual
             carousel.innerHTML = '';
-            if (indicatorsContainer) {
-                indicatorsContainer.innerHTML = '';
-            }
             
             // Criar slides
             bannersData.forEach((banner, index) => {
                 const bannerElement = createBannerElement(banner, index === 0);
                 carousel.appendChild(bannerElement);
-                
-                // Criar indicador
-                if (indicatorsContainer) {
-                    const indicator = document.createElement('button');
-                    indicator.className = `banner-indicator ${index === 0 ? 'active' : ''}`;
-                    indicator.setAttribute('aria-label', `Ir para slide ${index + 1}`);
-                    indicator.onclick = () => showSlide(index);
-                    indicatorsContainer.appendChild(indicator);
-                }
             });
             
             // Reinicializar carrossel
@@ -4454,7 +4281,7 @@
         
         // Função para configurar controles do carrossel
         function setupCarouselControls(slides) {
-            // Função para mostrar slide específico - REFATORADA
+            // Função para mostrar slide específico - Apenas imagens
             window.showSlide = function(index) {
                 slides.forEach((slide, i) => {
                     slide.classList.remove('active', 'prev', 'next');
@@ -4468,13 +4295,6 @@
                     } else {
                         slide.classList.add('next');
                     }
-                });
-                
-                // Atualizar indicadores modernos
-                const indicators = document.querySelectorAll('.banner-indicator');
-                indicators.forEach((indicator, i) => {
-                    indicator.classList.toggle('active', i === index);
-                    indicator.setAttribute('aria-current', i === index ? 'true' : 'false');
                 });
                 
                 currentSlide = index;
@@ -4540,33 +4360,7 @@
             }
         }
         
-        // Event listeners para navegação
-        const nextBtn = document.getElementById('nextBanner');
-        const prevBtn = document.getElementById('prevBanner');
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                stopAutoSlide();
-                const slides = document.querySelectorAll('.banner-slide');
-                if (slides.length > 0) {
-                    const next = (currentSlide + 1) % slides.length;
-                    showSlide(next);
-                }
-                startAutoSlide(); // Reinicia o auto-play
-            });
-        }
-        
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                stopAutoSlide();
-                const slides = document.querySelectorAll('.banner-slide');
-                if (slides.length > 0) {
-                    const prev = (currentSlide - 1 + slides.length) % slides.length;
-                    showSlide(prev);
-                }
-                startAutoSlide(); // Reinicia o auto-play
-            });
-        }
+        // Navegação automática apenas - sem botões
         
         // Pausar auto-play quando mouse estiver sobre o carrossel
         const carousel = document.getElementById('bannerCarousel');
