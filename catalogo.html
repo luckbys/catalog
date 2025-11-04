@@ -318,9 +318,7 @@
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            /* Removido aspect-ratio aqui para evitar conflitos com absolute sizing */
-            height: 100%;
-            width: 100%;
+            aspect-ratio: 1920/560; /* Proporção exata 1920x560px */
             overflow: hidden;
             position: relative;
         }
@@ -332,17 +330,6 @@
         
         .banner-slide.prev {
             transform: translateX(-100%);
-        }
-
-        /* Orientação vertical inspirada no exemplo da 21st dev */
-        .banner-carousel-container.vertical .banner-slide {
-            transform: translateY(100%);
-        }
-        .banner-carousel-container.vertical .banner-slide.active {
-            transform: translateY(0);
-        }
-        .banner-carousel-container.vertical .banner-slide.prev {
-            transform: translateY(-100%);
         }
         
         /* Banner apenas com imagem - sem texto */
@@ -365,9 +352,6 @@
             position: absolute;
             inset: 0;
             overflow: hidden;
-            display: flex;           /* Centraliza imagem quando usamos contain */
-            align-items: center;
-            justify-content: center;
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
         }
         
@@ -998,54 +982,6 @@
                 padding: 12px;
                 touch-action: manipulation;
                 -webkit-tap-highlight-color: transparent;
-            }
-
-            /* Botões de navegação do carrossel (estilo shadcn/21st dev) */
-            .carousel-btn {
-                position: absolute;
-                z-index: 30;
-                display: grid;
-                place-items: center;
-                width: 44px;
-                height: 44px;
-                border-radius: 9999px;
-                background: rgba(255, 255, 255, 0.9);
-                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
-                border: 1px solid rgba(226, 232, 240, 0.8);
-                backdrop-filter: blur(6px);
-                -webkit-tap-highlight-color: transparent;
-                transition: all 0.2s ease;
-            }
-            .carousel-btn:hover {
-                background: #ffffff;
-                transform: translateZ(0) scale(1.03);
-            }
-            .carousel-btn svg {
-                width: 22px;
-                height: 22px;
-                color: #334155;
-            }
-            /* Posição para orientação horizontal */
-            .banner-carousel-container .prev-btn {
-                left: 12px;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-            .banner-carousel-container .next-btn {
-                right: 12px;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-            /* Reposiciona para orientação vertical (mobile) */
-            .banner-carousel-container.vertical .prev-btn {
-                left: 50%;
-                top: 12px;
-                transform: translateX(-50%);
-            }
-            .banner-carousel-container.vertical .next-btn {
-                left: 50%;
-                bottom: 12px;
-                transform: translateX(-50%);
             }
             
             /* Touch-friendly mobile menu items */
@@ -1823,19 +1759,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Controles do carrossel (inspirados no 21st dev) -->
-                <button id="prevBanner" class="carousel-btn prev-btn" aria-label="Anterior">
-                    <!-- Ícone padrão horizontal: chevron-left -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-                <button id="nextBanner" class="carousel-btn next-btn" aria-label="Próximo">
-                    <!-- Ícone padrão horizontal: chevron-right -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
             </div>
         </div>
     </section>
@@ -3630,7 +3553,7 @@
             carousel.innerHTML = '';
             
             bannersData.forEach((banner, index) => {
-                const bannerElement = createBannerElement(banner, index === 0, index);
+                const bannerElement = createBannerElement(banner, index === 0);
                 carousel.appendChild(bannerElement);
             });
             
@@ -3658,7 +3581,7 @@
         }
         
         // Função para criar elemento de banner (suporta imagem e layout texto)
-        function createBannerElement(banner, isActive = false, index = 0) {
+        function createBannerElement(banner, isActive = false) {
             const div = document.createElement('div');
             div.className = `banner-slide ${isActive ? 'active' : ''} absolute inset-0 overflow-hidden`;
             
@@ -3668,7 +3591,7 @@
             // Verificar se tem imagem para usar layout baseado em imagem
             if (banner.imagem_url && banner.imagem_url.trim() !== '') {
                 try {
-                    return createImageBanner(banner, isActive, ctaInfo, div, index);
+                    return createImageBanner(banner, isActive, ctaInfo, div);
                 } catch (error) {
                     console.error('❌ Erro ao criar banner de imagem, usando fallback de texto:', error);
                     return createTextBanner(banner, isActive, ctaInfo, div);
@@ -3679,96 +3602,32 @@
         }
         
         // Função para criar banner baseado em imagem (apenas imagem, sem texto)
-        function createImageBanner(banner, isActive, ctaInfo, div, index = 0) {
+        function createImageBanner(banner, isActive, ctaInfo, div) {
             // Usar proxy do MinIO para evitar problemas de CORS
             let imageUrl = banner.imagem_url;
-
-            // Se a URL é do MinIO, usar o proxy do backend com caminho completo (sem query)
+            
+            // Se a URL é do MinIO, usar o proxy do backend
             if (imageUrl && imageUrl.includes('c4crm-minio.zv7gpn.easypanel.host')) {
-                try {
-                    const u = new URL(imageUrl);
-                    let fullPath = u.pathname.replace(/^\/+/, ''); // remove '/'
-                    // Detectar bucket no caminho e remover prefixo para chave correta
-                    let bucketHint = null;
-                    if (fullPath.startsWith('produtos/')) {
-                        bucketHint = 'produtos';
-                        fullPath = fullPath.replace(/^produtos\//, '');
-                    } else if (fullPath.startsWith('crm-media-files/')) {
-                        bucketHint = 'crm-media-files';
-                        fullPath = fullPath.replace(/^crm-media-files\//, '');
-                    }
-                    // Enviar somente a chave (sem prefixo do bucket)
-                    imageUrl = `${API_BASE}/api/minio-image?path=${encodeURIComponent(fullPath)}`;
-                    console.log('🔄 Usando proxy MinIO (bucket detectado:', bucketHint || 'auto', ') com key:', fullPath);
-                } catch (e) {
-                    // Fallback: usar apenas o nome do arquivo
-                    const fileName = imageUrl.split('?')[0].split('/').pop();
-                    imageUrl = `${API_BASE}/api/minio-image?path=${encodeURIComponent(fileName)}`;
-                    console.log('🔄 Usando proxy MinIO (fallback arquivo):', fileName);
-                }
+                // Extrair apenas o nome do arquivo da URL do MinIO
+                const urlParts = imageUrl.split('/');
+                const fileName = urlParts[urlParts.length - 1];
+                imageUrl = `${API_BASE}/api/minio-image?path=${fileName}`;
+                console.log('🔄 Usando proxy MinIO para banner:', fileName);
             }
-
-            // Criar DOM programaticamente para controlar fallback robusto
-            div.innerHTML = `<div class="banner-image-container"></div>`;
-            const container = div.querySelector('.banner-image-container');
-            const img = document.createElement('img');
-            img.src = imageUrl;
-            img.alt = banner.titulo || 'Banner promocional';
-            img.className = 'banner-image';
-            // Evitar atraso/falha no segundo slide: carregar os dois primeiros com eager
-            img.loading = index < 2 ? 'eager' : 'lazy';
-            img.style.opacity = '0';
-
-            img.addEventListener('load', () => {
-                try {
-                    // Ajuste nerd de proporção: se fugir muito do 1920x560, usar contain
-                    const naturalRatio = (img.naturalWidth || 0) / (img.naturalHeight || 1);
-                    const targetRatio = 1920 / 560;
-                    const diff = Math.abs(naturalRatio - targetRatio);
-                    if (diff > 0.15) {
-                        img.style.objectFit = 'contain';
-                        // Deixar fundo suave para evitar barras pretas
-                        container.style.background = 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
-                    } else {
-                        img.style.objectFit = 'cover';
-                        img.style.objectPosition = 'center center';
-                    }
-                    // Garantir que a imagem ocupe o container sem cortes de altura
-                    img.style.maxWidth = '100%';
-                    img.style.maxHeight = '100%';
-                    img.style.opacity = '1';
-                    img.classList.add('loaded');
-                } catch {}
-            });
-
-            let triedFallback = false;
-            let triedStaticFallback = false;
-            img.addEventListener('error', () => {
-                if (!triedFallback) {
-                    triedFallback = true;
-                    const fallbackSrc = `${API_BASE}/api/local-image?path=padrao.png`;
-                    console.log('🔄 Banner fallback (imagem padrão):', fallbackSrc);
-                    img.src = fallbackSrc;
-                    return;
-                }
-                // Se o endpoint local também falhar, tentar fallback estático servido pelo mesmo host
-                if (!triedStaticFallback) {
-                    triedStaticFallback = true;
-                    const staticFallback = `${window.location.origin}/public/padrao.png`;
-                    console.log('🪄 Fallback estático final:', staticFallback);
-                    img.src = staticFallback;
-                    return;
-                }
-                // Se o fallback também falhar, alternar para layout de texto
-                console.warn('⚠️ Falha ao carregar imagem do banner e fallback. Alternando para layout de texto.');
-                const textDiv = createTextBanner(banner, isActive, ctaInfo, document.createElement('div'));
-                // Substituir o conteúdo do slide atual
-                try {
-                    div.replaceWith(textDiv);
-                } catch {}
-            });
-
-            container.appendChild(img);
+            
+            div.innerHTML = `
+                <!-- Container da imagem limpo - apenas a imagem -->
+                <div class="banner-image-container">
+                    <img src="${imageUrl}" 
+                         alt="${banner.titulo || 'Banner promocional'}"
+                         class="banner-image"
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png'; console.log('🔄 Banner fallback:', this.src);"
+                         onload="this.style.opacity='1'; this.classList.add('loaded');"
+                         style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                </div>
+            `;
+            
             return div;
         }
         
@@ -4112,29 +3971,6 @@
             renderBanners();
         }
         
-        // --- Orientação do carrossel (horizontal/vertical) ---
-        let isVerticalCarousel = false;
-        function applyCarouselOrientation() {
-            const container = document.querySelector('.banner-carousel-container');
-            if (!container) return;
-            // Usa vertical em telas pequenas, inspirado no exemplo da 21st dev
-            isVerticalCarousel = window.matchMedia('(max-width: 640px)').matches;
-            container.classList.toggle('vertical', isVerticalCarousel);
-            
-            // Ajusta ícones dos botões conforme a orientação
-            const prevBtn = document.getElementById('prevBanner');
-            const nextBtn = document.getElementById('nextBanner');
-            if (prevBtn && nextBtn) {
-                if (isVerticalCarousel) {
-                    prevBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>';
-                    nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
-                } else {
-                    prevBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
-                    nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
-                }
-            }
-        }
-        
         // Função para inicializar o carrossel
         function initializeCarousel() {
             // Atualizar referências dos slides
@@ -4142,9 +3978,6 @@
             
             if (newSlides.length === 0) return;
             
-            // Define orientação conforme viewport
-            applyCarouselOrientation();
-
             // Resetar variáveis do carrossel
             currentSlide = 0;
             
@@ -4263,7 +4096,7 @@
         
         // Suporte para navegação por teclado
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || (isVerticalCarousel && e.key === 'ArrowUp')) {
+            if (e.key === 'ArrowLeft') {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
@@ -4271,7 +4104,7 @@
                     showSlide(prev);
                 }
                 startAutoSlide();
-            } else if (e.key === 'ArrowRight' || (isVerticalCarousel && e.key === 'ArrowDown')) {
+            } else if (e.key === 'ArrowRight') {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
@@ -4285,38 +4118,32 @@
         // Suporte para touch/swipe em dispositivos móveis
         let touchStartX = 0;
         let touchEndX = 0;
-        let touchStartY = 0;
-        let touchEndY = 0;
         
         if (carousel) {
             carousel.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
             });
             
             carousel.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
-                touchEndY = e.changedTouches[0].screenY;
                 handleSwipe();
             });
         }
         
         function handleSwipe() {
             const swipeThreshold = 50;
-            const diffX = touchStartX - touchEndX;
-            const diffY = touchStartY - touchEndY;
-            const diff = isVerticalCarousel ? diffY : diffX;
+            const diff = touchStartX - touchEndX;
             
             if (Math.abs(diff) > swipeThreshold) {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
                     if (diff > 0) {
-                        // Próximo slide (left ou down)
+                        // Swipe left - próximo slide
                         const next = (currentSlide + 1) % slides.length;
                         showSlide(next);
                     } else {
-                        // Slide anterior (right ou up)
+                        // Swipe right - slide anterior
                         const prev = (currentSlide - 1 + slides.length) % slides.length;
                         showSlide(prev);
                     }
@@ -4327,12 +4154,6 @@
         
         // Inicializar carrossel dinamicamente
         console.log('🚀 Inicializando catálogo...');
-        applyCarouselOrientation();
-        window.addEventListener('resize', () => {
-            // Debounce leve
-            clearTimeout(window.__carouselResizeTimer);
-            window.__carouselResizeTimer = setTimeout(applyCarouselOrientation, 120);
-        });
         loadBanners(); // Carregar banners do Supabase
         
         
