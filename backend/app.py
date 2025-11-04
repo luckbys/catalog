@@ -697,6 +697,30 @@ def debug_supabase_status():
         "order_processor_type": str(type(order_processor)) if order_processor else None
     }
 
+# -------------------- Proxy para API de Produção --------------------
+@app.get("/api/proxy/produtos")
+def proxy_produtos(sessao_id: Optional[str] = None):
+    """Proxy simples para buscar produtos da API de produção, evitando CORS no navegador.
+    Aceita opcionalmente o parâmetro sessao_id e repassa para a API de produção.
+    """
+    base_url = "https://hakimfarma.devsible.com.br/api/produtos"
+    url = base_url if not sessao_id else f"{base_url}?sessao_id={sessao_id}"
+    try:
+        headers = {
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Connection": "keep-alive"
+        }
+        resp = requests.get(url, headers=headers, timeout=20)
+        resp.raise_for_status()
+        try:
+            data = resp.json()
+        except ValueError:
+            raise HTTPException(status_code=500, detail="Resposta inválida da API de produção (não é JSON)")
+        return data
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Falha ao buscar produtos na produção: {str(e)}")
+
 @app.get("/api/produtos")
 def listar_produtos():
     """Busca produtos do Supabase ou retorna dados de exemplo como fallback"""

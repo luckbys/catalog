@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug Tempo Real - Produção</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .debug-panel { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 12px; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        .product-test { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .discount-badge { background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Tempo Real - Produção</h1>
+    
+    <div class="debug-panel">
+        <h2>📊 Status do Debug</h2>
+        <div id="status">Iniciando...</div>
+    </div>
+    
+    <div class="debug-panel">
+        <h2>📋 Logs de Execução</h2>
+        <div id="logs"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h2>🎯 Produtos com Desconto Encontrados</h2>
+        <div id="products"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://hakimfarma.devsible.com.br';
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `[${timestamp}] ${message}`;
+            logs.appendChild(logDiv);
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML = message;
+        }
+        
+        async function debugProduction() {
+            try {
+                updateStatus('🔄 Carregando dados da API de produção...');
+                log('Iniciando debug da produção', 'info');
+                
+                // Buscar dados da API
+                const response = await fetch(`${API_BASE}/api/produtos`);
+                log(`Status da API: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`Total de produtos recebidos: ${data.produtos?.length || 0}`, 'success');
+                
+                if (!data.produtos || data.produtos.length === 0) {
+                    log('Nenhum produto encontrado!', 'error');
+                    return;
+                }
+                
+                // Processar produtos (mesma lógica do frontend)
+                const productsData = [];
+                let discountCount = 0;
+                
+                data.produtos.forEach((p, index) => {
+                    // Calcular preço promocional se houver desconto
+                    let originalPrice = null;
+                    let promoPrice = null;
+                    
+                    if (p.preco_original && (p.percentual_desconto || p.valor_desconto)) {
+                        originalPrice = Number(p.preco_original);
+                        promoPrice = Number(p.preco);
+                        log(`Produto ${index + 1}: ${p.descricao} - Desconto detectado (Método 1)`, 'success');
+                    } else if (p.percentual_desconto && p.percentual_desconto > 0) {
+                        originalPrice = Number(p.preco) / (1 - (p.percentual_desconto / 100));
+                        promoPrice = Number(p.preco);
+                        log(`Produto ${index + 1}: ${p.descricao} - Desconto detectado (Método 2)`, 'success');
+                    } else if (p.valor_desconto && p.valor_desconto > 0) {
+                        originalPrice = Number(p.preco) + Number(p.valor_desconto);
+                        promoPrice = Number(p.preco);
+                        log(`Produto ${index + 1}: ${p.descricao} - Desconto detectado (Método 3)`, 'success');
+                    }
+                    
+                    const product = {
+                        id: String(p.id),
+                        name: p.descricao,
+                        description: p.apresentacao || p.categoria || p.descricao,
+                        price: Number(p.preco),
+                        originalPrice: originalPrice,
+                        promoPrice: promoPrice,
+                        percentualDesconto: p.percentual_desconto ? Number(p.percentual_desconto) : null,
+                        valorDesconto: p.valor_desconto ? Number(p.valor_desconto) : null,
+                        imageUrl: p.imagem_url || `${API_BASE}/api/local-image?path=padrao.png`,
+                        laboratorio: p.laboratorio
+                    };
+                    
+                    productsData.push(product);
+                    
+                    // Se tem desconto, contar e mostrar
+                    if (originalPrice && promoPrice) {
+                        discountCount++;
+                        displayProduct(product);
+                    }
+                });
+                
+                log(`Processamento concluído: ${discountCount} produtos com desconto encontrados`, 'success');
+                updateStatus(`✅ Debug concluído: ${discountCount} produtos com desconto de ${productsData.length} total`);
+                
+                // Testar renderização de badge
+                testBadgeRendering();
+                
+            } catch (error) {
+                log(`Erro durante o debug: ${error.message}`, 'error');
+                updateStatus(`❌ Erro: ${error.message}`);
+            }
+        }
+        
+        function displayProduct(product) {
+            const productsDiv = document.getElementById('products');
+            const productDiv = document.createElement('div');
+            productDiv.className = 'product-test';
+            
+            // Testar se o badge seria renderizado
+            const shouldShowBadge = product.originalPrice && product.promoPrice;
+            const badgeText = product.percentualDesconto ? 
+                `-${Math.round(product.percentualDesconto)}%` : 
+                product.valorDesconto ? 
+                    `-R$ ${product.valorDesconto.toFixed(2)}` : 
+                    'OFERTA';
+            
+            productDiv.innerHTML = `
+                <h4>${product.name} (ID: ${product.id})</h4>
+                <p><strong>Preço:</strong> R$ ${product.price.toFixed(2)}</p>
+                <p><strong>Preço Original:</strong> R$ ${product.originalPrice?.toFixed(2) || 'N/A'}</p>
+                <p><strong>Preço Promo:</strong> R$ ${product.promoPrice?.toFixed(2) || 'N/A'}</p>
+                <p><strong>Percentual:</strong> ${product.percentualDesconto || 'N/A'}%</p>
+                <p><strong>Valor Desconto:</strong> R$ ${product.valorDesconto?.toFixed(2) || 'N/A'}</p>
+                <p><strong>Condição Badge:</strong> ${shouldShowBadge ? '✅ SIM' : '❌ NÃO'}</p>
+                ${shouldShowBadge ? `<div class="discount-badge">${badgeText}</div>` : ''}
+            `;
+            
+            productsDiv.appendChild(productDiv);
+        }
+        
+        function testBadgeRendering() {
+            log('Testando renderização de badge...', 'info');
+            
+            // Criar um produto de teste
+            const testProduct = {
+                originalPrice: 100,
+                promoPrice: 80,
+                percentualDesconto: 20
+            };
+            
+            // Testar a condição exata do frontend
+            const condition = testProduct.originalPrice && testProduct.promoPrice;
+            log(`Condição do badge (originalPrice && promoPrice): ${condition}`, condition ? 'success' : 'error');
+            
+            if (condition) {
+                const badgeText = testProduct.percentualDesconto ? 
+                    `-${Math.round(testProduct.percentualDesconto)}%` : 'OFERTA';
+                log(`Badge seria renderizado com texto: "${badgeText}"`, 'success');
+            }
+        }
+        
+        // Iniciar debug quando a página carregar
+        window.addEventListener('load', () => {
+            log('Página carregada, iniciando debug...', 'info');
+            debugProduction();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!-- TEMPLATE DE PRODUTO 1 DE PRODUÇÃO -->
+`
+            <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-2 flex flex-col transition-all duration-300 border border-slate-100 group">
+                <div class="product-img-wrapper relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+                    <img src="${product.imageUrl}" 
+                         alt="${product.name}" 
+                         class="product-img w-full h-full object-cover transition-all duration-300" 
+                         loading="lazy" 
+                         decoding="async" 
+                         fetchpriority="low"
+                         onerror="handleImageError(this, '${product.name}')" 
+                         onload="this.closest('.product-img-wrapper')?.classList.add('loaded'); this.classList.add('loaded-img');">
+                    
+                    <!-- Badge Promocional -->
+                    ${product.originalPrice && product.promoPrice ? `
+                        <div class="discount-badge">
+                            ${product.percentualDesconto ? 
+                                `-${Math.round(product.percentualDesconto)}%` : 
+                                product.valorDesconto ? 
+                                    `-R$ ${product.valorDesconto.toFixed(2)}` : 
+                                    'OFERTA'
+                            }
+                        </div>
+                    `

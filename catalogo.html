@@ -1544,6 +1544,100 @@
             position: relative;
         }
     </style>
+    <!-- ===== DEBUG BADGE: modo de força e logger (ativado via ?debug_badge=1) ===== -->
+    <style>
+        .debug-badge-active .discount-badge {
+            z-index: 9999 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: inline-flex !important;
+            pointer-events: none !important;
+            filter: none !important;
+            mix-blend-mode: normal !important;
+        }
+        .debug-badge-active .product-img-wrapper,
+        .debug-badge-active .product-card {
+            overflow: visible !important;
+        }
+        .debug-badge-panel {
+            position: fixed; bottom: 12px; right: 12px;
+            background: #0f172a; color: #fff; padding: 8px 12px;
+            border-radius: 8px; font: 12px monospace; z-index: 10000;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.4); opacity: .92;
+        }
+    </style>
+    <script>
+    (function(){
+        // Debug somente quando URL tem ?debug_badge=1
+        try {
+            const params = new URLSearchParams(location.search);
+            const debugOn = params.get('debug_badge') === '1';
+            if (!debugOn) return;
+
+            document.documentElement.classList.add('debug-badge-active');
+            const log = (...args) => console.log('[BADGE-DEBUG]', ...args);
+
+            function describe(el){
+                if (!el) return 'null';
+                const parts = [];
+                let node = el;
+                while (node && node.nodeType === 1 && parts.length < 6) {
+                    const id = node.id ? '#' + node.id : '';
+                    const cls = (node.className || '').toString().trim().split(/\s+/).filter(Boolean).slice(0,3).map(c=>'.'+c).join('');
+                    parts.unshift(node.tagName.toLowerCase() + id + cls);
+                    node = node.parentElement;
+                }
+                return parts.join(' > ');
+            }
+
+            function checkBadge(el){
+                try {
+                    const cs = getComputedStyle(el);
+                    const rect = el.getBoundingClientRect();
+                    const cx = rect.left + rect.width/2;
+                    const cy = rect.top + rect.height/2;
+                    const topEl = document.elementFromPoint(Math.max(0,cx), Math.max(0,cy));
+                    const covered = topEl && topEl !== el && !el.contains(topEl);
+                    const parent = el.closest('.product-img-wrapper, .product-card') || el.parentElement;
+                    const pcs = parent ? getComputedStyle(parent) : null;
+                    log('badge-state', {
+                        text: (el.textContent||'').trim(),
+                        display: cs.display, visibility: cs.visibility, opacity: cs.opacity, zIndex: cs.zIndex,
+                        rect: {x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.width), h: Math.round(rect.height)},
+                        parent_overflow: pcs ? pcs.overflow : null,
+                        top_element: covered ? describe(topEl) : 'none'
+                    });
+                    if (covered && topEl) {
+                        try { topEl.style.outline = '2px dashed orange'; } catch {}
+                        try { el.style.outline = '2px solid lime'; } catch {}
+                    }
+                } catch(e){ log('checkBadge-error', e?.message || e); }
+            }
+
+            const mo = new MutationObserver(muts => {
+                for (const m of muts) {
+                    m.addedNodes && m.addedNodes.forEach(n => {
+                        if (n.nodeType === 1) {
+                            const list = (n.matches && n.matches('.discount-badge')) ? [n] : (n.querySelectorAll ? n.querySelectorAll('.discount-badge') : []);
+                            list && list.forEach(b => requestAnimationFrame(() => checkBadge(b)));
+                        }
+                    });
+                }
+            });
+            mo.observe(document.documentElement, {childList:true, subtree:true});
+            document.querySelectorAll('.discount-badge').forEach(b => checkBadge(b));
+
+            const panel = document.createElement('div');
+            panel.className = 'debug-badge-panel';
+            panel.textContent = 'Debug badge ativo';
+            document.addEventListener('click', () => panel.textContent = 'Debug badge ativo • ' + new Date().toLocaleTimeString());
+            document.body.appendChild(panel);
+            log('debug-badge enabled');
+        } catch (e) {
+            console.warn('BADGE-DEBUG erro:', e);
+        }
+    })();
+    </script>
 </head>
 <body class="text-slate-800">
 

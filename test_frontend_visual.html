@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Teste Visual Frontend - Produção</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        
+        .debug-panel { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        
+        .log { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+            font-family: monospace; 
+            font-size: 12px; 
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        
+        /* CSS EXATO DO FRONTEND DE PRODUÇÃO */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            margin: 10px;
+            width: 280px;
+            float: left;
+        }
+        
+        .product-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .product-img-wrapper {
+            position: relative;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            overflow: hidden;
+        }
+        
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        
+        /* BADGE DE DESCONTO - CSS EXATO */
+        .discount-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .product-info {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .product-description {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .price-container {
+            margin-top: auto;
+        }
+        
+        .price-original {
+            font-size: 14px;
+            color: #94a3b8;
+            text-decoration: line-through;
+            margin-bottom: 4px;
+        }
+        
+        .price-current {
+            font-size: 20px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+        
+        .price-normal {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .test-section {
+            clear: both;
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Teste Visual Frontend - Produção</h1>
+    
+    <div class="debug-panel">
+        <h2>📊 Status do Teste</h2>
+        <div id="status">Carregando...</div>
+    </div>
+    
+    <div class="debug-panel">
+        <h2>📋 Logs de Execução</h2>
+        <div id="logs"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">🧪 Teste 1: Produto com Desconto Manual (Controle)</div>
+        <div class="product-card">
+            <div class="product-img-wrapper">
+                <img src="./public/padrao.png" 
+                     alt="Produto Teste" 
+                     class="product-img">
+                <div class="discount-badge">-20%</div>
+            </div>
+            <div class="product-info">
+                <div class="product-name">PRODUTO TESTE MANUAL</div>
+                <div class="product-description">Teste de controle com badge manual</div>
+                <div class="price-container">
+                    <div class="price-original">R$ 100,00</div>
+                    <div class="price-current">R$ 80,00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">🔄 Teste 2: Produtos da API de Produção (Renderização Dinâmica)</div>
+        <div id="dynamic-products"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `[${timestamp}] ${message}`;
+            logs.appendChild(logDiv);
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML = message;
+        }
+        
+        function createProductCard(product) {
+            // LÓGICA EXATA DO FRONTEND DE PRODUÇÃO
+            const shouldShowBadge = product.originalPrice && product.promoPrice;
+            
+            log(`Produto: ${product.name}`, 'info');
+            log(`  originalPrice: ${product.originalPrice}`, 'info');
+            log(`  promoPrice: ${product.promoPrice}`, 'info');
+            log(`  Condição badge (originalPrice && promoPrice): ${shouldShowBadge}`, shouldShowBadge ? 'success' : 'error');
+            
+            const badgeText = product.percentualDesconto ? 
+                `-${Math.round(product.percentualDesconto)}%` : 
+                product.valorDesconto ? 
+                    `-R$ ${product.valorDesconto.toFixed(2)}` : 
+                    'OFERTA';
+            
+            if (shouldShowBadge) {
+                log(`  Badge será exibido: "${badgeText}"`, 'success');
+            } else {
+                log(`  Badge NÃO será exibido`, 'error');
+            }
+            
+            // Template EXATO do frontend
+            return `
+                <div class="product-card">
+                    <div class="product-img-wrapper">
+                        <img src="${product.imageUrl}" 
+                             alt="${product.name}" 
+                             class="product-img"
+                             onerror="this.src='./public/padrao.png'">
+                        
+                        ${shouldShowBadge ? `
+                            <div class="discount-badge">
+                                ${badgeText}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="price-container">
+                            ${product.originalPrice && product.promoPrice ? `
+                                <div class="price-original">R$ ${product.originalPrice.toFixed(2)}</div>
+                                <div class="price-current">R$ ${product.promoPrice.toFixed(2)}</div>
+                            ` : `
+                                <div class="price-normal">R$ ${product.price.toFixed(2)}</div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadProductsFromAPI() {
+            try {
+                updateStatus('🔄 Carregando produtos da API...');
+                log('Iniciando carregamento da API de produção', 'info');
+                
+                // Usar proxy local para evitar CORS; incluir sessao_id conhecido
+                const response = await fetch(`${API_BASE}/api/proxy/produtos?sessao_id=07ib2MEKsa`);
+                log(`Status da API: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const produtos = data.produtos || [];
+                log(`Total de produtos recebidos: ${produtos.length}`, 'success');
+                
+                // Processar produtos com LÓGICA EXATA do frontend
+                const productsWithDiscount = [];
+                
+                produtos.forEach((p, index) => {
+                    // Calcular preços EXATAMENTE como no frontend
+                    let originalPrice = null;
+                    let promoPrice = null;
+                    
+                    if (p.preco_original && (p.percentual_desconto || p.valor_desconto)) {
+                        originalPrice = Number(p.preco_original);
+                        promoPrice = Number(p.preco);
+                    } else if (p.percentual_desconto && p.percentual_desconto > 0) {
+                        originalPrice = Number(p.preco) / (1 - (p.percentual_desconto / 100));
+                        promoPrice = Number(p.preco);
+                    } else if (p.valor_desconto && p.valor_desconto > 0) {
+                        originalPrice = Number(p.preco) + Number(p.valor_desconto);
+                        promoPrice = Number(p.preco);
+                    }
+                    
+                    if (originalPrice && promoPrice) {
+                        const product = {
+                            id: String(p.id),
+                            name: p.descricao,
+                            description: p.apresentacao || p.categoria || 'Produto farmacêutico',
+                            price: Number(p.preco),
+                            originalPrice: originalPrice,
+                            promoPrice: promoPrice,
+                            percentualDesconto: p.percentual_desconto ? Number(p.percentual_desconto) : null,
+                            valorDesconto: p.valor_desconto ? Number(p.valor_desconto) : null,
+                            imageUrl: p.imagem_url || `${API_BASE}/api/local-image?path=padrao.png`,
+                            laboratorio: p.laboratorio
+                        };
+                        
+                        productsWithDiscount.push(product);
+                    }
+                });
+                
+                log(`Produtos com desconto encontrados: ${productsWithDiscount.length}`, 'success');
+                
+                // Renderizar produtos
+                const container = document.getElementById('dynamic-products');
+                if (productsWithDiscount.length > 0) {
+                    container.innerHTML = productsWithDiscount
+                        .slice(0, 3) // Mostrar apenas os primeiros 3
+                        .map(product => createProductCard(product))
+                        .join('');
+                    
+                    updateStatus(`✅ ${productsWithDiscount.length} produtos com desconto carregados`);
+                } else {
+                    container.innerHTML = '<p style="color: #dc3545;">❌ Nenhum produto com desconto encontrado!</p>';
+                    updateStatus('❌ Nenhum produto com desconto encontrado');
+                }
+                
+            } catch (error) {
+                log(`Erro: ${error.message}`, 'error');
+                updateStatus(`❌ Erro: ${error.message}`);
+                document.getElementById('dynamic-products').innerHTML = 
+                    `<p style="color: #dc3545;">❌ Erro ao carregar produtos: ${error.message}</p>`;
+            }
+        }
+        
+        // Iniciar quando a página carregar
+        window.addEventListener('load', () => {
+            log('Página carregada, iniciando teste visual...', 'info');
+            loadProductsFromAPI();
+        });
+    </script>
+</body>
+</html>
