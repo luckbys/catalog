@@ -3610,9 +3610,19 @@
             if (imageUrl && imageUrl.includes('c4crm-minio.zv7gpn.easypanel.host')) {
                 try {
                     const u = new URL(imageUrl);
-                    const fullPath = u.pathname.replace(/^\/+/, ''); // remove '/'
+                    let fullPath = u.pathname.replace(/^\/+/, ''); // remove '/'
+                    // Detectar bucket no caminho e remover prefixo para chave correta
+                    let bucketHint = null;
+                    if (fullPath.startsWith('produtos/')) {
+                        bucketHint = 'produtos';
+                        fullPath = fullPath.replace(/^produtos\//, '');
+                    } else if (fullPath.startsWith('crm-media-files/')) {
+                        bucketHint = 'crm-media-files';
+                        fullPath = fullPath.replace(/^crm-media-files\//, '');
+                    }
+                    // Enviar somente a chave (sem prefixo do bucket)
                     imageUrl = `${API_BASE}/api/minio-image?path=${encodeURIComponent(fullPath)}`;
-                    console.log('🔄 Usando proxy MinIO com caminho completo:', fullPath);
+                    console.log('🔄 Usando proxy MinIO (bucket detectado:', bucketHint || 'auto', ') com key:', fullPath);
                 } catch (e) {
                     // Fallback: usar apenas o nome do arquivo
                     const fileName = imageUrl.split('?')[0].split('/').pop();
@@ -3636,12 +3646,21 @@
             });
 
             let triedFallback = false;
+            let triedStaticFallback = false;
             img.addEventListener('error', () => {
                 if (!triedFallback) {
                     triedFallback = true;
                     const fallbackSrc = `${API_BASE}/api/local-image?path=padrao.png`;
                     console.log('🔄 Banner fallback (imagem padrão):', fallbackSrc);
                     img.src = fallbackSrc;
+                    return;
+                }
+                // Se o endpoint local também falhar, tentar fallback estático servido pelo mesmo host
+                if (!triedStaticFallback) {
+                    triedStaticFallback = true;
+                    const staticFallback = `${window.location.origin}/public/padrao.png`;
+                    console.log('🪄 Fallback estático final:', staticFallback);
+                    img.src = staticFallback;
                     return;
                 }
                 // Se o fallback também falhar, alternar para layout de texto
