@@ -3883,35 +3883,13 @@
                     : (banner.badge_texto || '🏷️ Oferta Especial');
 
             div.innerHTML = `
-                ${targetUrl ? `<a href="${targetUrl}" target="_blank" rel="noopener" class="block w-full h-full">` : ''}
+                <div class="banner-image-container">
                     <img src="${imageUrl}" 
-                         alt="${banner.titulo || 'Banner promocional'}"
+                         alt="${banner.titulo || 'Banner'}"
                          loading="lazy" 
                          decoding="async"
                          onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png';"
                          style="width: 100%; height: 100%; object-fit: cover;">
-                ${targetUrl ? `</a>` : ''}
-                
-                <!-- Overlay com conteúdo (apenas mobile) -->
-                <div class="banner-content md:hidden">
-                    <div class="banner-badge">
-                        ${economia}
-                    </div>
-                    <h3 class="banner-title">${formatBannerTitle(banner)}</h3>
-                    ${banner.descricao ? `<p class="banner-description">${banner.descricao}</p>` : ''}
-                    ${targetUrl
-                        ? `<a href="${targetUrl}" target="_blank" rel="noopener" class="banner-cta">
-                                <span>${ctaInfo.primary}</span>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                                </svg>
-                           </a>`
-                        : `<button class="banner-cta" onclick="handleBannerCTA('${banner.tipo_promocao || ''}', ${banner.id})">
-                                <span>${ctaInfo.primary}</span>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                                </svg>
-                           </button>`}
                 </div>
             `;
             
