@@ -404,6 +404,75 @@
             overflow: hidden;
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
         }
+
+        /* Overlay mobile: informação e CTA por cima da imagem */
+        .banner-mobile-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 0.75rem 1rem;
+            z-index: 25;
+            color: #fff;
+            background: linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.0) 100%);
+            backdrop-filter: saturate(1.2) blur(2px);
+            border-radius: inherit;
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+        }
+
+        /* Esconder overlay em telas maiores (somente mobile) */
+        @media (min-width: 640px) {
+            .banner-mobile-overlay { display: none; }
+        }
+
+        .banner-mobile-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255,255,255,0.35);
+            background: rgba(0,0,0,0.20);
+        }
+
+        .banner-mobile-title {
+            margin-top: 8px;
+            font-size: 1rem;
+            line-height: 1.25rem;
+            font-weight: 800;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .banner-mobile-cta {
+            margin-top: 10px;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 9999px;
+            background: #fde047; /* amarelo Pague Menos vibe */
+            color: #111827;
+            font-weight: 800;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.45);
+        }
+
+        .banner-mobile-cta:active { transform: scale(0.98); }
+
+        @media (max-width: 640px) {
+            .cta-secondary { display: none; }
+            .cta-primary { display: none; }
+        }
         
         /* Animação de carregamento de imagem */
         @keyframes fadeInImage {
@@ -3687,6 +3756,13 @@
             // Se houver URL de destino, tornar o banner clicável
             const targetUrl = banner.link_url || banner.url_destino || banner.link || '';
             
+            // Economia/Badge
+            const economia = (banner.valor_desconto && Number(banner.valor_desconto) > 0)
+                ? `💰 Economize R$ ${banner.valor_desconto}`
+                : (banner.percentual_desconto && Number(banner.percentual_desconto) > 0)
+                    ? `💰 Economize ${banner.percentual_desconto}%`
+                    : (banner.badge_texto || '🏷️ Oferta');
+
             div.innerHTML = `
                 <!-- Container da imagem limpo - apenas a imagem -->
                 <div class="banner-image-container">
@@ -3699,6 +3775,22 @@
                              onload="this.style.opacity='1'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
                              style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
                     ${targetUrl ? `</a>` : ''}
+
+                    <!-- Overlay Mobile (somente mobile) -->
+                    <div class="banner-mobile-overlay sm:hidden">
+                        <div class="banner-mobile-chip">${economia}</div>
+                        <div class="banner-mobile-title">${formatBannerTitle(banner)}</div>
+                        ${targetUrl
+                            ? `<a href="${targetUrl}" target="_blank" rel="noopener" class="banner-mobile-cta" aria-label="${ctaInfo.primary}">
+                                    <span>🛒 ${ctaInfo.primary}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 7l5 5-5 5M6 12h12"/></svg>
+                               </a>`
+                            : `<button class="banner-mobile-cta" role="button" aria-label="${ctaInfo.primary}"
+                                        onclick="handleBannerCTA('${banner.tipo_promocao || ''}', ${banner.id})">
+                                    <span>🛒 ${ctaInfo.primary}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 7l5 5-5 5M6 12h12"/></svg>
+                               </button>`}
+                    </div>
                 </div>
             `;
             
@@ -4037,7 +4129,9 @@
                     cor_primaria: "#10B981",
                     cor_secundaria: "#14B8A6",
                     icone: "pill",
-                    percentual_desconto: 50
+                    percentual_desconto: 50,
+                    imagem_url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 600'><defs><linearGradient id='g' x1='0' y1='1' x2='0' y2='0'><stop stop-color='%2310B981' offset='0'/><stop stop-color='%2314B8A6' offset='1'/></linearGradient></defs><rect width='1600' height='600' fill='url(%23g)'/><circle cx='1400' cy='300' r='180' fill='rgba(255,255,255,0.1)'/></svg>",
+                    link_url: "https://www.paguemenos.com.br/"
                 }
             ];
             
