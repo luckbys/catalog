@@ -318,7 +318,7 @@
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            aspect-ratio: 16/9; /* Proporção mais alta para melhor visibilidade */
+            aspect-ratio: 1920/560; /* Proporção exata 1920x560px */
             overflow: hidden;
             position: relative;
         }
@@ -778,7 +778,7 @@
             }
             
             #bannerCarousel {
-                height: 100%;
+                height: 11rem;
             }
             
             .product-card {
@@ -1074,7 +1074,7 @@
             }
             
             #bannerCarousel {
-                height: 100%;
+                height: 11rem;
             }
             
             .product-card {
@@ -1107,7 +1107,7 @@
             }
             
             #bannerCarousel {
-                height: 100%;
+                height: 18rem;
             }
         }
         
@@ -1354,9 +1354,9 @@
         
         /* Melhor controle de aspect ratio para diferentes telas */
         .banner-carousel-container {
-            aspect-ratio: 16/9; /* Mais alto para destacar banners */
-            min-height: 240px;
-            max-height: 700px;
+            aspect-ratio: 1920/560; /* Proporção exata 1920x560px */
+            min-height: 200px;
+            max-height: 600px;
             width: 100%;
         }
         
@@ -1367,13 +1367,13 @@
             }
             
             .banner-carousel-container {
-                aspect-ratio: 4/3; /* Mobile mais alto para melhor leitura */
-                min-height: 160px;
-                max-height: 260px;
+                aspect-ratio: 1920/560; /* Mantém proporção mesmo no mobile */
+                min-height: 120px;
+                max-height: 200px;
             }
             
             #bannerCarousel {
-                height: 100%;
+                height: auto;
             }
             
             .product-card {
@@ -3553,7 +3553,7 @@
             carousel.innerHTML = '';
             
             bannersData.forEach((banner, index) => {
-                const bannerElement = createBannerElement(banner, index === 0);
+                const bannerElement = createBannerElement(banner, index === 0, index);
                 carousel.appendChild(bannerElement);
             });
             
@@ -3581,7 +3581,7 @@
         }
         
         // Função para criar elemento de banner (suporta imagem e layout texto)
-        function createBannerElement(banner, isActive = false) {
+        function createBannerElement(banner, isActive = false, index = 0) {
             const div = document.createElement('div');
             div.className = `banner-slide ${isActive ? 'active' : ''} absolute inset-0 overflow-hidden`;
             
@@ -3591,7 +3591,7 @@
             // Verificar se tem imagem para usar layout baseado em imagem
             if (banner.imagem_url && banner.imagem_url.trim() !== '') {
                 try {
-                    return createImageBanner(banner, isActive, ctaInfo, div);
+                    return createImageBanner(banner, isActive, ctaInfo, div, index);
                 } catch (error) {
                     console.error('❌ Erro ao criar banner de imagem, usando fallback de texto:', error);
                     return createTextBanner(banner, isActive, ctaInfo, div);
@@ -3602,7 +3602,7 @@
         }
         
         // Função para criar banner baseado em imagem (apenas imagem, sem texto)
-        function createImageBanner(banner, isActive, ctaInfo, div) {
+        function createImageBanner(banner, isActive, ctaInfo, div, index = 0) {
             // Usar proxy do MinIO para evitar problemas de CORS
             let imageUrl = banner.imagem_url;
 
@@ -3638,11 +3638,27 @@
             img.src = imageUrl;
             img.alt = banner.titulo || 'Banner promocional';
             img.className = 'banner-image';
-            img.loading = 'lazy';
+            // Evitar atraso/falha no segundo slide: carregar os dois primeiros com eager
+            img.loading = index < 2 ? 'eager' : 'lazy';
             img.style.opacity = '0';
 
             img.addEventListener('load', () => {
-                try { img.style.opacity = '1'; img.classList.add('loaded'); } catch {}
+                try {
+                    // Ajuste nerd de proporção: se fugir muito do 1920x560, usar contain
+                    const naturalRatio = (img.naturalWidth || 0) / (img.naturalHeight || 1);
+                    const targetRatio = 1920 / 560;
+                    const diff = Math.abs(naturalRatio - targetRatio);
+                    if (diff > 0.25) {
+                        img.style.objectFit = 'contain';
+                        // Deixar fundo suave para evitar barras pretas
+                        container.style.background = 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
+                    } else {
+                        img.style.objectFit = 'cover';
+                        img.style.objectPosition = 'center center';
+                    }
+                    img.style.opacity = '1';
+                    img.classList.add('loaded');
+                } catch {}
             });
 
             let triedFallback = false;
