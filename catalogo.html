@@ -104,67 +104,93 @@
             z-index: 20;
         }
 
-        /* Setas de navegação do carrossel (estilo Pague Menos-like) */
-        .carousel-arrow {
+        /* Controles de Navegação Modernos */
+        .banner-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 9999px;
+            width: 52px;
+            height: 52px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.4);
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 50%;
             cursor: pointer;
-            z-index: 30;
-            backdrop-filter: blur(8px);
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 20;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
-        .carousel-arrow:hover {
-            background: rgba(0, 0, 0, 0.6);
-            transform: translateY(-50%) scale(1.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        .banner-nav svg {
+            width: 24px;
+            height: 24px;
+            color: #1f2937;
+            transition: transform 0.3s ease;
         }
         
-        .carousel-arrow:active {
+        .banner-nav:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.15),
+                0 10px 10px -5px rgba(0, 0, 0, 0.08);
+        }
+        
+        .banner-nav:hover svg {
+            transform: scale(1.1);
+        }
+        
+        .banner-nav:active {
             transform: translateY(-50%) scale(0.95);
         }
         
-        .carousel-arrow.left { left: 0.75rem; }
-        .carousel-arrow.right { right: 0.75rem; }
-        .carousel-arrow svg { width: 18px; height: 18px; }
-
-        /* Mobile: setas menores e mais discretas */
-        @media (max-width: 640px) {
-            .carousel-arrow { 
-                width: 32px; 
-                height: 32px;
-                background: rgba(0, 0, 0, 0.5);
-                border: 1.5px solid rgba(255, 255, 255, 0.6);
-            }
-            .carousel-arrow svg { 
-                width: 14px; 
-                height: 14px; 
-            }
-            .carousel-arrow.left { left: 0.5rem; }
-            .carousel-arrow.right { right: 0.5rem; }
+        .banner-nav-prev {
+            left: 1.5rem;
         }
         
-        /* Mobile muito pequeno: setas ainda menores */
-        @media (max-width: 380px) {
-            .carousel-arrow { 
-                width: 28px; 
-                height: 28px;
-            }
-            .carousel-arrow svg { 
-                width: 12px; 
-                height: 12px; 
-            }
+        .banner-nav-next {
+            right: 1.5rem;
+        }
+        
+        /* Indicadores de Slide */
+        .banner-indicators {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 20;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 9999px;
+        }
+        
+        .banner-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none;
+            padding: 0;
+        }
+        
+        .banner-indicator.active {
+            width: 24px;
+            border-radius: 4px;
+            background: white;
+        }
+        
+        .banner-indicator:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
         }
 
         /* Skeleton shimmer enquanto a imagem carrega */
@@ -389,219 +415,344 @@
             opacity: 1 !important;
         }
         
-        /* Estilos do Carrossel de Banners - Apenas Imagem */
+        /* ========================================
+           BANNER CAROUSEL - DESIGN MODERNO
+           ======================================== */
+        
         .banner-carousel-section {
             position: relative;
-            z-index: 10;
-            padding: 1rem 0;
+            padding: 1.5rem 0 2rem 0;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
         }
         
-        .banner-carousel-container {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        
-        .banner-slide {
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            aspect-ratio: 16/9; /* Proporção mais adequada para mobile */
-            overflow: hidden;
+        .banner-carousel-wrapper {
             position: relative;
-            border-radius: 0.75rem;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                0 0 0 1px rgba(0, 0, 0, 0.05);
+            background: #fff;
         }
         
-        /* Ajustes de proporção por tamanho de tela */
-        @media (min-width: 640px) {
-            .banner-slide {
-                aspect-ratio: 21/9; /* Mais largo em tablets */
-            }
+        .banner-carousel {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            overflow: hidden;
         }
         
-        @media (min-width: 1024px) {
-            .banner-slide {
-                aspect-ratio: 1920/560; /* Proporção original em desktop */
-            }
+        /* Slides */
+        .banner-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
         }
         
         .banner-slide.active {
             opacity: 1;
-            transform: translateX(0);
+            transform: scale(1);
+            pointer-events: auto;
         }
         
         .banner-slide.prev {
-            transform: translateX(-100%);
+            transform: translateX(-100%) scale(0.95);
         }
         
-        /* Banner apenas com imagem - sem texto */
+        .banner-slide.next {
+            transform: translateX(100%) scale(0.95);
+        }
+        
+        /* Imagem do Banner */
         .banner-slide img {
-            object-fit: cover;
-            object-position: center center;
             width: 100%;
             height: 100%;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
-            border-radius: inherit;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
-        /* Hover apenas em desktop */
-        @media (min-width: 1024px) {
-            .banner-slide:hover img {
-                transform: scale(1.02);
+        .banner-slide.active img {
+            animation: zoomIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes zoomIn {
+            from {
+                transform: scale(1.1);
+            }
+            to {
+                transform: scale(1);
             }
         }
         
-        /* Mobile: sem hover, melhor performance */
-        @media (max-width: 1023px) {
-            .banner-slide img {
-                will-change: auto;
-            }
-        }
-        
-        /* Container da imagem limpo */
-        .banner-image-container {
+        /* Loading State */
+        .banner-loading {
             position: absolute;
             inset: 0;
-            overflow: hidden;
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            border-radius: inherit;
-        }
-        
-        /* Garantir que o banner não quebre em telas muito pequenas */
-        @media (max-width: 360px) {
-            .banner-carousel-container {
-                margin: 0 0.25rem;
-            }
-            
-            .banner-slide {
-                border-radius: 0.5rem;
-            }
-            
-            .banner-mobile-overlay {
-                padding: 0.5rem;
-            }
-            
-            .banner-mobile-chip {
-                font-size: 0.65rem;
-                padding: 4px 8px;
-            }
-            
-            .banner-mobile-title {
-                font-size: 0.8125rem;
-                margin-top: 0.375rem;
-            }
-            
-            .banner-mobile-cta {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.75rem;
-                margin-top: 0.5rem;
-            }
-        }
-
-        /* Overlay mobile: informação e CTA por cima da imagem */
-        .banner-mobile-overlay {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            padding: 1rem;
-            z-index: 25;
-            color: #fff;
-            background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0.0) 100%);
-            backdrop-filter: saturate(1.2) blur(4px);
-            border-radius: 0 0 0.75rem 0.75rem;
-            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-        }
-
-        /* Esconder overlay em telas maiores (somente mobile) */
-        @media (min-width: 640px) {
-            .banner-mobile-overlay { display: none; }
-        }
-
-        .banner-mobile-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 9999px;
-            border: 1px solid rgba(255,255,255,0.4);
-            background: rgba(0,0,0,0.25);
-            backdrop-filter: blur(8px);
-        }
-
-        .banner-mobile-title {
-            margin-top: 0.5rem;
-            font-size: 0.95rem;
-            line-height: 1.3;
-            font-weight: 700;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .banner-mobile-cta {
-            margin-top: 0.75rem;
-            width: 100%;
-            display: inline-flex;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+
+        /* Overlay de Conteúdo do Banner */
+        .banner-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 2rem;
+            background: linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0.7) 0%,
+                rgba(0, 0, 0, 0.4) 40%,
+                rgba(0, 0, 0, 0) 70%
+            );
+            z-index: 10;
+        }
+        
+        .banner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
             border-radius: 9999px;
-            background: linear-gradient(135deg, #fde047 0%, #fbbf24 100%);
-            color: #111827;
-            font-weight: 800;
             font-size: 0.875rem;
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4), 0 2px 4px rgba(0,0,0,0.2);
-            border: 2px solid rgba(255,255,255,0.5);
-            transition: all 0.2s ease;
+            font-weight: 700;
+            color: #dc2626;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            width: fit-content;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-
-        .banner-mobile-cta:active { 
-            transform: scale(0.96);
-            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
-        }
-
-        @media (max-width: 640px) {
-            .cta-secondary { display: none; }
-            .cta-primary { display: none; }
-            
-            /* Ajustes específicos do banner para mobile */
-            .banner-carousel-section {
-                padding: 0.5rem 0 1rem 0;
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
             }
-            
-            .banner-mobile-overlay {
-                padding: 0.75rem;
-            }
-            
-            .banner-mobile-title {
-                font-size: 0.875rem;
-                line-height: 1.25;
-            }
-            
-            .banner-mobile-cta {
-                padding: 0.625rem 0.875rem;
-                font-size: 0.8125rem;
+            50% {
+                opacity: 0.8;
             }
         }
         
-        /* Tablets */
-        @media (min-width: 641px) and (max-width: 1023px) {
+        .banner-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+        }
+        
+        .banner-description {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        
+        .banner-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #78350f;
+            font-weight: 800;
+            font-size: 1rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 
+                0 10px 15px -3px rgba(251, 191, 36, 0.4),
+                0 4px 6px -2px rgba(251, 191, 36, 0.2);
+            width: fit-content;
+        }
+        
+        .banner-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 20px 25px -5px rgba(251, 191, 36, 0.5),
+                0 10px 10px -5px rgba(251, 191, 36, 0.3);
+        }
+        
+        .banner-cta:active {
+            transform: translateY(0);
+        }
+        
+        /* Mobile: Overlay simplificado */
+        @media (max-width: 640px) {
+            .banner-content {
+                padding: 1rem;
+            }
+            
+            .banner-badge {
+                font-size: 0.75rem;
+                padding: 0.375rem 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .banner-title {
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .banner-description {
+                font-size: 0.875rem;
+                margin-bottom: 1rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
+            .banner-cta {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* ========================================
+           RESPONSIVIDADE DO BANNER
+           ======================================== */
+        
+        /* Mobile */
+        @media (max-width: 640px) {
             .banner-carousel-section {
-                padding: 0.75rem 0 1.25rem 0;
+                padding: 1rem 0 1.5rem 0;
+            }
+            
+            .banner-carousel-wrapper {
+                border-radius: 1rem;
+            }
+            
+            .banner-carousel {
+                aspect-ratio: 4/3;
+            }
+            
+            .banner-nav {
+                width: 40px;
+                height: 40px;
+                opacity: 0.9;
+            }
+            
+            .banner-nav svg {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .banner-nav-prev {
+                left: 0.75rem;
+            }
+            
+            .banner-nav-next {
+                right: 0.75rem;
+            }
+            
+            .banner-indicators {
+                bottom: 1rem;
+                padding: 0.5rem 0.75rem;
+                gap: 0.375rem;
+            }
+            
+            .banner-indicator {
+                width: 6px;
+                height: 6px;
+            }
+            
+            .banner-indicator.active {
+                width: 18px;
+            }
+        }
+        
+        /* Mobile muito pequeno */
+        @media (max-width: 380px) {
+            .banner-carousel-section {
+                padding: 0.75rem 0 1rem 0;
+            }
+            
+            .banner-carousel-wrapper {
+                border-radius: 0.75rem;
+            }
+            
+            .banner-nav {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .banner-nav svg {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .banner-nav-prev {
+                left: 0.5rem;
+            }
+            
+            .banner-nav-next {
+                right: 0.5rem;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 641px) and (max-width: 1023px) {
+            .banner-carousel {
+                aspect-ratio: 21/9;
             }
         }
         
         /* Desktop */
         @media (min-width: 1024px) {
-            .banner-carousel-section {
-                padding: 1rem 0 1.5rem 0;
+            .banner-carousel {
+                aspect-ratio: 2.5/1;
+            }
+            
+            .banner-nav:not(:hover) {
+                opacity: 0.7;
+            }
+        }
+        
+        /* Desabilitar animações para quem prefere movimento reduzido */
+        @media (prefers-reduced-motion: reduce) {
+            .banner-slide,
+            .banner-slide img,
+            .banner-nav,
+            .banner-indicator {
+                transition: none !important;
+                animation: none !important;
             }
         }
         
@@ -2004,31 +2155,37 @@
         </div>
     </header>
 
-    <!-- Carrossel de Banners de Promoções -->
-    <section class="banner-carousel-section bg-gradient-to-r from-slate-50 to-white">
-        <div class="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-            <div class="banner-carousel-container relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-xl">
+    <!-- Carrossel de Banners de Promoções - Design Moderno -->
+    <section class="banner-carousel-section">
+        <div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="banner-carousel-wrapper">
                 <!-- Carrossel Container -->
-                <div id="bannerCarousel" class="relative h-full touch-pan-y" role="region" aria-roledescription="carousel" aria-label="Carrossel de promoções" aria-live="polite">
-                    <!-- Os banners serão inseridos aqui dinamicamente pelo JavaScript -->
-                    <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-500 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12">
-                        <div class="text-white text-center">
-                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                            <p class="text-lg font-semibold">Carregando banners...</p>
+                <div id="bannerCarousel" class="banner-carousel" role="region" aria-roledescription="carousel" aria-label="Carrossel de promoções" aria-live="polite">
+                    <!-- Loading State -->
+                    <div class="banner-slide active">
+                        <div class="banner-loading">
+                            <div class="loading-spinner"></div>
+                            <p class="loading-text">Carregando ofertas...</p>
                         </div>
                     </div>
                 </div>
-                <!-- Controles de navegação do carrossel -->
-                <button id="prevBanner" class="carousel-arrow left" aria-label="Banner anterior" aria-controls="bannerCarousel">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                
+                <!-- Controles de Navegação Modernos -->
+                <button id="prevBanner" class="banner-nav banner-nav-prev" aria-label="Banner anterior">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
                 </button>
-                <button id="nextBanner" class="carousel-arrow right" aria-label="Próximo banner" aria-controls="bannerCarousel">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button id="nextBanner" class="banner-nav banner-nav-next" aria-label="Próximo banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                 </button>
+                
+                <!-- Indicadores de Slide -->
+                <div class="banner-indicators" id="bannerIndicators">
+                    <!-- Serão inseridos dinamicamente -->
+                </div>
             </div>
         </div>
     </section>
@@ -3811,9 +3968,11 @@
             }
         }
         
-        // Função para renderizar banners do Supabase
+        // Função para renderizar banners - REFATORADA
         function renderBanners() {
             const carousel = document.getElementById('bannerCarousel');
+            const indicatorsContainer = document.getElementById('bannerIndicators');
+            
             if (!carousel) {
                 console.error('❌ Elemento bannerCarousel não encontrado!');
                 return;
@@ -3821,30 +3980,24 @@
             
             // Limpar conteúdo atual
             carousel.innerHTML = '';
+            if (indicatorsContainer) {
+                indicatorsContainer.innerHTML = '';
+            }
             
+            // Criar slides
             bannersData.forEach((banner, index) => {
                 const bannerElement = createBannerElement(banner, index === 0);
                 carousel.appendChild(bannerElement);
+                
+                // Criar indicador
+                if (indicatorsContainer) {
+                    const indicator = document.createElement('button');
+                    indicator.className = `banner-indicator ${index === 0 ? 'active' : ''}`;
+                    indicator.setAttribute('aria-label', `Ir para slide ${index + 1}`);
+                    indicator.onclick = () => showSlide(index);
+                    indicatorsContainer.appendChild(indicator);
+                }
             });
-            
-            // Adicionar indicadores de progresso
-            const indicatorsContainer = document.createElement('div');
-            indicatorsContainer.className = 'carousel-indicators';
-            
-            bannersData.forEach((_, index) => {
-                const indicator = document.createElement('div');
-                indicator.className = `carousel-indicator ${index === 0 ? 'active' : ''}`;
-                indicator.onclick = () => showSlide(index);
-                indicatorsContainer.appendChild(indicator);
-            });
-            
-            carousel.appendChild(indicatorsContainer);
-            
-            // Adicionar barra de progresso
-            const progressBar = document.createElement('div');
-            progressBar.className = 'carousel-progress';
-            progressBar.style.width = '0%';
-            carousel.appendChild(progressBar);
             
             // Reinicializar carrossel
             initializeCarousel();
@@ -3880,57 +4033,58 @@
             }
         }
         
-        // Função para criar banner baseado em imagem (apenas imagem, sem texto)
+        // Função para criar banner baseado em imagem - REFATORADA
         function createImageBanner(banner, isActive, ctaInfo, div) {
             // Usar proxy do MinIO para evitar problemas de CORS
             let imageUrl = banner.imagem_url;
             
             // Se a URL é do MinIO, usar o proxy do backend
             if (imageUrl && imageUrl.includes('c4crm-minio.zv7gpn.easypanel.host')) {
-                // Extrair apenas o nome do arquivo da URL do MinIO
                 const urlParts = imageUrl.split('/');
                 const fileName = urlParts[urlParts.length - 1];
                 imageUrl = `${API_BASE}/api/minio-image?path=${fileName}`;
                 console.log('🔄 Usando proxy MinIO para banner:', fileName);
             }
-            // Se houver URL de destino, tornar o banner clicável
+            
             const targetUrl = banner.link_url || banner.url_destino || banner.link || '';
             
-            // Economia/Badge
+            // Badge de economia
             const economia = (banner.valor_desconto && Number(banner.valor_desconto) > 0)
                 ? `💰 Economize R$ ${banner.valor_desconto}`
                 : (banner.percentual_desconto && Number(banner.percentual_desconto) > 0)
-                    ? `💰 Economize ${banner.percentual_desconto}%`
-                    : (banner.badge_texto || '🏷️ Oferta');
+                    ? `🔥 ${banner.percentual_desconto}% OFF`
+                    : (banner.badge_texto || '🏷️ Oferta Especial');
 
             div.innerHTML = `
-                <!-- Container da imagem limpo - apenas a imagem -->
-                <div class="banner-image-container">
-                    ${targetUrl ? `<a href="${targetUrl}" target="_blank" rel="noopener" aria-label="Abrir promoção">` : ''}
-                        <img src="${imageUrl}" 
-                             alt="${banner.titulo || 'Banner promocional'}"
-                             class="banner-image"
-                             loading="lazy" decoding="async"
-                             onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png'; console.log('🔄 Banner fallback:', this.src);"
-                             onload="this.style.opacity='1'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-                             style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
-                    ${targetUrl ? `</a>` : ''}
-
-                    <!-- Overlay Mobile (somente mobile) -->
-                    <div class="banner-mobile-overlay sm:hidden">
-                        <div class="banner-mobile-chip">${economia}</div>
-                        <div class="banner-mobile-title">${formatBannerTitle(banner)}</div>
-                        ${targetUrl
-                            ? `<a href="${targetUrl}" target="_blank" rel="noopener" class="banner-mobile-cta" aria-label="${ctaInfo.primary}">
-                                    <span>🛒 ${ctaInfo.primary}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 7l5 5-5 5M6 12h12"/></svg>
-                               </a>`
-                            : `<button class="banner-mobile-cta" role="button" aria-label="${ctaInfo.primary}"
-                                        onclick="handleBannerCTA('${banner.tipo_promocao || ''}', ${banner.id})">
-                                    <span>🛒 ${ctaInfo.primary}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 7l5 5-5 5M6 12h12"/></svg>
-                               </button>`}
+                ${targetUrl ? `<a href="${targetUrl}" target="_blank" rel="noopener" class="block w-full h-full">` : ''}
+                    <img src="${imageUrl}" 
+                         alt="${banner.titulo || 'Banner promocional'}"
+                         loading="lazy" 
+                         decoding="async"
+                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png';"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                ${targetUrl ? `</a>` : ''}
+                
+                <!-- Overlay com conteúdo (apenas mobile) -->
+                <div class="banner-content md:hidden">
+                    <div class="banner-badge">
+                        ${economia}
                     </div>
+                    <h3 class="banner-title">${formatBannerTitle(banner)}</h3>
+                    ${banner.descricao ? `<p class="banner-description">${banner.descricao}</p>` : ''}
+                    ${targetUrl
+                        ? `<a href="${targetUrl}" target="_blank" rel="noopener" class="banner-cta">
+                                <span>${ctaInfo.primary}</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                           </a>`
+                        : `<button class="banner-cta" onclick="handleBannerCTA('${banner.tipo_promocao || ''}', ${banner.id})">
+                                <span>${ctaInfo.primary}</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                           </button>`}
                 </div>
             `;
             
@@ -4300,29 +4454,28 @@
         
         // Função para configurar controles do carrossel
         function setupCarouselControls(slides) {
-            // Função para mostrar slide específico
+            // Função para mostrar slide específico - REFATORADA
             window.showSlide = function(index) {
                 slides.forEach((slide, i) => {
-                    slide.classList.remove('active', 'prev');
+                    slide.classList.remove('active', 'prev', 'next');
+                    slide.setAttribute('aria-hidden', 'true');
+                    
                     if (i === index) {
                         slide.classList.add('active');
+                        slide.setAttribute('aria-hidden', 'false');
                     } else if (i < index) {
                         slide.classList.add('prev');
+                    } else {
+                        slide.classList.add('next');
                     }
                 });
                 
-                // Atualizar indicadores
-                const indicators = document.querySelectorAll('.carousel-indicator');
+                // Atualizar indicadores modernos
+                const indicators = document.querySelectorAll('.banner-indicator');
                 indicators.forEach((indicator, i) => {
                     indicator.classList.toggle('active', i === index);
+                    indicator.setAttribute('aria-current', i === index ? 'true' : 'false');
                 });
-                
-                // Atualizar barra de progresso
-                const progressBar = document.querySelector('.carousel-progress');
-                if (progressBar && slides.length > 0) {
-                    const progressPercent = ((index + 1) / slides.length) * 100;
-                    progressBar.style.width = `${progressPercent}%`;
-                }
                 
                 currentSlide = index;
 
