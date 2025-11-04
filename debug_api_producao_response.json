@@ -1,0 +1,113 @@
+{
+  "timestamp": "2025-11-03T22:11:31.515570",
+  "total_produtos": 15959,
+  "produtos_com_desconto": 3,
+  "primeiros_5_produtos": [
+    {
+      "id": 2455170,
+      "descricao": "CLORIDRATO DE TRAMADOL",
+      "apresentacao": "50 MG C/ 10 CAP",
+      "preco": 33.7,
+      "estoque": 0,
+      "imagem_url": null,
+      "categoria": null,
+      "laboratorio": "LEGRAND PHARMA INDUS",
+      "preco_original": null,
+      "percentual_desconto": null,
+      "valor_desconto": null
+    },
+    {
+      "id": 2455171,
+      "descricao": "VELIJA",
+      "apresentacao": "30 MG C/ 30 CAP",
+      "preco": 79.43,
+      "estoque": 0,
+      "imagem_url": null,
+      "categoria": null,
+      "laboratorio": "LIBBS FARMACEUTICA L",
+      "preco_original": null,
+      "percentual_desconto": null,
+      "valor_desconto": null
+    },
+    {
+      "id": 2465302,
+      "descricao": "TADALAFILA",
+      "apresentacao": null,
+      "preco": 52.56,
+      "estoque": 0,
+      "imagem_url": "https://c4crm-minio.zv7gpn.easypanel.host/produtos/40952.jpg",
+      "categoria": null,
+      "laboratorio": "EUROFARMA LABORATORI",
+      "preco_original": 55.32631578947369,
+      "percentual_desconto": 5.0,
+      "valor_desconto": null
+    },
+    {
+      "id": 2455215,
+      "descricao": "CLORIDRATO DE PAROXETINA",
+      "apresentacao": "20MG C/ 30 CP REV",
+      "preco": 56.29,
+      "estoque": 0,
+      "imagem_url": null,
+      "categoria": null,
+      "laboratorio": "UNIAO QUIMICA",
+      "preco_original": null,
+      "percentual_desconto": null,
+      "valor_desconto": null
+    },
+    {
+      "id": 2455218,
+      "descricao": "MIRTAZAPINA ",
+      "apresentacao": "15 MG C/30 CP ORODISP",
+      "preco": 77.18,
+      "estoque": 0,
+      "imagem_url": null,
+      "categoria": null,
+      "laboratorio": "GERMED FARMACEUTICA ",
+      "preco_original": null,
+      "percentual_desconto": null,
+      "valor_desconto": null
+    }
+  ],
+  "produtos_com_desconto_sample": [
+    {
+      "id": 2465302,
+      "descricao": "TADALAFILA",
+      "apresentacao": null,
+      "preco": 52.56,
+      "estoque": 0,
+      "imagem_url": "https://c4crm-minio.zv7gpn.easypanel.host/produtos/40952.jpg",
+      "categoria": null,
+      "laboratorio": "EUROFARMA LABORATORI",
+      "preco_original": 55.32631578947369,
+      "percentual_desconto": 5.0,
+      "valor_desconto": null
+    },
+    {
+      "id": 2465034,
+      "descricao": "070330731769",
+      "apresentacao": "PENTE P/ CABELOS 1 UNI",
+      "preco": 10.83,
+      "estoque": 0,
+      "imagem_url": null,
+      "categoria": null,
+      "laboratorio": "FING`RS DO BRASIL LT",
+      "preco_original": 15.471428571428573,
+      "percentual_desconto": 30.0,
+      "valor_desconto": null
+    },
+    {
+      "id": 2455206,
+      "descricao": "RIVOTRIL",
+      "apresentacao": null,
+      "preco": 10.3,
+      "estoque": 0,
+      "imagem_url": "https://c4crm-minio.zv7gpn.easypanel.host/produtos/536.webp",
+      "categoria": null,
+      "laboratorio": "BLANVER FARMOQUIMICA",
+      "preco_original": 10.729166666666668,
+      "percentual_desconto": 4.0,
+      "valor_desconto": null
+    }
+  ]
+}

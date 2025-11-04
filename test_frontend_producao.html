@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Teste Frontend Produção - Descontos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            position: relative;
+        }
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .price-info {
+            margin: 10px 0;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 14px;
+        }
+        .current-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Teste Frontend Produção - Descontos</h1>
+        <p>Este teste verifica se o frontend está processando corretamente os produtos com desconto da API de produção.</p>
+        
+        <div id="status" class="status">
+            📡 Carregando produtos da API de produção...
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function testProductsWithDiscount() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '📡 Buscando produtos da API de produção...';
+                statusDiv.className = 'status warning';
+                
+                // Buscar produtos da API de produção
+                const response = await fetch('https://hakimfarma.devsible.com.br/api/produtos');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const produtos = data.produtos || [];
+                
+                statusDiv.innerHTML = `✅ API respondeu com ${produtos.length} produtos`;
+                statusDiv.className = 'status success';
+                
+                // IDs dos produtos que sabemos que têm desconto
+                const produtosTestIds = [2465302, 2465034, 2455206];
+                
+                // Processar produtos exatamente como o frontend faz
+                const productsData = [];
+                let produtosComDesconto = 0;
+                
+                produtos.forEach(p => {
+                    // Calcular preço promocional se houver desconto (mesma lógica do catalogo.html)
+                    let originalPrice = null;
+                    let promoPrice = null;
+                    
+                    if (p.preco_original && (p.percentual_desconto || p.valor_desconto)) {
+                        originalPrice = Number(p.preco_original);
+                        promoPrice = Number(p.preco);
+                    } else if (p.percentual_desconto && p.percentual_desconto > 0) {
+                        // Se só temos percentual de desconto, calcular preço original
+                        originalPrice = Number(p.preco) / (1 - (p.percentual_desconto / 100));
+                        promoPrice = Number(p.preco);
+                    } else if (p.valor_desconto && p.valor_desconto > 0) {
+                        // Se só temos valor de desconto, calcular preço original
+                        originalPrice = Number(p.preco) + Number(p.valor_desconto);
+                        promoPrice = Number(p.preco);
+                    }
+                    
+                    const productObj = {
+                        id: String(p.id),
+                        name: p.descricao,
+                        description: p.apresentacao || p.categoria || p.descricao,
+                        price: Number(p.preco),
+                        originalPrice: originalPrice,
+                        promoPrice: promoPrice,
+                        percentualDesconto: p.percentual_desconto ? Number(p.percentual_desconto) : null,
+                        valorDesconto: p.valor_desconto ? Number(p.valor_desconto) : null,
+                        imageUrl: p.imagem_url,
+                        laboratorio: p.laboratorio
+                    };
+                    
+                    productsData.push(productObj);
+                    
+                    // Contar produtos com desconto
+                    if (originalPrice && promoPrice) {
+                        produtosComDesconto++;
+                    }
+                });
+                
+                // Mostrar resultados
+                let html = `
+                    <h2>📊 Resultados do Processamento</h2>
+                    <div class="status success">
+                        <strong>Total de produtos:</strong> ${productsData.length}<br>
+                        <strong>Produtos com desconto processados:</strong> ${produtosComDesconto}
+                    </div>
+                `;
+                
+                // Mostrar produtos de teste específicos
+                html += '<h3>🎯 Produtos de Teste (IDs conhecidos com desconto)</h3>';
+                
+                produtosTestIds.forEach(testId => {
+                    const produto = productsData.find(p => p.id === String(testId));
+                    
+                    if (produto) {
+                        const hasDiscount = produto.originalPrice && produto.promoPrice;
+                        const badgeText = produto.percentualDesconto ? 
+                            `-${Math.round(produto.percentualDesconto)}%` : 
+                            produto.valorDesconto ? 
+                            `-R$ ${produto.valorDesconto.toFixed(2)}` : 
+                            'DESCONTO';
+                        
+                        html += `
+                            <div class="product-card">
+                                ${hasDiscount ? `<div class="discount-badge">${badgeText}</div>` : ''}
+                                <h4>📦 ${produto.name}</h4>
+                                <div class="price-info">
+                                    ${produto.originalPrice ? `<div class="original-price">De R$ ${produto.originalPrice.toFixed(2)}</div>` : ''}
+                                    <div class="current-price">R$ ${produto.price.toFixed(2)}</div>
+                                </div>
+                                <div class="debug-info">
+                                    <strong>Debug Info:</strong><br>
+                                    ID: ${produto.id}<br>
+                                    originalPrice: ${produto.originalPrice}<br>
+                                    promoPrice: ${produto.promoPrice}<br>
+                                    percentualDesconto: ${produto.percentualDesconto}<br>
+                                    valorDesconto: ${produto.valorDesconto}<br>
+                                    <strong>Exibiria badge:</strong> ${hasDiscount ? '✅ SIM' : '❌ NÃO'}<br>
+                                    <strong>Texto do badge:</strong> ${hasDiscount ? badgeText : 'N/A'}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="product-card">
+                                <h4>❌ Produto ID ${testId} não encontrado</h4>
+                            </div>
+                        `;
+                    }
+                });
+                
+                // Mostrar todos os produtos com desconto encontrados
+                const produtosComDescontoArray = productsData.filter(p => p.originalPrice && p.promoPrice);
+                
+                if (produtosComDescontoArray.length > 0) {
+                    html += '<h3>🏷️ Todos os Produtos com Desconto Encontrados</h3>';
+                    
+                    produtosComDescontoArray.forEach(produto => {
+                        const badgeText = produto.percentualDesconto ? 
+                            `-${Math.round(produto.percentualDesconto)}%` : 
+                            produto.valorDesconto ? 
+                            `-R$ ${produto.valorDesconto.toFixed(2)}` : 
+                            'DESCONTO';
+                        
+                        html += `
+                            <div class="product-card">
+                                <div class="discount-badge">${badgeText}</div>
+                                <h4>📦 ${produto.name}</h4>
+                                <div class="price-info">
+                                    <div class="original-price">De R$ ${produto.originalPrice.toFixed(2)}</div>
+                                    <div class="current-price">R$ ${produto.price.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `
+                        <div class="status error">
+                            <h3>❌ Nenhum produto com desconto processado!</h3>
+                            <p>Isso indica que a condição <code>originalPrice && promoPrice</code> não está sendo atendida.</p>
+                        </div>
+                    `;
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Erro: ${error.message}`;
+                statusDiv.className = 'status error';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        <h3>❌ Erro ao carregar produtos</h3>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                        <p><strong>Possíveis causas:</strong></p>
+                        <ul>
+                            <li>Problema de CORS (Cross-Origin Resource Sharing)</li>
+                            <li>API indisponível</li>
+                            <li>Problema de conectividade</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        // Executar teste quando a página carregar
+        document.addEventListener('DOMContentLoaded', testProductsWithDiscount);
+    </script>
+</body>
+</html>
