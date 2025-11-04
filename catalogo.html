@@ -318,7 +318,9 @@
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            aspect-ratio: 1920/560; /* Proporção exata 1920x560px */
+            /* Removido aspect-ratio aqui para evitar conflitos com absolute sizing */
+            height: 100%;
+            width: 100%;
             overflow: hidden;
             position: relative;
         }
@@ -352,6 +354,9 @@
             position: absolute;
             inset: 0;
             overflow: hidden;
+            display: flex;           /* Centraliza imagem quando usamos contain */
+            align-items: center;
+            justify-content: center;
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
         }
         
@@ -3648,7 +3653,7 @@
                     const naturalRatio = (img.naturalWidth || 0) / (img.naturalHeight || 1);
                     const targetRatio = 1920 / 560;
                     const diff = Math.abs(naturalRatio - targetRatio);
-                    if (diff > 0.25) {
+                    if (diff > 0.15) {
                         img.style.objectFit = 'contain';
                         // Deixar fundo suave para evitar barras pretas
                         container.style.background = 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
@@ -3656,6 +3661,9 @@
                         img.style.objectFit = 'cover';
                         img.style.objectPosition = 'center center';
                     }
+                    // Garantir que a imagem ocupe o container sem cortes de altura
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
                     img.style.opacity = '1';
                     img.classList.add('loaded');
                 } catch {}
