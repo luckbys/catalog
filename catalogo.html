@@ -62,6 +62,11 @@
         .carousel-container {
             position: relative;
         }
+
+        /* Altura base responsiva do carrossel para evitar corte inferior */
+        #bannerCarousel {
+            height: clamp(18rem, 28vw, 30rem);
+        }
         
         .carousel-indicators {
             position: absolute;
@@ -98,6 +103,51 @@
             transition: width 0.1s ease;
             z-index: 20;
         }
+
+        /* Setas de navegação do carrossel (estilo Pague Menos-like) */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            z-index: 30;
+            backdrop-filter: blur(6px);
+            transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .carousel-arrow:hover {
+            background: rgba(0, 0, 0, 0.5);
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .carousel-arrow.left { left: 12px; }
+        .carousel-arrow.right { right: 12px; }
+        .carousel-arrow svg { width: 20px; height: 20px; }
+
+        @media (max-width: 640px) {
+            .carousel-arrow { width: 36px; height: 36px; }
+        }
+
+        /* Skeleton shimmer enquanto a imagem carrega */
+        .banner-image-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            animation: shimmer 1.8s linear infinite;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .banner-image-container.loaded::before { display: none; }
         
         /* Efeitos hover melhorados */
         .banner-slide:hover .animate-pulse {
@@ -778,7 +828,7 @@
             }
             
             #bannerCarousel {
-                height: 11rem;
+                height: clamp(14rem, 55vw, 22rem);
             }
             
             .product-card {
@@ -1107,7 +1157,7 @@
             }
             
             #bannerCarousel {
-                height: 18rem;
+                height: clamp(20rem, 35vw, 26rem);
             }
         }
         
@@ -1750,7 +1800,7 @@
         <div class="container mx-auto px-3 md:px-4 lg:px-6">
             <div class="banner-carousel-container relative overflow-hidden rounded-xl md:rounded-2xl shadow-xl md:shadow-2xl">
                 <!-- Carrossel Container -->
-                <div id="bannerCarousel" class="relative h-full touch-pan-y">
+                <div id="bannerCarousel" class="relative h-full touch-pan-y" role="region" aria-roledescription="carousel" aria-label="Carrossel de promoções" aria-live="polite">
                     <!-- Os banners serão inseridos aqui dinamicamente pelo JavaScript -->
                     <div class="banner-slide active absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-500 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12">
                         <div class="text-white text-center">
@@ -1759,6 +1809,17 @@
                         </div>
                     </div>
                 </div>
+                <!-- Controles de navegação do carrossel -->
+                <button id="prevBanner" class="carousel-arrow left" aria-label="Banner anterior" aria-controls="bannerCarousel">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button id="nextBanner" class="carousel-arrow right" aria-label="Próximo banner" aria-controls="bannerCarousel">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
     </section>
@@ -3584,6 +3645,15 @@
         function createBannerElement(banner, isActive = false) {
             const div = document.createElement('div');
             div.className = `banner-slide ${isActive ? 'active' : ''} absolute inset-0 overflow-hidden`;
+            // Acessibilidade por slide
+            div.setAttribute('role', 'group');
+            div.setAttribute('aria-roledescription', 'slide');
+            try {
+                const total = bannersData && bannersData.length ? bannersData.length : 0;
+                const indexLabel = isActive ? 'ativo' : 'inativo';
+                div.setAttribute('aria-label', `Slide ${total > 0 ? (currentSlide + 1) : 1} de ${total} (${indexLabel})`);
+            } catch (e) {}
+            div.setAttribute('aria-hidden', isActive ? 'false' : 'true');
             
             // Determinar CTA baseado no tipo de promoção
             const ctaInfo = getCTAInfo(banner);
@@ -3614,17 +3684,21 @@
                 imageUrl = `${API_BASE}/api/minio-image?path=${fileName}`;
                 console.log('🔄 Usando proxy MinIO para banner:', fileName);
             }
+            // Se houver URL de destino, tornar o banner clicável
+            const targetUrl = banner.link_url || banner.url_destino || banner.link || '';
             
             div.innerHTML = `
                 <!-- Container da imagem limpo - apenas a imagem -->
                 <div class="banner-image-container">
-                    <img src="${imageUrl}" 
-                         alt="${banner.titulo || 'Banner promocional'}"
-                         class="banner-image"
-                         loading="lazy"
-                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png'; console.log('🔄 Banner fallback:', this.src);"
-                         onload="this.style.opacity='1'; this.classList.add('loaded');"
-                         style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                    ${targetUrl ? `<a href="${targetUrl}" target="_blank" rel="noopener" aria-label="Abrir promoção">` : ''}
+                        <img src="${imageUrl}" 
+                             alt="${banner.titulo || 'Banner promocional'}"
+                             class="banner-image"
+                             loading="lazy" decoding="async"
+                             onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png'; console.log('🔄 Banner fallback:', this.src);"
+                             onload="this.style.opacity='1'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+                             style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                    ${targetUrl ? `</a>` : ''}
                 </div>
             `;
             
@@ -4017,6 +4091,9 @@
                 }
                 
                 currentSlide = index;
+
+                // Pré-carregar imagem do próximo slide
+                preloadNextSlideImage(index);
                 
                 // Reiniciar timer do auto-slide
                 if (autoSlideInterval) {
@@ -4036,6 +4113,23 @@
                 const prev = (currentSlide - 1 + slides.length) % slides.length;
                 showSlide(prev);
             };
+        }
+
+        // Pré-carregar imagem do próximo slide para experiência suave
+        function preloadNextSlideImage(index) {
+            try {
+                const slides = document.querySelectorAll('.banner-slide');
+                if (!slides || slides.length === 0) return;
+                const next = (index + 1) % slides.length;
+                const nextSlideImg = slides[next]?.querySelector('.banner-image');
+                if (nextSlideImg && nextSlideImg.dataset && nextSlideImg.dataset.preloaded !== 'true') {
+                    const img = new Image();
+                    img.src = nextSlideImg.currentSrc || nextSlideImg.src;
+                    img.onload = () => { nextSlideImg.dataset.preloaded = 'true'; };
+                }
+            } catch (e) {
+                console.warn('🔎 Falha ao pré-carregar próxima imagem do banner:', e);
+            }
         }
 
         // --- FUNCIONALIDADE DO CARROSSEL DE BANNERS ---
