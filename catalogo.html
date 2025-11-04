@@ -333,6 +333,17 @@
         .banner-slide.prev {
             transform: translateX(-100%);
         }
+
+        /* Orientação vertical inspirada no exemplo da 21st dev */
+        .banner-carousel-container.vertical .banner-slide {
+            transform: translateY(100%);
+        }
+        .banner-carousel-container.vertical .banner-slide.active {
+            transform: translateY(0);
+        }
+        .banner-carousel-container.vertical .banner-slide.prev {
+            transform: translateY(-100%);
+        }
         
         /* Banner apenas com imagem - sem texto */
         .banner-slide img {
@@ -987,6 +998,54 @@
                 padding: 12px;
                 touch-action: manipulation;
                 -webkit-tap-highlight-color: transparent;
+            }
+
+            /* Botões de navegação do carrossel (estilo shadcn/21st dev) */
+            .carousel-btn {
+                position: absolute;
+                z-index: 30;
+                display: grid;
+                place-items: center;
+                width: 44px;
+                height: 44px;
+                border-radius: 9999px;
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+                border: 1px solid rgba(226, 232, 240, 0.8);
+                backdrop-filter: blur(6px);
+                -webkit-tap-highlight-color: transparent;
+                transition: all 0.2s ease;
+            }
+            .carousel-btn:hover {
+                background: #ffffff;
+                transform: translateZ(0) scale(1.03);
+            }
+            .carousel-btn svg {
+                width: 22px;
+                height: 22px;
+                color: #334155;
+            }
+            /* Posição para orientação horizontal */
+            .banner-carousel-container .prev-btn {
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .banner-carousel-container .next-btn {
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            /* Reposiciona para orientação vertical (mobile) */
+            .banner-carousel-container.vertical .prev-btn {
+                left: 50%;
+                top: 12px;
+                transform: translateX(-50%);
+            }
+            .banner-carousel-container.vertical .next-btn {
+                left: 50%;
+                bottom: 12px;
+                transform: translateX(-50%);
             }
             
             /* Touch-friendly mobile menu items */
@@ -1764,6 +1823,19 @@
                         </div>
                     </div>
                 </div>
+                <!-- Controles do carrossel (inspirados no 21st dev) -->
+                <button id="prevBanner" class="carousel-btn prev-btn" aria-label="Anterior">
+                    <!-- Ícone padrão horizontal: chevron-left -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button id="nextBanner" class="carousel-btn next-btn" aria-label="Próximo">
+                    <!-- Ícone padrão horizontal: chevron-right -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
     </section>
@@ -4040,6 +4112,29 @@
             renderBanners();
         }
         
+        // --- Orientação do carrossel (horizontal/vertical) ---
+        let isVerticalCarousel = false;
+        function applyCarouselOrientation() {
+            const container = document.querySelector('.banner-carousel-container');
+            if (!container) return;
+            // Usa vertical em telas pequenas, inspirado no exemplo da 21st dev
+            isVerticalCarousel = window.matchMedia('(max-width: 640px)').matches;
+            container.classList.toggle('vertical', isVerticalCarousel);
+            
+            // Ajusta ícones dos botões conforme a orientação
+            const prevBtn = document.getElementById('prevBanner');
+            const nextBtn = document.getElementById('nextBanner');
+            if (prevBtn && nextBtn) {
+                if (isVerticalCarousel) {
+                    prevBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>';
+                    nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+                } else {
+                    prevBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+                    nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+                }
+            }
+        }
+        
         // Função para inicializar o carrossel
         function initializeCarousel() {
             // Atualizar referências dos slides
@@ -4047,6 +4142,9 @@
             
             if (newSlides.length === 0) return;
             
+            // Define orientação conforme viewport
+            applyCarouselOrientation();
+
             // Resetar variáveis do carrossel
             currentSlide = 0;
             
@@ -4165,7 +4263,7 @@
         
         // Suporte para navegação por teclado
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') {
+            if (e.key === 'ArrowLeft' || (isVerticalCarousel && e.key === 'ArrowUp')) {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
@@ -4173,7 +4271,7 @@
                     showSlide(prev);
                 }
                 startAutoSlide();
-            } else if (e.key === 'ArrowRight') {
+            } else if (e.key === 'ArrowRight' || (isVerticalCarousel && e.key === 'ArrowDown')) {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
@@ -4187,32 +4285,38 @@
         // Suporte para touch/swipe em dispositivos móveis
         let touchStartX = 0;
         let touchEndX = 0;
+        let touchStartY = 0;
+        let touchEndY = 0;
         
         if (carousel) {
             carousel.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
             });
             
             carousel.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
                 handleSwipe();
             });
         }
         
         function handleSwipe() {
             const swipeThreshold = 50;
-            const diff = touchStartX - touchEndX;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+            const diff = isVerticalCarousel ? diffY : diffX;
             
             if (Math.abs(diff) > swipeThreshold) {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
                     if (diff > 0) {
-                        // Swipe left - próximo slide
+                        // Próximo slide (left ou down)
                         const next = (currentSlide + 1) % slides.length;
                         showSlide(next);
                     } else {
-                        // Swipe right - slide anterior
+                        // Slide anterior (right ou up)
                         const prev = (currentSlide - 1 + slides.length) % slides.length;
                         showSlide(prev);
                     }
@@ -4223,6 +4327,12 @@
         
         // Inicializar carrossel dinamicamente
         console.log('🚀 Inicializando catálogo...');
+        applyCarouselOrientation();
+        window.addEventListener('resize', () => {
+            // Debounce leve
+            clearTimeout(window.__carouselResizeTimer);
+            window.__carouselResizeTimer = setTimeout(applyCarouselOrientation, 120);
+        });
         loadBanners(); // Carregar banners do Supabase
         
         
