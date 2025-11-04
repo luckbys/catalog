@@ -1,0 +1,628 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1888,
+        128
+      ],
+      "id": "28da956a-8eab-4dfb-bf64-e9e81fe29134",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "hakin t",
+        "remoteJid": "={{ $('Edit Fields4').item.json.from }}",
+        "messageId": "={{ $('Edit Fields4').item.json.msgid }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -352
+      ],
+      "id": "118cf193-5e02-4960-838f-1c95715a644c",
+      "name": "Marcar como Lida2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Edit Fields4').item.json.instance }}",
+        "remoteJid": "={{ $('Edit Fields4').item.json.from }}",
+        "messageText": "={{ $json.mensagem_cliente }}",
+        "options_message": {
+          "delay": 2200
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "5332d984-e380-4169-acff-f77ed2244843",
+      "name": "Enviar Mensagem Texto2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $json.instance }}",
+        "remoteJid": "={{ $json.from }}",
+        "messageText": "={{ $json.messageText }}",
+        "options_message": {
+          "delay": 1000
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -352
+      ],
+      "id": "c5d82da5-f89c-41b0-9af0-7fc97428c027",
+      "name": "Enviar Link Catalogo2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const quantidade = $('Processar Resposta2').first().json.quantidade_produtos;\nconst httpResponse = $('HTTP Request - Enviar Produtos2').first().json;\n\nlet catalogoUrl = 'Link não disponível';\n\n// Tenta diferentes caminhos possíveis\nif (httpResponse.link_produtos) {\n  catalogoUrl = httpResponse.link_produtos;\n} else if (httpResponse.data && httpResponse.data.link_produtos) {\n  catalogoUrl = httpResponse.data.link_produtos;\n} else if (httpResponse.data && httpResponse.data.catalogo_url) {\n  catalogoUrl = httpResponse.data.catalogo_url;\n} else if (httpResponse.catalogo_url) {\n  catalogoUrl = httpResponse.catalogo_url;\n}\n\nconst editFieldsData = $('Edit Fields4').first().json;\n\nreturn {\n  json: {\n    instance: editFieldsData.instance,\n    from: editFieldsData.from,\n    messageText: `✅ Catálogo gerado com sucesso!\\n\\n📋 ${quantidade} produto(s) encontrado(s)\\n\\n👉 Clique no link para visualizar:\\n${catalogoUrl}`,\n    quantidade: quantidade,\n    catalogo_url: catalogoUrl\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -352
+      ],
+      "id": "ea560f64-ba20-4696-b8c2-6af381e24582",
+      "name": "Preparar Mensagem Link2"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        -352
+      ],
+      "id": "63412c68-bdc3-4ddc-90bf-ac4d0464fe1f",
+      "name": "Wait2",
+      "webhookId": "bf092940-b1b8-4aa0-b1c7-910a0a30904f"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Edit Fields4').item.json.instance }}",
+        "remoteJid": "={{ $('Edit Fields4').item.json.from }}",
+        "messageText": "🔍 Buscando produtos na nossa farmácia...",
+        "options_message": {
+          "delay": 1000
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -352
+      ],
+      "id": "96940b12-5b5e-40bb-aef5-38e3825c329f",
+      "name": "Enviar Mensagem Buscando2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hakimfarma.devsible.com.br/api/produtos/criar-sessao",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"cliente_nome\": $json.cliente_nome,\n    \"cliente_telefone\": $json.cliente_telefone,\n    \"produtos\": $json.produtos,\n    \"quantidade_produtos\": $json.quantidade_produtos,\n    \"timestamp\": $json.timestamp\n  }\n}}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        -352
+      ],
+      "id": "56818101-7e3e-416d-9297-57e7717e461d",
+      "name": "HTTP Request - Enviar Produtos2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json;\n\nfunction toFloat(v) {\n  const n = parseFloat(v);\n  return isNaN(n) ? null : n;\n}\n\nconst produtos = (inputData.produtos || []).map(p => {\n  const base = toFloat(p.preco) ?? toFloat(p.valor) ?? 0;\n  const promo = toFloat(p.preco_promocional ?? p.precoPromo ?? p.promocional ?? p.promo ?? p.preco_com_desconto);\n  const descontoPerc = toFloat(p.desconto_percentual ?? p.percentual_desconto);\n  const descontoVal = toFloat(p.desconto_valor ?? p.valor_desconto);\n\n  let preco = base;\n  let preco_original = null;\n  let percentual_desconto = null;\n  let valor_desconto = null;\n\n  if (promo && promo > 0 && promo < base) {\n    preco_original = base;\n    preco = promo;\n    percentual_desconto = ((base - promo) / base) * 100;\n  } else if (descontoPerc && descontoPerc > 0) {\n    preco_original = base;\n    percentual_desconto = descontoPerc;\n    preco = base * (1 - (descontoPerc / 100));\n  } else if (descontoVal && descontoVal > 0) {\n    preco_original = base;\n    valor_desconto = descontoVal;\n    preco = Math.max(0, base - descontoVal);\n  }\n\n  const round2 = n => (n == null ? null : Math.round(n * 100) / 100);\n\n  return {\n    id: p.id || 0,\n    descricao: p.descricao || '',\n    apresentacao: p.apresentacao || '',\n    laboratorio: p.laboratorio || '',\n    preco: round2(preco) ?? 0,\n    preco_original: round2(preco_original),\n    percentual_desconto: round2(percentual_desconto),\n    valor_desconto: round2(valor_desconto),\n    estoque: Math.max(0, parseInt(p.quantidade) || 0),\n    imagem_url: p.imagem_url || '',\n    categoria: p.categoria || 'Medicamentos'\n  };\n});\n\nreturn {\n  json: {\n    cliente_nome: inputData.cliente_nome || 'Cliente',\n    cliente_telefone: inputData.cliente_telefone,\n    produtos,\n    quantidade_produtos: inputData.quantidade_produtos,\n    timestamp: inputData.timestamp\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        -352
+      ],
+      "id": "481fba0a-4154-4d71-ab33-8aece95178ae",
+      "name": "Preparar Dados para API2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "tem-produtos",
+              "leftValue": "={{ $json.tem_produtos }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "quantidade-maior-zero",
+              "leftValue": "={{ $json.quantidade_produtos }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -224
+      ],
+      "id": "6c45efc0-11aa-48c6-bb8a-acc0afc220a2",
+      "name": "IF Tem Produtos2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nconst editFieldsData = $('Edit Fields4').first().json;\n\nconsole.log('🔍 PROCESSANDO OUTPUT');\n\nlet produtos = [];\nlet mensagem = output;\nlet temProdutos = false;\n\nif (output && typeof output === 'string' && output.includes('PRODUTOS_JSON:')) {\n  try {\n    const parts = output.split('PRODUTOS_JSON:');\n    mensagem = parts[0].replace('MENSAGEM:', '').trim();\n    \n    let jsonPart = parts[1]\n      .trim()\n      .replace(/```json/g, '')\n      .replace(/```/g, '')\n      .replace(/\\n/g, '')\n      .replace(/\\r/g, '')\n      .replace(/\\t/g, '')\n      .trim();\n    \n    const jsonEndIndex = jsonPart.lastIndexOf(']');\n    if (jsonEndIndex !== -1) {\n      jsonPart = jsonPart.substring(0, jsonEndIndex + 1);\n    }\n    \n    let produtosRaw = JSON.parse(jsonPart);\n    \n    if (Array.isArray(produtosRaw)) {\n      produtos = produtosRaw;\n    } else if (produtosRaw.response && Array.isArray(produtosRaw.response)) {\n      produtos = produtosRaw.response;\n    } else if (produtosRaw.data && Array.isArray(produtosRaw.data)) {\n      produtos = produtosRaw.data;\n    } else {\n      produtos = [produtosRaw];\n    }\n    \n    produtos = produtos\n      .filter(p => p && p.descricao)\n      .map(p => ({\n        ...p,\n        quantidade: Math.max(0, parseInt(p.quantidade) || 0)\n      }));\n    \n    temProdutos = produtos.length > 0;\n    \n    console.log(`✅ ${produtos.length} produtos processados`);\n    \n  } catch (error) {\n    console.log('❌ Erro:', error.message);\n    produtos = [];\n    temProdutos = false;\n  }\n}\n\nconst resultado = {\n  tem_produtos: temProdutos,\n  mensagem_cliente: mensagem,\n  produtos: produtos,\n  quantidade_produtos: produtos.length,\n  cliente_telefone: editFieldsData.from || '',\n  cliente_nome: editFieldsData.nome || '',\n  timestamp: new Date().toISOString(),\n  sessao_id: editFieldsData.from || ''\n};\n\nreturn { json: resultado };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        -224
+      ],
+      "id": "66c9c024-7015-4c0f-aea5-1b174ff57984",
+      "name": "Processar Resposta2"
+    },
+    {
+      "parameters": {
+        "name": "criar_pedido",
+        "description": "Cria um pedido de compra após o cliente confirmar todos os dados",
+        "workflowId": "={{ $workflow.id }}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"cliente_nome\": \"string\",\n  \"cliente_telefone\": \"string\",\n  \"produtos\": [\n    {\n      \"nome\": \"string\",\n      \"quantidade\": \"number\",\n      \"valor_unitario\": \"number\"\n    }\n  ],\n  \"tipo_entrega\": \"entrega ou retirada\",\n  \"endereco\": \"string\",\n  \"forma_pagamento\": \"string\",\n  \"valor_total\": \"number\",\n  \"observacoes\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -992,
+        224
+      ],
+      "id": "f93b6785-78ba-49ff-a92e-67c926ea2cd4",
+      "name": "Tool Criar Pedido2"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "produtos",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "descricao",
+              "condition": "ilike",
+              "keyValue": "={{ '%' + $fromAI('conditions0_Value', `o medicamento que for solicitado pelo cliente, buscar pela descrição`, 'string') + '%' }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        192
+      ],
+      "id": "9f683d04-45de-4d8a-b661-b0828a90f5a1",
+      "name": "Supabase Tool Produtos2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "yIPm0m5T4MK8AkfA",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.from }}",
+        "contextWindowLength": 70
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1456,
+        64
+      ],
+      "id": "54d2767b-eaa3-4c77-80a7-abd9db78ce04",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        32
+      ],
+      "id": "6f03544b-f4bf-4d16-b011-cc483f928c6f",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gpN4f9Ybl64teuKr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "Você é o Atendente Virtual da Farmácia HAKIM.\n\n=== IMPORTANTE: FORMATO DE RESPOSTA COM PRODUTOS ===\n\nQUANDO O CLIENTE PERGUNTAR SOBRE PRODUTOS:\n1. Use a tool 'Supabase Tool Produtos' para buscar\n2. SEMPRE responda EXATAMENTE neste formato (SEM usar ```json ou ```)\n\nMENSAGEM: Encontrei X produtos! Vou enviar a lista para você escolher. 📋\nPRODUTOS_JSON: [cole aqui o array JSON COMPLETO]\n\nEXEMPLO REAL DE RESPOSTA:\nMENSAGEM: Encontrei 3 produtos! Vou enviar a lista para você escolher. 📋\nPRODUTOS_JSON: [{\"id\":1,\"descricao\":\"RIVOTRIL\",\"apresentacao\":\"0,25MG\",\"laboratorio\":\"ROCHE\",\"valor\":10.50,\"preco_promocional\":8.99}]\n\nREGRAS CRÍTICAS:\n- NUNCA use ```json ou ``` ou qualquer markdown\n- NÃO quebre linhas no JSON\n- COLE o array JSON EXATAMENTE como a tool retornou\n- Use APENAS o formato: MENSAGEM: texto\\nPRODUTOS_JSON: [array]\n\n=== FLUXO DE ATENDIMENTO ===\n\nAPÓS O CLIENTE ESCOLHER O PRODUTO:\n1. Pergunte a quantidade desejada\n2. Pergunte se é para entrega ou retirada\n3. Se entrega, solicite:\n   - Endereço completo (rua, número, bairro)\n   - Ponto de referência (opcional)\n4. Pergunte a forma de pagamento:\n   - Dinheiro (se sim, pergunte se precisa de troco)\n   - Pix\n   - Cartão (débito ou crédito)\n5. Pergunte se tem alguma observação adicional\n6. CONFIRME todos os dados antes de finalizar\n\nPARA FINALIZAR O PEDIDO:\nUse a tool 'criar_pedido' com TODOS os dados:\n- cliente_nome\n- cliente_telefone\n- produtos: [{nome, quantidade, valor_unitario}]\n- tipo_entrega: \"entrega\" ou \"retirada\"\n- endereco: endereço completo (se entrega)\n- forma_pagamento\n- valor_total\n- observacoes\n\n=== REGRAS ===\n- Seja sempre cordial e profissional\n- Confirme TODOS os dados antes de finalizar\n- Se o cliente pedir para alterar algo, seja flexível\n- Nunca finalize sem confirmação do cliente"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1600,
+        -224
+      ],
+      "id": "5238bb88-aeed-4e56-bdfd-7a59325194eb",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "bf09e274-2bfc-45b8-a7c0-87502c9b6e70",
+              "leftValue": "={{ $json.from_me }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "IF fromMe=false2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        -208
+      ],
+      "id": "a283880b-d132-4e1b-9f09-09096bf8eb9f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "38cb3eb8-cdb4-4466-8bb8-e0df118f657f",
+              "name": "message",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "c2be49c1-f5f8-4197-a86a-f48c7e7f1d8d",
+              "name": "from",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "81310992-4fa6-4086-8859-b0bda3f2a3d4",
+              "name": "instance",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "5f13232d-2611-4d56-a0d2-36c98e96a524",
+              "name": "msgid",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2d55f0b7-912a-4f9c-9324-865b7fd29d91",
+              "name": "from_me",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "string"
+            },
+            {
+              "id": "22cddb2b-b078-4f78-81a4-d80389f595b2",
+              "name": "nome",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2112,
+        -224
+      ],
+      "id": "f5b1c931-7553-4bcb-91d6-ceba124c4fd2",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weshou7",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2352,
+        -224
+      ],
+      "id": "0bcbaaea-49ac-4036-a3b8-d06bf8d1ccf9",
+      "name": "Webhook2",
+      "webhookId": "4b299188-efdf-4ab3-b72f-2edbb855a001"
+    }
+  ],
+  "connections": {
+    "Enviar Link Catalogo2": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Lida2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Mensagem Link2": {
+      "main": [
+        [
+          {
+            "node": "Enviar Link Catalogo2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Preparar Mensagem Link2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem Buscando2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Enviar Produtos2": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem Buscando2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Dados para API2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Enviar Produtos2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Tem Produtos2": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados para API2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensagem Texto2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Resposta2": {
+      "main": [
+        [
+          {
+            "node": "IF Tem Produtos2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool Criar Pedido2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Tool Produtos2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Processar Resposta2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF fromMe=false2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "IF fromMe=false2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "77f30554d2102f542e00b67be9506d390e9827f42a3e24a5d0de8d5fb8d2944f"
+  }
+}

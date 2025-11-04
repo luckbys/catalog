@@ -3605,29 +3605,55 @@
         function createImageBanner(banner, isActive, ctaInfo, div) {
             // Usar proxy do MinIO para evitar problemas de CORS
             let imageUrl = banner.imagem_url;
-            
-            // Se a URL é do MinIO, usar o proxy do backend
+
+            // Se a URL é do MinIO, usar o proxy do backend com caminho completo (sem query)
             if (imageUrl && imageUrl.includes('c4crm-minio.zv7gpn.easypanel.host')) {
-                // Extrair apenas o nome do arquivo da URL do MinIO
-                const urlParts = imageUrl.split('/');
-                const fileName = urlParts[urlParts.length - 1];
-                imageUrl = `${API_BASE}/api/minio-image?path=${fileName}`;
-                console.log('🔄 Usando proxy MinIO para banner:', fileName);
+                try {
+                    const u = new URL(imageUrl);
+                    const fullPath = u.pathname.replace(/^\/+/, ''); // remove '/'
+                    imageUrl = `${API_BASE}/api/minio-image?path=${encodeURIComponent(fullPath)}`;
+                    console.log('🔄 Usando proxy MinIO com caminho completo:', fullPath);
+                } catch (e) {
+                    // Fallback: usar apenas o nome do arquivo
+                    const fileName = imageUrl.split('?')[0].split('/').pop();
+                    imageUrl = `${API_BASE}/api/minio-image?path=${encodeURIComponent(fileName)}`;
+                    console.log('🔄 Usando proxy MinIO (fallback arquivo):', fileName);
+                }
             }
-            
-            div.innerHTML = `
-                <!-- Container da imagem limpo - apenas a imagem -->
-                <div class="banner-image-container">
-                    <img src="${imageUrl}" 
-                         alt="${banner.titulo || 'Banner promocional'}"
-                         class="banner-image"
-                         loading="lazy"
-                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png'; console.log('🔄 Banner fallback:', this.src);"
-                         onload="this.style.opacity='1'; this.classList.add('loaded');"
-                         style="opacity: 0; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
-                </div>
-            `;
-            
+
+            // Criar DOM programaticamente para controlar fallback robusto
+            div.innerHTML = `<div class="banner-image-container"></div>`;
+            const container = div.querySelector('.banner-image-container');
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = banner.titulo || 'Banner promocional';
+            img.className = 'banner-image';
+            img.loading = 'lazy';
+            img.style.opacity = '0';
+
+            img.addEventListener('load', () => {
+                try { img.style.opacity = '1'; img.classList.add('loaded'); } catch {}
+            });
+
+            let triedFallback = false;
+            img.addEventListener('error', () => {
+                if (!triedFallback) {
+                    triedFallback = true;
+                    const fallbackSrc = `${API_BASE}/api/local-image?path=padrao.png`;
+                    console.log('🔄 Banner fallback (imagem padrão):', fallbackSrc);
+                    img.src = fallbackSrc;
+                    return;
+                }
+                // Se o fallback também falhar, alternar para layout de texto
+                console.warn('⚠️ Falha ao carregar imagem do banner e fallback. Alternando para layout de texto.');
+                const textDiv = createTextBanner(banner, isActive, ctaInfo, document.createElement('div'));
+                // Substituir o conteúdo do slide atual
+                try {
+                    div.replaceWith(textDiv);
+                } catch {}
+            });
+
+            container.appendChild(img);
             return div;
         }
         
