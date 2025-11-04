@@ -15,6 +15,36 @@
     },
     {
       "parameters": {
+        "method": "GET",
+        "url": "https://hakimfarma.devsible.com.br/api/produtos",
+        "options": {
+          "timeout": 12000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -720,
+        32
+      ],
+      "id": "c2f6b7a9-6f1e-4d2a-8c6b-0b7e5a33a7e1",
+      "name": "HTTP Request - Buscar Produtos Fallback2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst edit = $('Edit Fields4').first().json;\nconst query = (edit.message || '').toLowerCase();\n\n// Estrutura esperada do backend: { produtos: [...] }\nconst produtos = (raw.produtos || [])\n  .filter(p => {\n    const qtd = Math.max(0, parseInt(p.quantidade ?? p.estoque) || 0);\n    if (qtd <= 0) return false;\n\n    const d = (p.descricao || '').toLowerCase();\n    const a = (p.apresentacao || '').toLowerCase();\n    const l = (p.laboratorio || '').toLowerCase();\n    // filtro simples por termos da mensagem\n    return query ? (d.includes(query) || a.includes(query) || l.includes(query)) : true;\n  })\n  .slice(0, 30);\n\nreturn { json: {\n  cliente_nome: edit.nome || 'Cliente',\n  cliente_telefone: edit.from || '',\n  produtos,\n  quantidade_produtos: produtos.length,\n  timestamp: new Date().toISOString()\n}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        32
+      ],
+      "id": "0f0b3b53-9f1d-4f9b-bc16-0f9c6b0ef3d9",
+      "name": "Filtrar e Montar Input Fallback2"
+    },
+    {
+      "parameters": {
         "resource": "chat-api",
         "operation": "read-messages",
         "instanceName": "hakin t",
@@ -160,7 +190,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $input.first().json;\n\nfunction toFloat(v) {\n  const n = parseFloat(v);\n  return isNaN(n) ? null : n;\n}\n\nconst produtos = (inputData.produtos || []).map(p => {\n  const base = toFloat(p.preco) ?? toFloat(p.valor) ?? 0;\n  const promo = toFloat(p.preco_promocional ?? p.precoPromo ?? p.promocional ?? p.promo ?? p.preco_com_desconto);\n  const descontoPerc = toFloat(p.desconto_percentual ?? p.percentual_desconto);\n  const descontoVal = toFloat(p.desconto_valor ?? p.valor_desconto);\n\n  let preco = base;\n  let preco_original = null;\n  let percentual_desconto = null;\n  let valor_desconto = null;\n\n  if (promo && promo > 0 && promo < base) {\n    preco_original = base;\n    preco = promo;\n    percentual_desconto = ((base - promo) / base) * 100;\n  } else if (descontoPerc && descontoPerc > 0) {\n    preco_original = base;\n    percentual_desconto = descontoPerc;\n    preco = base * (1 - (descontoPerc / 100));\n  } else if (descontoVal && descontoVal > 0) {\n    preco_original = base;\n    valor_desconto = descontoVal;\n    preco = Math.max(0, base - descontoVal);\n  }\n\n  const round2 = n => (n == null ? null : Math.round(n * 100) / 100);\n\n  return {\n    id: p.id || 0,\n    descricao: p.descricao || '',\n    apresentacao: p.apresentacao || '',\n    laboratorio: p.laboratorio || '',\n    preco: round2(preco) ?? 0,\n    preco_original: round2(preco_original),\n    percentual_desconto: round2(percentual_desconto),\n    valor_desconto: round2(valor_desconto),\n    estoque: Math.max(0, parseInt(p.quantidade) || 0),\n    imagem_url: p.imagem_url || '',\n    categoria: p.categoria || 'Medicamentos'\n  };\n});\n\nreturn {\n  json: {\n    cliente_nome: inputData.cliente_nome || 'Cliente',\n    cliente_telefone: inputData.cliente_telefone,\n    produtos,\n    quantidade_produtos: inputData.quantidade_produtos,\n    timestamp: inputData.timestamp\n  }\n};"
+        "jsCode": "const inputData = $input.first().json;\n\nfunction toFloat(v) {\n  const n = parseFloat(v);\n  return isNaN(n) ? null : n;\n}\n\nconst produtos = (inputData.produtos || []).map(p => {\n  const base = toFloat(p.preco) ?? toFloat(p.valor) ?? 0;\n  const promo = toFloat(p.preco_promocional ?? p.precoPromo ?? p.promocional ?? p.promo ?? p.preco_com_desconto);\n  const descontoPerc = toFloat(p.desconto_percentual ?? p.percentual_desconto);\n  const descontoVal = toFloat(p.desconto_valor ?? p.valor_desconto);\n\n  let preco = base;\n  let preco_original = null;\n  let percentual_desconto = null;\n  let valor_desconto = null;\n\n  if (promo && promo > 0 && promo < base) {\n    preco_original = base;\n    preco = promo;\n    percentual_desconto = ((base - promo) / base) * 100;\n  } else if (descontoPerc && descontoPerc > 0) {\n    preco_original = base;\n    percentual_desconto = descontoPerc;\n    preco = base * (1 - (descontoPerc / 100));\n  } else if (descontoVal && descontoVal > 0) {\n    preco_original = base;\n    valor_desconto = descontoVal;\n    preco = Math.max(0, base - descontoVal);\n  }\n\n  const round2 = n => (n == null ? null : Math.round(n * 100) / 100);\n\n  return {\n    id: p.id || 0,\n    descricao: p.descricao || '',\n    apresentacao: p.apresentacao || '',\n    laboratorio: p.laboratorio || '',\n    preco: round2(preco) ?? 0,\n    preco_original: round2(preco_original),\n    percentual_desconto: round2(percentual_desconto),\n    valor_desconto: round2(valor_desconto),\n    estoque: Math.max(0, parseInt(p.quantidade ?? p.estoque) || 0),\n    imagem_url: p.imagem_url || '',\n    categoria: p.categoria || 'Medicamentos'\n  };\n}).filter(p => p.estoque > 0);\n\nreturn {\n  json: {\n    cliente_nome: inputData.cliente_nome || 'Cliente',\n    cliente_telefone: inputData.cliente_telefone,\n    produtos,\n    quantidade_produtos: produtos.length,\n    timestamp: inputData.timestamp\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -216,7 +246,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const output = $input.item.json.output;\nconst editFieldsData = $('Edit Fields4').first().json;\n\nconsole.log('🔍 PROCESSANDO OUTPUT');\n\nlet produtos = [];\nlet mensagem = output;\nlet temProdutos = false;\n\nif (output && typeof output === 'string' && output.includes('PRODUTOS_JSON:')) {\n  try {\n    const parts = output.split('PRODUTOS_JSON:');\n    mensagem = parts[0].replace('MENSAGEM:', '').trim();\n    \n    let jsonPart = parts[1]\n      .trim()\n      .replace(/```json/g, '')\n      .replace(/```/g, '')\n      .replace(/\\n/g, '')\n      .replace(/\\r/g, '')\n      .replace(/\\t/g, '')\n      .trim();\n    \n    const jsonEndIndex = jsonPart.lastIndexOf(']');\n    if (jsonEndIndex !== -1) {\n      jsonPart = jsonPart.substring(0, jsonEndIndex + 1);\n    }\n    \n    let produtosRaw = JSON.parse(jsonPart);\n    \n    if (Array.isArray(produtosRaw)) {\n      produtos = produtosRaw;\n    } else if (produtosRaw.response && Array.isArray(produtosRaw.response)) {\n      produtos = produtosRaw.response;\n    } else if (produtosRaw.data && Array.isArray(produtosRaw.data)) {\n      produtos = produtosRaw.data;\n    } else {\n      produtos = [produtosRaw];\n    }\n    \n    produtos = produtos\n      .filter(p => p && p.descricao)\n      .map(p => ({\n        ...p,\n        quantidade: Math.max(0, parseInt(p.quantidade) || 0)\n      }));\n    \n    temProdutos = produtos.length > 0;\n    \n    console.log(`✅ ${produtos.length} produtos processados`);\n    \n  } catch (error) {\n    console.log('❌ Erro:', error.message);\n    produtos = [];\n    temProdutos = false;\n  }\n}\n\nconst resultado = {\n  tem_produtos: temProdutos,\n  mensagem_cliente: mensagem,\n  produtos: produtos,\n  quantidade_produtos: produtos.length,\n  cliente_telefone: editFieldsData.from || '',\n  cliente_nome: editFieldsData.nome || '',\n  timestamp: new Date().toISOString(),\n  sessao_id: editFieldsData.from || ''\n};\n\nreturn { json: resultado };"
+        "jsCode": "const output = $input.item.json.output;\nconst editFieldsData = $('Edit Fields4').first().json;\n\nconsole.log('🔍 PROCESSANDO OUTPUT');\n\nlet produtos = [];\nlet mensagem = output;\nlet temProdutos = false;\n\nif (output && typeof output === 'string' && output.includes('PRODUTOS_JSON:')) {\n  try {\n    const parts = output.split('PRODUTOS_JSON:');\n    mensagem = parts[0].replace('MENSAGEM:', '').trim();\n    \n    let jsonPart = parts[1]\n      .trim()\n      .replace(/```json/g, '')\n      .replace(/```/g, '')\n      .replace(/\\n/g, '')\n      .replace(/\\r/g, '')\n      .replace(/\\t/g, '')\n      .trim();\n    \n    const jsonEndIndex = jsonPart.lastIndexOf(']');\n    if (jsonEndIndex !== -1) {\n      jsonPart = jsonPart.substring(0, jsonEndIndex + 1);\n    }\n    \n    let produtosRaw = JSON.parse(jsonPart);\n    \n    if (Array.isArray(produtosRaw)) {\n      produtos = produtosRaw;\n    } else if (produtosRaw.response && Array.isArray(produtosRaw.response)) {\n      produtos = produtosRaw.response;\n    } else if (produtosRaw.data && Array.isArray(produtosRaw.data)) {\n      produtos = produtosRaw.data;\n    } else {\n      produtos = [produtosRaw];\n    }\n    \n    produtos = produtos\n      .filter(p => p && p.descricao)\n      .map(p => ({\n        ...p,\n        quantidade: Math.max(0, parseInt(p.quantidade ?? p.estoque) || 0)\n      }))\n      .filter(p => p.quantidade > 0);\n    \n    temProdutos = produtos.length > 0;\n    \n    console.log(`✅ ${produtos.length} produtos processados`);\n    \n  } catch (error) {\n    console.log('❌ Erro:', error.message);\n    produtos = [];\n    temProdutos = false;\n  }\n}\n\nconst resultado = {\n  tem_produtos: temProdutos,\n  mensagem_cliente: mensagem,\n  produtos: produtos,\n  quantidade_produtos: produtos.length,\n  cliente_telefone: editFieldsData.from || '',\n  cliente_nome: editFieldsData.nome || '',\n  timestamp: new Date().toISOString(),\n  sessao_id: editFieldsData.from || ''\n};\n\nreturn { json: resultado };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -507,6 +537,33 @@
         [
           {
             "node": "Enviar Mensagem Texto2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request - Buscar Produtos Fallback2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Buscar Produtos Fallback2": {
+      "main": [
+        [
+          {
+            "node": "Filtrar e Montar Input Fallback2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar e Montar Input Fallback2": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados para API2",
             "type": "main",
             "index": 0
           }
