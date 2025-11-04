@@ -777,7 +777,12 @@ def listar_produtos():
             print(f"[PRODUTOS] Encontrados {len(result.data)} produtos no Supabase")
             # Garantir que todos os produtos tenham o campo laboratorio
             produtos_formatados = []
-            for produto in result.data:
+            print(f"[DEBUG] Iniciando processamento de {len(result.data)} produtos...")
+            for i, produto in enumerate(result.data):
+                # Debug geral
+                if i < 5:  # Primeiros 5 produtos
+                    print(f"[DEBUG] Produto {i}: ID={produto.get('id')}, Desc={produto.get('descricao')}")
+                
                 # Obter valores básicos
                 preco_raw = produto.get("preco") or produto.get("price", 0)
                 desconto_raw = produto.get("desconto_percentual", 0) or 0
@@ -792,14 +797,22 @@ def listar_produtos():
                 
                 valor_desconto = produto.get("desconto_valor")
                 
+                # Debug específico para produto 2465302 (verificar tipo do ID)
+                produto_id = produto.get("id")
+                if produto_id == 2465302 or produto_id == "2465302" or str(produto_id) == "2465302":
+                    print(f"[DEBUG 2465302] ENCONTRADO! ID: {produto_id} (tipo: {type(produto_id)})")
+                    print(f"[DEBUG 2465302] Descrição: {produto.get('descricao')}")
+                    print(f"[DEBUG 2465302] Preço atual: {preco_atual} (tipo: {type(preco_atual)})")
+                    print(f"[DEBUG 2465302] Percentual desconto: {percentual_desconto} (tipo: {type(percentual_desconto)})")
+                    print(f"[DEBUG 2465302] Condição percentual_desconto > 0: {percentual_desconto > 0}")
+                
                 # Calcular preço original se há desconto percentual
                 preco_original = None
                 if percentual_desconto > 0:
                     preco_original = preco_atual / (1 - percentual_desconto/100)
                     # Debug específico para produtos com desconto
-                    if produto.get("id") == 2465302:
-                        print(f"[DEBUG] Produto {produto.get('id')} - {produto.get('descricao')}")
-                        print(f"[DEBUG] Preço: {preco_atual}, Desconto: {percentual_desconto}%, Original: {preco_original}")
+                    if produto_id == 2465302 or produto_id == "2465302" or str(produto_id) == "2465302":
+                        print(f"[DEBUG 2465302] Preço original calculado: {preco_original}")
                 
                 produto_formatado = {
                     "id": produto.get("id"),
