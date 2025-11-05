@@ -123,7 +123,7 @@ async function sendOrderNotificationToSeller(orderData, orderDetails) {
 🔗 *GERENCIAR:*
 ${adminLink}`;
     
-    // Enviar via Evolution API
+    // Enviar via Evolution API v2
     const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${INSTANCE_NAME}`, {
         method: 'POST',
         headers: {
@@ -132,8 +132,13 @@ ${adminLink}`;
         },
         body: JSON.stringify({
             number: SELLER_PHONE,
-            text: message,
-            delay: 1200
+            options: {
+                delay: 1200,
+                presence: 'composing'
+            },
+            textMessage: {
+                text: message
+            }
         })
     });
     
@@ -160,12 +165,17 @@ POST /message/sendText/{instance}
 }
 ```
 
-**Body:**
+**Body (Evolution API v2):**
 ```json
 {
     "number": "5512981443806",
-    "text": "Mensagem aqui",
-    "delay": 1200
+    "options": {
+        "delay": 1200,
+        "presence": "composing"
+    },
+    "textMessage": {
+        "text": "Mensagem aqui"
+    }
 }
 ```
 

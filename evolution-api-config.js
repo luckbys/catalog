@@ -44,8 +44,13 @@ async function sendTextMessage(number, text, delay = EVOLUTION_CONFIG.MESSAGE_DE
             },
             body: JSON.stringify({
                 number: number,
-                text: text,
-                delay: delay
+                options: {
+                    delay: delay,
+                    presence: 'composing'
+                },
+                textMessage: {
+                    text: text
+                }
             }),
             signal: AbortSignal.timeout(EVOLUTION_CONFIG.REQUEST_TIMEOUT)
         });
