@@ -4257,7 +4257,6 @@ ${adminLink}
                 selectedCategory = chip.dataset.category;
                 // Renderizar produtos
                 renderProducts();
-                showFilterFeedback(selectedCategory ? 'Categoria atualizada' : 'Mostrando todos os produtos');
             });
         });
         
@@ -4269,65 +4268,9 @@ ${adminLink}
         if (sortFilter) {
             sortFilter.addEventListener('change', () => {
                 renderProducts();
-                showFilterFeedback('Ordenação aplicada');
             });
         }
 
-        
-        // Feedback visual de filtros
-        function showFilterFeedback(message, type = 'success') {
-            const feedback = document.createElement('div');
-            feedback.className = `filter-feedback ${type}`;
-            feedback.textContent = message;
-            feedback.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                background: ${type === 'success' ? '#10b981' : '#3b82f6'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 9999;
-                animation: slideInRight 0.3s ease-out;
-                font-size: 14px;
-                font-weight: 600;
-            `;
-            document.body.appendChild(feedback);
-            setTimeout(() => {
-                feedback.style.animation = 'slideOutRight 0.3s ease-in';
-                setTimeout(() => feedback.remove(), 300);
-            }, 2000);
-        }
-        
-        // Adicionar animações CSS
-        if (!document.getElementById('filter-feedback-style')) {
-            const style = document.createElement('style');
-            style.id = 'filter-feedback-style';
-            style.textContent = `
-                @keyframes slideInRight {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-                @keyframes slideOutRight {
-                    from {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
         
         // Autocomplete no Header
         const headerSearchSuggestions = document.getElementById('headerSearchSuggestions');
