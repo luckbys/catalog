@@ -9,10 +9,10 @@ const EVOLUTION_CONFIG = {
     API_URL: 'https://chatbot-evolution-api.zv7gpn.easypanel.host',
     
     // API Key para autenticação
-    API_KEY: '29683C4C977415CAAFCCE10F7D57E11',
+    API_KEY: 'E7Bp3tlb9zQxd54rHzBzVOxDEwF8BDbZ9cR16WeEGXGpEeZMorP8cdrGWhpkfDQODlwh5CuO1aN8pTpj2Fwmc2ARYPgibsnoB8oXIynzcifVqhWTI7R4PCHsQcDFQM0p',
     
     // Nome da instância
-    INSTANCE_NAME: 'hakimfarma',
+    INSTANCE_NAME: 'farmahakim',
     
     // Número do vendedor (com código do país)
     SELLER_PHONE: '5512976021836',
