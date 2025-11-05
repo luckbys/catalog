@@ -297,7 +297,8 @@ Pedido registrado com sucesso! ✅"""
             
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             
-            if response.status_code == 200:
+            # ✅ CORREÇÃO: Aceitar qualquer código 2xx (200-299) como sucesso
+            if response.ok:  # Equivalente a: 200 <= status_code < 300
                 return {
                     "success": True,
                     "response": response.json(),
