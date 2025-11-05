@@ -9,7 +9,7 @@ const EVOLUTION_CONFIG = {
     API_URL: 'https://chatbot-evolution-api.zv7gpn.easypanel.host',
     
     // API Key para autenticação
-    API_KEY: '016179B162E9-4D01-AA9B-D0E3730E0954',
+    API_KEY: '429683C4C977415CAAFCCE10F7D57E11',
     
     // Nome da instância
     INSTANCE_NAME: 'hakimfarma',
