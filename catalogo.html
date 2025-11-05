@@ -3,7 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Hakim Farma - Sua Farmácia Online</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>Hakim Farma - Sua Farmácia Online | Medicamentos com Entrega Rápida</title>
+    <meta name="description" content="Compre medicamentos online na Hakim Farma com os melhores preços e entrega rápida. Mais de 10.000 produtos em estoque. Farmácia de confiança com atendimento 24h.">
+    <meta name="keywords" content="farmácia online, medicamentos, remédios, delivery farmácia, farmácia 24 horas, comprar remédios online, medicamentos com desconto, saúde, bem-estar, produtos de higiene, suplementos">
+    <meta name="author" content="Hakim Farma">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://hakimfarma.com.br/catalogo">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hakimfarma.com.br/catalogo">
+    <meta property="og:title" content="Hakim Farma - Sua Farmácia Online">
+    <meta property="og:description" content="Os melhores preços em medicamentos com entrega rápida e segura. Mais de 10.000 produtos disponíveis.">
+    <meta property="og:image" content="https://hakimfarma.com.br/public/logo.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Hakim Farma">
+    <meta property="og:locale" content="pt_BR">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://hakimfarma.com.br/catalogo">
+    <meta name="twitter:title" content="Hakim Farma - Sua Farmácia Online">
+    <meta name="twitter:description" content="Os melhores preços em medicamentos com entrega rápida e segura.">
+    <meta name="twitter:image" content="https://hakimfarma.com.br/public/logo.png">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./public/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./public/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./public/logo.png">
+    <link rel="shortcut icon" href="./public/logo.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <!-- Mobile App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hakim Farma">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Hakim Farma">
     
     <!-- Performance optimizations -->
     <meta name="theme-color" content="#10b981">
@@ -1929,6 +1976,101 @@
             console.warn('BADGE-DEBUG erro:', e);
         }
     })();
+    </script>
+    
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Pharmacy",
+        "name": "Hakim Farma",
+        "description": "Farmácia online com os melhores preços em medicamentos e produtos de saúde",
+        "url": "https://hakimfarma.com.br",
+        "logo": "https://hakimfarma.com.br/public/logo.png",
+        "image": "https://hakimfarma.com.br/public/logo.png",
+        "telephone": "+55-11-0000-0000",
+        "email": "contato@hakimfarma.com.br",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rua Exemplo, 123",
+            "addressLocality": "São Paulo",
+            "addressRegion": "SP",
+            "postalCode": "01000-000",
+            "addressCountry": "BR"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "-23.5505",
+            "longitude": "-46.6333"
+        },
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday"
+                ],
+                "opens": "00:00",
+                "closes": "23:59"
+            }
+        ],
+        "priceRange": "$$",
+        "currenciesAccepted": "BRL",
+        "paymentAccepted": "Cash, Credit Card, Debit Card, PIX",
+        "areaServed": {
+            "@type": "Country",
+            "name": "Brazil"
+        },
+        "sameAs": [
+            "https://www.facebook.com/hakimfarma",
+            "https://www.instagram.com/hakimfarma",
+            "https://twitter.com/hakimfarma"
+        ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Hakim Farma",
+        "url": "https://hakimfarma.com.br",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://hakimfarma.com.br/catalogo.html?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Hakim Farma",
+        "url": "https://hakimfarma.com.br",
+        "logo": "https://hakimfarma.com.br/public/logo.png",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+55-11-0000-0000",
+            "contactType": "customer service",
+            "areaServed": "BR",
+            "availableLanguage": ["Portuguese"]
+        },
+        "sameAs": [
+            "https://www.facebook.com/hakimfarma",
+            "https://www.instagram.com/hakimfarma",
+            "https://twitter.com/hakimfarma"
+        ]
+    }
     </script>
 </head>
 <body class="text-slate-800">

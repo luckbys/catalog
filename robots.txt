@@ -1,0 +1,40 @@
+# Hakim Farma - Robots.txt
+
+User-agent: *
+Allow: /
+Allow: /catalogo.html
+Allow: /public/
+
+# Disallow admin and private areas
+Disallow: /backend/
+Disallow: /api/
+Disallow: /*.db$
+
+# Sitemap
+Sitemap: https://hakimfarma.com.br/sitemap.xml
+
+# Crawl-delay for polite bots
+Crawl-delay: 1
+
+# Specific bot rules
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
