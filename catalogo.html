@@ -346,7 +346,8 @@
                 0 20px 25px -5px rgba(0, 0, 0, 0.1),
                 0 10px 10px -5px rgba(0, 0, 0, 0.04),
                 0 0 0 1px rgba(0, 0, 0, 0.05);
-            background: #fff;
+            background: #f8fafc;
+            line-height: 0;
         }
         
         .banner-carousel {
@@ -354,16 +355,24 @@
             width: 100%;
             aspect-ratio: 16/9;
             overflow: hidden;
+            display: block;
+            line-height: 0;
+            font-size: 0;
         }
         
         /* Slides */
         .banner-slide {
             position: absolute;
             inset: 0;
+            width: 100%;
+            height: 100%;
             opacity: 0;
             transform: scale(0.95);
             transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
+            display: block;
+            line-height: 0;
+            font-size: 0;
         }
         
         .banner-slide.active {
@@ -380,10 +389,15 @@
             transform: translateX(100%) scale(0.95);
         }
         
-        /* Imagem do Banner */
-        .banner-slide img {
+        /* Imagem do Banner - Ocupa todo o espaço */
+        .banner-slide img,
+        .banner-slide a {
+            display: block;
             width: 100%;
             height: 100%;
+        }
+        
+        .banner-slide img {
             object-fit: cover;
             object-position: center;
             transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -573,7 +587,12 @@
             }
             
             .banner-carousel {
-                aspect-ratio: 4/3;
+                aspect-ratio: 16/9;
+                min-height: 200px;
+            }
+            
+            .banner-slide img {
+                object-fit: cover;
             }
         }
         
@@ -586,12 +605,17 @@
             .banner-carousel-wrapper {
                 border-radius: 0.75rem;
             }
+            
+            .banner-carousel {
+                min-height: 180px;
+            }
         }
         
         /* Tablet */
         @media (min-width: 641px) and (max-width: 1023px) {
             .banner-carousel {
                 aspect-ratio: 21/9;
+                min-height: 280px;
             }
         }
         
@@ -599,6 +623,7 @@
         @media (min-width: 1024px) {
             .banner-carousel {
                 aspect-ratio: 2.5/1;
+                min-height: 350px;
             }
         }
         
@@ -3860,7 +3885,7 @@
             }
         }
         
-        // Função para criar banner baseado em imagem - REFATORADA
+        // Função para criar banner baseado em imagem - Simplificada
         function createImageBanner(banner, isActive, ctaInfo, div) {
             // Usar proxy do MinIO para evitar problemas de CORS
             let imageUrl = banner.imagem_url;
@@ -3874,24 +3899,27 @@
             }
             
             const targetUrl = banner.link_url || banner.url_destino || banner.link || '';
-            
-            // Badge de economia
-            const economia = (banner.valor_desconto && Number(banner.valor_desconto) > 0)
-                ? `💰 Economize R$ ${banner.valor_desconto}`
-                : (banner.percentual_desconto && Number(banner.percentual_desconto) > 0)
-                    ? `🔥 ${banner.percentual_desconto}% OFF`
-                    : (banner.badge_texto || '🏷️ Oferta Especial');
 
-            div.innerHTML = `
-                <div class="banner-image-container">
+            // Criar imagem diretamente no slide
+            if (targetUrl) {
+                div.innerHTML = `
+                    <a href="${targetUrl}" target="_blank" rel="noopener" style="display: block; width: 100%; height: 100%;">
+                        <img src="${imageUrl}" 
+                             alt="${banner.titulo || 'Banner promocional'}"
+                             loading="lazy" 
+                             decoding="async"
+                             onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png';">
+                    </a>
+                `;
+            } else {
+                div.innerHTML = `
                     <img src="${imageUrl}" 
-                         alt="${banner.titulo || 'Banner'}"
+                         alt="${banner.titulo || 'Banner promocional'}"
                          loading="lazy" 
                          decoding="async"
-                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png';"
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-            `;
+                         onerror="this.onerror=null; this.src='${API_BASE}/api/local-image?path=padrao.png';">
+                `;
+            }
             
             return div;
         }
