@@ -2089,14 +2089,15 @@
                     </div>
                 </div>
 
-                <!-- Desktop Search Bar -->
-                <div class="flex-1 max-w-3xl mx-8 hidden lg:block">
+                <!-- Desktop Search Bar with Autocomplete -->
+                <div class="flex-1 max-w-3xl mx-8 hidden lg:block relative">
                     <div class="relative">
                         <input 
                             id="searchInput" 
                             type="text" 
                             placeholder="🔍 Busque por medicamentos, produtos de saúde, vitaminas..." 
                             class="w-full search-enhanced rounded-xl py-4 px-6 pr-14 text-slate-700 placeholder-slate-500 focus:outline-none"
+                            autocomplete="off"
                         />
                         <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-green-50">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -2104,6 +2105,13 @@
                                 <path d="m21 21-4.35-4.35"></path>
                             </svg>
                         </button>
+                    </div>
+                    <!-- Autocomplete Dropdown -->
+                    <div id="headerSearchSuggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 max-h-80 overflow-y-auto">
+                        <div class="p-4">
+                            <p class="text-sm font-semibold text-slate-600 mb-3">Sugestões:</p>
+                            <div id="headerSuggestionsList" class="flex flex-col gap-2"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -2148,16 +2156,16 @@
                 </div>
             </div>
 
-            <!-- Navigation/Breadcrumb -->
-            <div class="py-3 md:py-4">
-                <div class="breadcrumb-enhanced">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-2 md:space-x-3 text-xs md:text-sm">
-                            <div class="flex items-center space-x-1 md:space-x-2 text-green-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
-                                </svg>
+            <!-- Navigation/Breadcrumb with Categories -->
+            <div class="py-3 md:py-4 border-t border-slate-200/60">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <!-- Breadcrumb -->
+                    <div class="flex items-center space-x-2 md:space-x-3 text-xs md:text-sm">
+                        <div class="flex items-center space-x-1 md:space-x-2 text-green-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                            </svg>
                                 <span class="font-semibold">Catálogo</span>
                             </div>
                             <div class="hidden sm:flex items-center space-x-2 text-slate-600">
@@ -2174,10 +2182,156 @@
                             <span>Entrega rápida e segura</span>
                         </div>
                     </div>
+                    
+                    <!-- Categories Navigation - Mobile Scroll Optimized -->
+                    <div class="flex flex-col gap-3">
+                        <!-- Categories Row with Horizontal Scroll -->
+                        <div class="categories-scroll-container">
+                            <div class="categories-scroll-wrapper">
+                                <button class="category-chip active" data-category="">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                    </svg>
+                                    Todos
+                                </button>
+                                <button class="category-chip" data-category="medicamentos">
+                                    💊 Medicamentos
+                                </button>
+                                <button class="category-chip" data-category="higiene">
+                                    🧼 Higiene
+                                </button>
+                                <button class="category-chip" data-category="beleza">
+                                    💄 Beleza
+                                </button>
+                                <button class="category-chip" data-category="suplementos">
+                                    💪 Suplementos
+                                </button>
+                                <button class="category-chip" data-category="infantil">
+                                    👶 Infantil
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Sort Dropdown -->
+                        <div class="flex items-center justify-between md:justify-end gap-2">
+                            <label class="text-sm font-medium text-slate-600">Ordenar:</label>
+                            <select id="sortFilter" class="flex-1 md:flex-none px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-green-500 focus:outline-none transition-colors text-sm bg-white">
+                                <option value="relevance">Relevância</option>
+                                <option value="price-asc">💰 Menor preço</option>
+                                <option value="price-desc">💎 Maior preço</option>
+                                <option value="name-asc">A-Z</option>
+                                <option value="name-desc">Z-A</option>
+                                <option value="discount">🔥 Desconto</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
+    
+    <!-- Estilos para as categorias -->
+    <style>
+        /* Container de scroll das categorias */
+        .categories-scroll-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .categories-scroll-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0.25rem 0;
+        }
+        
+        .categories-scroll-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Chips de categoria */
+        .category-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+            min-height: 44px;
+        }
+        
+        .category-chip:hover {
+            border-color: #10b981;
+            color: #10b981;
+            background: #f0fdf4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+        
+        .category-chip.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .category-chip.active:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+        }
+        
+        /* Mobile: touch feedback */
+        @media (max-width: 768px) {
+            .category-chip:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Autocomplete Styles */
+        #headerSearchSuggestions .suggestion-item {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        #headerSearchSuggestions .suggestion-item:hover {
+            background: #f0fdf4;
+            color: #10b981;
+        }
+        
+        #headerSearchSuggestions .suggestion-icon {
+            width: 20px;
+            height: 20px;
+            color: #94a3b8;
+        }
+    </style>
 
     <!-- Carrossel de Banners - Apenas Imagens -->
     <section class="banner-carousel-section">
@@ -2676,11 +2830,48 @@
             console.log('[DEBUG] Busca header:', query);
         }
         
-        const filtered = productsData.filter(p => {
+        // Aplicar filtros
+        let filtered = productsData.filter(p => {
             const tName = p.name.toLowerCase();
             const tDesc = p.description.toLowerCase();
-            return tName.includes(query) || tDesc.includes(query);
+            const matchesSearch = tName.includes(query) || tDesc.includes(query);
+            
+            // Filtro de categoria (dos chips)
+            const selectedCategory = window.getSelectedCategory ? window.getSelectedCategory() : '';
+            const matchesCategory = !selectedCategory || 
+                (p.categoria && p.categoria.toLowerCase().includes(selectedCategory));
+            
+            return matchesSearch && matchesCategory;
         });
+        
+        // Aplicar ordenação
+        const sortFilter = document.getElementById('sortFilter');
+        const sortValue = sortFilter ? sortFilter.value : 'relevance';
+        
+        switch(sortValue) {
+            case 'price-asc':
+                filtered.sort((a, b) => a.price - b.price);
+                break;
+            case 'price-desc':
+                filtered.sort((a, b) => b.price - a.price);
+                break;
+            case 'name-asc':
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name-desc':
+                filtered.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+            case 'discount':
+                filtered.sort((a, b) => {
+                    const discountA = a.percentualDesconto || 0;
+                    const discountB = b.percentualDesconto || 0;
+                    return discountB - discountA;
+                });
+                break;
+            default:
+                // relevance - manter ordem original
+                break;
+        }
         
         console.log('[DEBUG] Produtos filtrados:', filtered.length);
         
@@ -3941,6 +4132,161 @@
             headerSearchInputEl.addEventListener('input', handleHeaderSearch);
         }
         
+        // ========================================
+        // FILTROS AVANÇADOS E AUTOCOMPLETE
+        // ========================================
+        
+        // Event listeners para chips de categoria
+        let selectedCategory = '';
+        const categoryChips = document.querySelectorAll('.category-chip');
+        
+        categoryChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                // Remover active de todos
+                categoryChips.forEach(c => c.classList.remove('active'));
+                // Adicionar active no clicado
+                chip.classList.add('active');
+                // Atualizar categoria selecionada
+                selectedCategory = chip.dataset.category;
+                // Renderizar produtos
+                renderProducts();
+                showFilterFeedback(selectedCategory ? 'Categoria atualizada' : 'Mostrando todos os produtos');
+            });
+        });
+        
+        // Variável global para categoria (usada no renderProducts)
+        window.getSelectedCategory = () => selectedCategory;
+        
+        // Event listener para ordenação
+        const sortFilter = document.getElementById('sortFilter');
+        if (sortFilter) {
+            sortFilter.addEventListener('change', () => {
+                renderProducts();
+                showFilterFeedback('Ordenação aplicada');
+            });
+        }
+
+        
+        // Feedback visual de filtros
+        function showFilterFeedback(message, type = 'success') {
+            const feedback = document.createElement('div');
+            feedback.className = `filter-feedback ${type}`;
+            feedback.textContent = message;
+            feedback.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                animation: slideInRight 0.3s ease-out;
+                font-size: 14px;
+                font-weight: 600;
+            `;
+            document.body.appendChild(feedback);
+            setTimeout(() => {
+                feedback.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => feedback.remove(), 300);
+            }, 2000);
+        }
+        
+        // Adicionar animações CSS
+        if (!document.getElementById('filter-feedback-style')) {
+            const style = document.createElement('style');
+            style.id = 'filter-feedback-style';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOutRight {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Autocomplete no Header
+        const headerSearchSuggestions = document.getElementById('headerSearchSuggestions');
+        const headerSuggestionsList = document.getElementById('headerSuggestionsList');
+        
+        function updateHeaderSearchSuggestions(query) {
+            if (!query || query.length < 2) {
+                if (headerSearchSuggestions) headerSearchSuggestions.classList.add('hidden');
+                return;
+            }
+            
+            // Encontrar produtos que correspondem
+            const matches = productsData
+                .filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+                .slice(0, 6);
+            
+            if (matches.length > 0 && headerSuggestionsList) {
+                headerSuggestionsList.innerHTML = matches.map(product => `
+                    <div class="suggestion-item" onclick="applySuggestion('${product.name.replace(/'/g, "\\'")}')">
+                        <svg class="suggestion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <div class="font-medium text-slate-700">${product.name}</div>
+                            <div class="text-xs text-slate-500">${formatCurrency(product.price)}</div>
+                        </div>
+                    </div>
+                `).join('');
+                if (headerSearchSuggestions) headerSearchSuggestions.classList.remove('hidden');
+            } else {
+                if (headerSearchSuggestions) headerSearchSuggestions.classList.add('hidden');
+            }
+        }
+        
+        // Função global para aplicar sugestão
+        window.applySuggestion = function(name) {
+            if (searchInputEl) searchInputEl.value = name;
+            if (headerSearchInputEl) headerSearchInputEl.value = name;
+            if (mobileSearchInput) mobileSearchInput.value = name;
+            if (searchSuggestions) searchSuggestions.classList.add('hidden');
+            renderProducts();
+        };
+        
+        // Adicionar autocomplete ao campo de busca do header
+        if (searchInputEl) {
+            searchInputEl.addEventListener('input', debounce((e) => {
+                updateHeaderSearchSuggestions(e.target.value);
+            }, 300));
+            
+            searchInputEl.addEventListener('focus', (e) => {
+                if (e.target.value.length >= 2) {
+                    updateHeaderSearchSuggestions(e.target.value);
+                }
+            });
+        }
+        
+        // Fechar sugestões ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (headerSearchSuggestions && 
+                !headerSearchSuggestions.contains(e.target) && 
+                !searchInputEl?.contains(e.target)) {
+                headerSearchSuggestions.classList.add('hidden');
+            }
+        });
+        
         // --- FUNCIONALIDADE PARA CARREGAR BANNERS DINAMICAMENTE ---
         let bannersData = [];
         
@@ -4538,26 +4884,60 @@
             }
         });
         
-        // Suporte para touch/swipe em dispositivos móveis
+        // ========================================
+        // GESTOS MOBILE APRIMORADOS
+        // ========================================
+        
+        // Swipe no Banner com feedback visual
         let touchStartX = 0;
         let touchEndX = 0;
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let touchStartTime = 0;
+        let isSwiping = false;
         
         if (carousel) {
             carousel.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
-            });
+                touchStartY = e.changedTouches[0].screenY;
+                touchStartTime = Date.now();
+                isSwiping = false;
+            }, { passive: true });
+            
+            carousel.addEventListener('touchmove', (e) => {
+                if (!isSwiping) {
+                    const touchCurrentX = e.changedTouches[0].screenX;
+                    const touchCurrentY = e.changedTouches[0].screenY;
+                    const diffX = Math.abs(touchCurrentX - touchStartX);
+                    const diffY = Math.abs(touchCurrentY - touchStartY);
+                    
+                    // Detectar se é swipe horizontal
+                    if (diffX > diffY && diffX > 10) {
+                        isSwiping = true;
+                    }
+                }
+            }, { passive: true });
             
             carousel.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
+                touchEndY = e.changedTouches[0].screenY;
+                handleBannerSwipe();
+            }, { passive: true });
         }
         
-        function handleSwipe() {
+        function handleBannerSwipe() {
             const swipeThreshold = 50;
+            const swipeVelocityThreshold = 0.5; // pixels por ms
             const diff = touchStartX - touchEndX;
+            const diffY = Math.abs(touchStartY - touchEndY);
+            const timeDiff = Date.now() - touchStartTime;
+            const velocity = Math.abs(diff) / timeDiff;
             
-            if (Math.abs(diff) > swipeThreshold) {
+            // Ignorar se for scroll vertical
+            if (diffY > Math.abs(diff)) return;
+            
+            // Swipe rápido ou longo o suficiente
+            if (Math.abs(diff) > swipeThreshold || velocity > swipeVelocityThreshold) {
                 stopAutoSlide();
                 const slides = document.querySelectorAll('.banner-slide');
                 if (slides.length > 0) {
@@ -4565,14 +4945,236 @@
                         // Swipe left - próximo slide
                         const next = (currentSlide + 1) % slides.length;
                         showSlide(next);
+                        showSwipeFeedback('next');
                     } else {
                         // Swipe right - slide anterior
                         const prev = (currentSlide - 1 + slides.length) % slides.length;
                         showSlide(prev);
+                        showSwipeFeedback('prev');
                     }
                 }
                 startAutoSlide();
             }
+        }
+        
+        // Feedback visual de swipe
+        function showSwipeFeedback(direction) {
+            const feedback = document.createElement('div');
+            feedback.className = 'swipe-feedback';
+            feedback.innerHTML = direction === 'next' ? '→' : '←';
+            feedback.style.cssText = `
+                position: fixed;
+                top: 50%;
+                ${direction === 'next' ? 'right: 20px' : 'left: 20px'};
+                transform: translateY(-50%);
+                font-size: 48px;
+                color: white;
+                opacity: 0;
+                animation: swipeFeedback 0.5s ease-out;
+                pointer-events: none;
+                z-index: 9999;
+            `;
+            document.body.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 500);
+        }
+        
+        // Adicionar animação CSS
+        if (!document.getElementById('swipe-feedback-style')) {
+            const style = document.createElement('style');
+            style.id = 'swipe-feedback-style';
+            style.textContent = `
+                @keyframes swipeFeedback {
+                    0% { opacity: 0; transform: translateY(-50%) scale(0.5); }
+                    50% { opacity: 1; transform: translateY(-50%) scale(1.2); }
+                    100% { opacity: 0; transform: translateY(-50%) scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // ========================================
+        // PULL TO REFRESH
+        // ========================================
+        
+        let pullStartY = 0;
+        let pullCurrentY = 0;
+        let isPulling = false;
+        let pullThreshold = 80;
+        
+        const pullToRefreshIndicator = document.createElement('div');
+        pullToRefreshIndicator.id = 'pull-to-refresh';
+        pullToRefreshIndicator.innerHTML = `
+            <div class="pull-refresh-content">
+                <svg class="pull-refresh-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span class="pull-refresh-text">Puxe para atualizar</span>
+            </div>
+        `;
+        pullToRefreshIndicator.style.cssText = `
+            position: fixed;
+            top: -100px;
+            left: 0;
+            right: 0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            color: white;
+            z-index: 9998;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        `;
+        document.body.appendChild(pullToRefreshIndicator);
+        
+        document.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                pullStartY = e.touches[0].clientY;
+                isPulling = true;
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!isPulling) return;
+            
+            pullCurrentY = e.touches[0].clientY;
+            const pullDistance = pullCurrentY - pullStartY;
+            
+            if (pullDistance > 0 && window.scrollY === 0) {
+                const translateY = Math.min(pullDistance * 0.5, pullThreshold);
+                pullToRefreshIndicator.style.transform = `translateY(${translateY + 100}px)`;
+                
+                const icon = pullToRefreshIndicator.querySelector('.pull-refresh-icon');
+                const text = pullToRefreshIndicator.querySelector('.pull-refresh-text');
+                
+                if (pullDistance > pullThreshold) {
+                    icon.style.transform = 'rotate(180deg)';
+                    text.textContent = 'Solte para atualizar';
+                } else {
+                    icon.style.transform = 'rotate(0deg)';
+                    text.textContent = 'Puxe para atualizar';
+                }
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchend', () => {
+            if (!isPulling) return;
+            
+            const pullDistance = pullCurrentY - pullStartY;
+            
+            if (pullDistance > pullThreshold && window.scrollY === 0) {
+                // Trigger refresh
+                pullToRefreshIndicator.querySelector('.pull-refresh-text').textContent = 'Atualizando...';
+                pullToRefreshIndicator.querySelector('.pull-refresh-icon').style.animation = 'spin 1s linear infinite';
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                pullToRefreshIndicator.style.transform = 'translateY(0)';
+            }
+            
+            isPulling = false;
+            pullStartY = 0;
+            pullCurrentY = 0;
+        }, { passive: true });
+        
+        // Adicionar animação de spin
+        if (!document.getElementById('pull-refresh-style')) {
+            const style = document.createElement('style');
+            style.id = 'pull-refresh-style';
+            style.textContent = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .pull-refresh-icon {
+                    transition: transform 0.3s ease;
+                }
+                .pull-refresh-content {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .pull-refresh-text {
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // ========================================
+        // SWIPE TO DELETE - Itens do Carrinho
+        // ========================================
+        
+        function initSwipeToDelete() {
+            const cartItems = document.querySelectorAll('.cart-item');
+            
+            cartItems.forEach(item => {
+                let startX = 0;
+                let currentX = 0;
+                let isSwiping = false;
+                
+                item.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    isSwiping = true;
+                    item.style.transition = 'none';
+                }, { passive: true });
+                
+                item.addEventListener('touchmove', (e) => {
+                    if (!isSwiping) return;
+                    
+                    currentX = e.touches[0].clientX;
+                    const diff = currentX - startX;
+                    
+                    // Apenas swipe para esquerda
+                    if (diff < 0) {
+                        item.style.transform = `translateX(${Math.max(diff, -100)}px)`;
+                        item.style.opacity = 1 + (diff / 200);
+                    }
+                }, { passive: true });
+                
+                item.addEventListener('touchend', () => {
+                    if (!isSwiping) return;
+                    
+                    const diff = currentX - startX;
+                    item.style.transition = 'all 0.3s ease';
+                    
+                    if (diff < -80) {
+                        // Remover item
+                        item.style.transform = 'translateX(-100%)';
+                        item.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            const productId = item.dataset.productId;
+                            if (productId) {
+                                removeFromCart(productId);
+                            }
+                        }, 300);
+                    } else {
+                        // Voltar ao normal
+                        item.style.transform = 'translateX(0)';
+                        item.style.opacity = '1';
+                    }
+                    
+                    isSwiping = false;
+                    startX = 0;
+                    currentX = 0;
+                }, { passive: true });
+            });
+        }
+        
+        // Reinicializar swipe quando carrinho atualizar
+        const originalRenderCart = window.renderCart;
+        if (originalRenderCart) {
+            window.renderCart = function() {
+                originalRenderCart();
+                setTimeout(initSwipeToDelete, 100);
+            };
         }
         
         // Inicializar carrossel dinamicamente
