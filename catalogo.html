@@ -3265,7 +3265,7 @@ ${adminLink}
             console.log('📱 Número:', SELLER_PHONE);
             console.log('📝 Mensagem:', message);
 
-            // Enviar mensagem via Evolution API v2
+            // Enviar mensagem via Evolution API
             const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${INSTANCE_NAME}`, {
                 method: 'POST',
                 headers: {
@@ -3274,13 +3274,7 @@ ${adminLink}
                 },
                 body: JSON.stringify({
                     number: SELLER_PHONE,
-                    options: {
-                        delay: 1200,
-                        presence: 'composing'
-                    },
-                    textMessage: {
-                        text: message
-                    }
+                    text: message
                 })
             });
 

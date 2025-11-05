@@ -29,13 +29,7 @@ Write-Host ""
 # Preparar body
 $body = @{
     number = $PHONE
-    options = @{
-        delay = 1200
-        presence = "composing"
-    }
-    textMessage = @{
-        text = $MESSAGE
-    }
+    text = $MESSAGE
 } | ConvertTo-Json -Depth 10
 
 # Headers

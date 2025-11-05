@@ -29,19 +29,15 @@
 }
 ```
 
-### Formato Novo (Correto - v2):
+### Formato Correto (Simplificado):
 ```javascript
 {
     number: "5512981443806",
-    options: {
-        delay: 1200,
-        presence: "composing"
-    },
-    textMessage: {
-        text: "Mensagem aqui"
-    }
+    text: "Mensagem aqui"
 }
 ```
+
+**Nota**: A Evolution API aceita o formato simples com apenas `number` e `text`.
 
 ---
 
@@ -85,14 +81,14 @@ body: JSON.stringify({
 
 ### Endpoint:
 ```
-POST https://evo.devsible.com.br/message/sendText/hakim
+POST https://chatbot-evolution-api.zv7gpn.easypanel.host
 ```
 
 ### Headers:
 ```json
 {
     "Content-Type": "application/json",
-    "apikey": "B6D711FCDE4D-4183-9385-D5C9B6E1E119"
+    "apikey": "016179B162E9-4D01-AA9B-D0E3730E0954"
 }
 ```
 
@@ -100,13 +96,7 @@ POST https://evo.devsible.com.br/message/sendText/hakim
 ```json
 {
     "number": "5512981443806",
-    "options": {
-        "delay": 1200,
-        "presence": "composing"
-    },
-    "textMessage": {
-        "text": "🔔 *NOVO PEDIDO RECEBIDO!*\n\n📋 *Pedido:* #71\n..."
-    }
+    "text": "🔔 *NOVO PEDIDO RECEBIDO!*\n\n📋 *Pedido:* #71\n..."
 }
 ```
 
@@ -147,13 +137,7 @@ curl -X POST "https://evo.devsible.com.br/message/sendText/hakim" \
   -H "apikey: B6D711FCDE4D-4183-9385-D5C9B6E1E119" \
   -d '{
     "number": "5512981443806",
-    "options": {
-        "delay": 1200,
-        "presence": "composing"
-    },
-    "textMessage": {
-        "text": "🔔 Teste de notificação!"
-    }
+    "text": "🔔 Teste de notificação!"
   }'
 ```
 

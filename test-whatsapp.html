@@ -188,13 +188,7 @@ ${adminLink}
                     },
                     body: JSON.stringify({
                         number: SELLER_PHONE,
-                        options: {
-                            delay: 1200,
-                            presence: 'composing'
-                        },
-                        textMessage: {
-                            text: message
-                        }
+                        text: message
                     })
                 });
 

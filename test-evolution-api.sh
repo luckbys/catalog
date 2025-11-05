@@ -31,13 +31,7 @@ RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$API_URL/message/sendText/$INSTA
   -H "apikey: $API_KEY" \
   -d "{
     \"number\": \"$PHONE\",
-    \"options\": {
-        \"delay\": 1200,
-        \"presence\": \"composing\"
-    },
-    \"textMessage\": {
-        \"text\": \"$MESSAGE\"
-    }
+    \"text\": \"$MESSAGE\"
   }")
 
 # Separar body e status code

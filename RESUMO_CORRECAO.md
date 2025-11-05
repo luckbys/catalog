@@ -64,13 +64,7 @@ curl -X POST "https://evo.devsible.com.br/message/sendText/hakim" \
   -H "apikey: B6D711FCDE4D-4183-9385-D5C9B6E1E119" \
   -d '{
     "number": "5512981443806",
-    "options": {
-        "delay": 1200,
-        "presence": "composing"
-    },
-    "textMessage": {
-        "text": "🔔 Teste!"
-    }
+    "text": "🔔 Teste!"
   }'
 ```
 
