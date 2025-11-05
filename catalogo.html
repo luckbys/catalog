@@ -3212,6 +3212,89 @@
         deliveryModal.classList.remove('flex');
     }
 
+    // WhatsApp Notification via Evolution API
+    async function sendOrderNotificationToSeller(orderData, orderDetails) {
+        const EVOLUTION_API_URL = 'https://evo.devsible.com.br';
+        const EVOLUTION_API_KEY = 'B6D711FCDE4D-4183-9385-D5C9B6E1E119';
+        const INSTANCE_NAME = 'hakim';
+        const SELLER_PHONE = '5512981443806';
+        
+        try {
+            // Extrair informações do pedido
+            const orderId = orderData.order?.order_number || orderData.order?.id || 'N/A';
+            const customerName = orderDetails.cliente?.nome || 'Cliente';
+            const customerPhone = orderDetails.cliente?.telefone || 'Não informado';
+            const customerAddress = orderDetails.cliente?.endereco || 'Não informado';
+            const total = orderDetails.pedido?.valor_total || 0;
+            const paymentMethod = orderDetails.pedido?.forma_pagamento || 'Não informado';
+            
+            // Criar link dinâmico para o admin
+            const adminLink = `${window.location.origin}/admin-pedidos.html?pedido=${orderId}`;
+            
+            // Montar lista de produtos
+            let productsList = '';
+            if (orderDetails.produtos && orderDetails.produtos.length > 0) {
+                productsList = orderDetails.produtos.map((item, index) => 
+                    `${index + 1}. *${item.nome}*\n   Qtd: ${item.quantidade} | R$ ${item.preco.toFixed(2)}`
+                ).join('\n\n');
+            }
+            
+            // Montar mensagem formatada
+            const message = `🔔 *NOVO PEDIDO RECEBIDO!*
+
+📋 *Pedido:* #${orderId}
+⏰ *Horário:* ${new Date().toLocaleString('pt-BR')}
+
+👤 *CLIENTE*
+Nome: ${customerName}
+📱 Telefone: ${customerPhone}
+📍 Endereço: ${customerAddress}
+
+🛒 *PRODUTOS*
+${productsList}
+
+💰 *TOTAL:* R$ ${total.toFixed(2)}
+💳 *Pagamento:* ${paymentMethod}
+
+🔗 *GERENCIAR PEDIDO:*
+${adminLink}
+
+✅ Acesse o link acima para confirmar e gerenciar este pedido!`;
+
+            console.log('📤 Enviando notificação para vendedor via WhatsApp...');
+            console.log('📱 Número:', SELLER_PHONE);
+            console.log('📝 Mensagem:', message);
+
+            // Enviar mensagem via Evolution API
+            const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${INSTANCE_NAME}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': EVOLUTION_API_KEY
+                },
+                body: JSON.stringify({
+                    number: SELLER_PHONE,
+                    text: message,
+                    delay: 1200
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                console.log('✅ Notificação enviada com sucesso para o vendedor!', result);
+                return true;
+            } else {
+                console.error('❌ Erro ao enviar notificação:', result);
+                return false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar notificação via WhatsApp:', error);
+            return false;
+        }
+    }
+
     // Success Modal Functions
     async function showSuccessModal(orderData) {
         const successModal = document.getElementById('successModal');
@@ -3705,6 +3788,10 @@
 
                 if (independentResponse.ok && independentResult.status === 'success') {
                     console.log('✅ Pedido processado com sucesso pelo sistema independente');
+                    
+                    // Enviar notificação para o vendedor via WhatsApp
+                    await sendOrderNotificationToSeller(independentResult, webhookPayload);
+                    
                     showSuccessModal(independentResult);
                     return true;
                 } else {

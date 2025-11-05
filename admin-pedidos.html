@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Pedidos - Hakim Farma Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .status-pendente {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            border: 2px solid #fbbf24;
+        }
+        
+        .status-confirmado {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: 2px solid #3b82f6;
+        }
+        
+        .status-preparando {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4338ca;
+            border: 2px solid #6366f1;
+        }
+        
+        .status-enviado {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            color: #5b21b6;
+            border: 2px solid #8b5cf6;
+        }
+        
+        .status-entregue {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+        
+        .status-cancelado {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        
+        .order-card {
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: #10b981;
+        }
+        
+        .action-btn {
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .filter-chip {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-chip:hover {
+            transform: translateY(-2px);
+        }
+        
+        .filter-chip.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .order-card {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification.show {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5"></path>
+        </svg>
+        <span id="notificationText">Status atualizado com sucesso!</span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Hakim Farma</h1>
+                        <p class="text-sm text-gray-600">Gerenciamento de Pedidos</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-lg border-2 border-emerald-200">
+                        <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm font-semibold text-emerald-700">Online</span>
+                    </div>
+                    <a href="catalogo.html" class="text-sm text-gray-600 hover:text-emerald-600 transition-colors">
+                        ← Voltar ao Catálogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-yellow-200">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">⏳</span>
+                    <span class="text-2xl font-bold text-yellow-600" id="statPendente">0</span>
+                </div>
+                <p class="text-sm text-gray-600 font-medium">Pendentes</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-blue-200">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">✅</span>
+                    <span class="text-2xl font-bold text-blue-600" id="statConfirmado">0</span>
+                </div>
+                <p class="text-sm text-gray-600 font-medium">Confirmados</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-purple-200">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">🚚</span>
+                    <span class="text-2xl font-bold text-purple-600" id="statEnviado">0</span>
+                </div>
+                <p class="text-sm text-gray-600 font-medium">Em Entrega</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-emerald-200">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">🎉</span>
+                    <span class="text-2xl font-bold text-emerald-600" id="statEntregue">0</span>
+                </div>
+                <p class="text-sm text-gray-600 font-medium">Entregues</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl p-4 shadow-md mb-6">
+            <div class="flex flex-wrap gap-2">
+                <button class="filter-chip active status-badge status-pendente" data-status="todos">
+                    📋 Todos
+                </button>
+                <button class="filter-chip status-badge status-pendente" data-status="pendente">
+                    ⏳ Pendentes
+                </button>
+                <button class="filter-chip status-badge status-confirmado" data-status="confirmado">
+                    ✅ Confirmados
+                </button>
+                <button class="filter-chip status-badge status-preparando" data-status="preparando">
+                    📦 Preparando
+                </button>
+                <button class="filter-chip status-badge status-enviado" data-status="enviado">
+                    🚚 Em Entrega
+                </button>
+                <button class="filter-chip status-badge status-entregue" data-status="entregue">
+                    🎉 Entregues
+                </button>
+                <button class="filter-chip status-badge status-cancelado" data-status="cancelado">
+                    ❌ Cancelados
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersList" class="space-y-4">
+            <!-- Orders will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <div class="text-6xl mb-4">📦</div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">Nenhum pedido encontrado</h3>
+            <p class="text-gray-500">Os pedidos aparecerão aqui quando forem realizados</p>
+        </div>
+
+    </main>
+
+    <script>
+        // Mock data - Em produção, isso viria de uma API
+        let orders = [
+            {
+                id: 71,
+                customer: {
+                    name: 'João Silva',
+                    phone: '(11) 98765-4321',
+                    address: 'Rua das Flores, 123 - Centro'
+                },
+                items: [
+                    { name: 'Dipirona 500mg', quantity: 2, price: 8.50 },
+                    { name: 'Vitamina C', quantity: 1, price: 15.00 }
+                ],
+                total: 32.00,
+                status: 'pendente',
+                createdAt: new Date(Date.now() - 5 * 60000),
+                estimatedDelivery: '45-60 min'
+            },
+            {
+                id: 70,
+                customer: {
+                    name: 'Maria Santos',
+                    phone: '(11) 91234-5678',
+                    address: 'Av. Principal, 456 - Jardim'
+                },
+                items: [
+                    { name: 'Paracetamol 750mg', quantity: 1, price: 12.00 }
+                ],
+                total: 12.00,
+                status: 'confirmado',
+                createdAt: new Date(Date.now() - 15 * 60000),
+                estimatedDelivery: '30-45 min'
+            },
+            {
+                id: 69,
+                customer: {
+                    name: 'Pedro Costa',
+                    phone: '(11) 99876-5432',
+                    address: 'Rua do Comércio, 789 - Vila Nova'
+                },
+                items: [
+                    { name: 'Shampoo Anticaspa', quantity: 1, price: 25.00 },
+                    { name: 'Condicionador', quantity: 1, price: 22.00 }
+                ],
+                total: 47.00,
+                status: 'enviado',
+                createdAt: new Date(Date.now() - 30 * 60000),
+                estimatedDelivery: '15-20 min'
+            }
+        ];
+
+        let currentFilter = 'todos';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+            updateStats();
+            setupFilters();
+            highlightOrderFromURL();
+        });
+        
+        // Highlight order from URL parameter
+        function highlightOrderFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('pedido');
+            
+            if (orderId) {
+                setTimeout(() => {
+                    const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+                    if (orderCard) {
+                        // Scroll to order
+                        orderCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Highlight with animation
+                        orderCard.style.border = '3px solid #10b981';
+                        orderCard.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.2)';
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            orderCard.style.border = '2px solid #e2e8f0';
+                            orderCard.style.boxShadow = '';
+                        }, 3000);
+                    }
+                }, 500);
+            }
+        }
+
+        // Load orders
+        function loadOrders() {
+            const ordersList = document.getElementById('ordersList');
+            const emptyState = document.getElementById('emptyState');
+            
+            const filteredOrders = currentFilter === 'todos' 
+                ? orders 
+                : orders.filter(o => o.status === currentFilter);
+            
+            if (filteredOrders.length === 0) {
+                ordersList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            ordersList.innerHTML = filteredOrders.map(order => createOrderCard(order)).join('');
+            
+            // Setup action buttons
+            setupActionButtons();
+        }
+
+        // Create order card
+        function createOrderCard(order) {
+            const statusConfig = {
+                pendente: { icon: '⏳', label: 'Pendente', class: 'status-pendente' },
+                confirmado: { icon: '✅', label: 'Confirmado', class: 'status-confirmado' },
+                preparando: { icon: '📦', label: 'Preparando', class: 'status-preparando' },
+                enviado: { icon: '🚚', label: 'Em Entrega', class: 'status-enviado' },
+                entregue: { icon: '🎉', label: 'Entregue', class: 'status-entregue' },
+                cancelado: { icon: '❌', label: 'Cancelado', class: 'status-cancelado' }
+            };
+            
+            const status = statusConfig[order.status];
+            const timeAgo = getTimeAgo(order.createdAt);
+            
+            return `
+                <div class="order-card bg-white rounded-2xl p-6 shadow-md" data-order-id="${order.id}">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-1">Pedido #${order.id}</h3>
+                            <p class="text-sm text-gray-500">${timeAgo}</p>
+                        </div>
+                        <span class="status-badge ${status.class}">
+                            ${status.icon} ${status.label}
+                        </span>
+                    </div>
+                    
+                    <!-- Customer Info -->
+                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 mb-4 border border-slate-200">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-lg">👤</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-800">${order.customer.name}</p>
+                                <p class="text-sm text-gray-600">📱 ${order.customer.phone}</p>
+                                <p class="text-sm text-gray-600">📍 ${order.customer.address}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Items -->
+                    <div class="mb-4">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Itens do Pedido:</h4>
+                        <div class="space-y-2">
+                            ${order.items.map(item => `
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-700">${item.quantity}x ${item.name}</span>
+                                    <span class="font-semibold text-gray-800">R$ ${item.price.toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
+                            <span class="font-bold text-gray-800">Total</span>
+                            <span class="text-xl font-bold text-emerald-600">R$ ${order.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex flex-wrap gap-2">
+                        ${getActionButtons(order)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get action buttons based on status
+        function getActionButtons(order) {
+            const buttons = {
+                pendente: `
+                    <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="confirmar" data-order-id="${order.id}">
+                        ✅ Confirmar Pedido
+                    </button>
+                    <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
+                        ❌
+                    </button>
+                `,
+                confirmado: `
+                    <button class="action-btn flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="preparar" data-order-id="${order.id}">
+                        📦 Iniciar Preparo
+                    </button>
+                `,
+                preparando: `
+                    <button class="action-btn flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="enviar" data-order-id="${order.id}">
+                        🚚 Enviar para Entrega
+                    </button>
+                `,
+                enviado: `
+                    <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="entregar" data-order-id="${order.id}">
+                        🎉 Marcar como Entregue
+                    </button>
+                `,
+                entregue: `
+                    <div class="flex-1 text-center py-3 px-4 bg-emerald-50 text-emerald-700 font-semibold rounded-xl border-2 border-emerald-200">
+                        ✓ Pedido Concluído
+                    </div>
+                `,
+                cancelado: `
+                    <div class="flex-1 text-center py-3 px-4 bg-red-50 text-red-700 font-semibold rounded-xl border-2 border-red-200">
+                        ✗ Pedido Cancelado
+                    </div>
+                `
+            };
+            
+            return buttons[order.status] || '';
+        }
+
+        // Setup action buttons
+        function setupActionButtons() {
+            document.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    const orderId = parseInt(this.dataset.orderId);
+                    handleAction(action, orderId);
+                });
+            });
+        }
+
+        // Handle actions
+        function handleAction(action, orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            const statusMap = {
+                confirmar: 'confirmado',
+                preparar: 'preparando',
+                enviar: 'enviado',
+                entregar: 'entregue',
+                cancelar: 'cancelado'
+            };
+            
+            const newStatus = statusMap[action];
+            if (!newStatus) return;
+            
+            // Update order status
+            order.status = newStatus;
+            
+            // Show notification
+            showNotification(`Pedido #${orderId} ${getStatusLabel(newStatus)}!`);
+            
+            // Reload orders
+            loadOrders();
+            updateStats();
+            
+            // In production, send to API
+            console.log(`Order ${orderId} updated to ${newStatus}`);
+        }
+
+        // Get status label
+        function getStatusLabel(status) {
+            const labels = {
+                confirmado: 'confirmado',
+                preparando: 'em preparo',
+                enviado: 'enviado para entrega',
+                entregue: 'entregue',
+                cancelado: 'cancelado'
+            };
+            return labels[status] || status;
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Update stats
+        function updateStats() {
+            const stats = {
+                pendente: 0,
+                confirmado: 0,
+                enviado: 0,
+                entregue: 0
+            };
+            
+            orders.forEach(order => {
+                if (stats.hasOwnProperty(order.status)) {
+                    stats[order.status]++;
+                }
+            });
+            
+            document.getElementById('statPendente').textContent = stats.pendente;
+            document.getElementById('statConfirmado').textContent = stats.confirmado;
+            document.getElementById('statEnviado').textContent = stats.enviado;
+            document.getElementById('statEntregue').textContent = stats.entregue;
+        }
+
+        // Setup filters
+        function setupFilters() {
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    // Remove active from all
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active to clicked
+                    this.classList.add('active');
+                    
+                    // Update filter
+                    currentFilter = this.dataset.status;
+                    
+                    // Reload orders
+                    loadOrders();
+                });
+            });
+        }
+
+        // Get time ago
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Agora mesmo';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} min atrás`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h atrás`;
+            return `${Math.floor(seconds / 86400)}d atrás`;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            // In production, fetch new orders from API
+            console.log('Auto-refresh...');
+        }, 30000);
+    </script>
+
+</body>
+</html>
