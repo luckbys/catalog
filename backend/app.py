@@ -266,6 +266,17 @@ async def serve_admin_pedidos():
     else:
         return FileResponse(local_path, media_type="text/html")
 
+@app.get("/test-api-orders.html")
+async def serve_test_api_orders():
+    """Serve a página de teste da API de pedidos"""
+    file_name = "test-api-orders.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
 # -------------------- Rotas auxiliares --------------------
 @app.post("/api/relay/n8n")
 def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_dep)):
@@ -312,12 +323,17 @@ def health():
 def get_orders():
     """Retorna lista de pedidos do Supabase"""
     try:
+        print("[API] GET /api/orders - Iniciando...")
+        
         if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            print("[API] ERROR: Order processor não disponível")
             raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
         
+        print("[API] Buscando pedidos do Supabase...")
         # Buscar pedidos do Supabase
         orders_res = order_processor.supabase.table("orders").select("*").order("created_at", desc=True).limit(50).execute()
         orders_data = getattr(orders_res, "data", []) or []
+        print(f"[API] Pedidos encontrados: {len(orders_data)}")
         
         # Formatar pedidos para o frontend
         formatted_orders = []
@@ -325,6 +341,18 @@ def get_orders():
             # Buscar itens do pedido
             items_res = order_processor.supabase.table("order_items").select("*").eq("order_id", order["id"]).execute()
             items_data = getattr(items_res, "data", []) or []
+            
+            # Mapear status do banco para o frontend
+            status_map = {
+                "pending": "pendente",
+                "confirmed": "confirmado",
+                "processing": "preparando",
+                "shipped": "enviado",
+                "delivered": "entregue",
+                "cancelled": "cancelado"
+            }
+            db_status = order.get("status", "pending")
+            frontend_status = status_map.get(db_status, "pendente")
             
             formatted_orders.append({
                 "id": order["id"],
@@ -342,18 +370,21 @@ def get_orders():
                     for item in items_data
                 ],
                 "total": float(order.get("total", 0)),
-                "status": order.get("status", "pending"),
+                "status": frontend_status,
                 "createdAt": order.get("created_at", ""),
                 "estimatedDelivery": "45-60 min",
                 "paymentMethod": order.get("payment_method", "")
             })
         
+        print(f"[API] Retornando {len(formatted_orders)} pedidos formatados")
         return {"orders": formatted_orders}
         
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] Erro ao buscar pedidos: {str(e)}")
+        print(f"[API ERROR] Erro ao buscar pedidos: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao buscar pedidos: {str(e)}")
 
 @app.get("/api/order-status")

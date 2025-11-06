@@ -269,25 +269,37 @@
         
         // Carregar pedidos da API
         async function fetchOrders() {
+            console.log('[DEBUG] Iniciando fetchOrders...');
             try {
+                console.log('[DEBUG] Fazendo fetch para /api/orders');
                 const response = await fetch('/api/orders');
+                console.log('[DEBUG] Response status:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('[DEBUG] Dados recebidos:', data);
                     orders = data.orders || [];
-                    console.log('Pedidos carregados:', orders.length);
+                    console.log('[DEBUG] Total de pedidos:', orders.length);
+                    console.log('[DEBUG] Pedidos:', orders);
                 } else {
-                    console.error('Erro ao carregar pedidos:', response.status);
+                    console.error('[ERROR] Erro ao carregar pedidos:', response.status);
+                    const errorText = await response.text();
+                    console.error('[ERROR] Resposta:', errorText);
                     // Usar dados mock como fallback
                     orders = mockOrders;
+                    console.log('[DEBUG] Usando mock orders:', mockOrders.length);
                 }
             } catch (error) {
-                console.error('Erro ao buscar pedidos:', error);
+                console.error('[ERROR] Erro ao buscar pedidos:', error);
                 // Usar dados mock como fallback
                 orders = mockOrders;
+                console.log('[DEBUG] Usando mock orders (catch):', mockOrders.length);
             }
             
             // Atualizar interface
+            console.log('[DEBUG] Chamando loadOrders...');
             loadOrders();
+            console.log('[DEBUG] Chamando updateStats...');
             updateStats();
         }
         
@@ -382,6 +394,9 @@
 
         // Load orders
         function loadOrders() {
+            console.log('[DEBUG] loadOrders iniciado');
+            console.log('[DEBUG] Total de orders:', orders.length);
+            
             const ordersList = document.getElementById('ordersList');
             const emptyState = document.getElementById('emptyState');
             const specificOrderBanner = document.getElementById('specificOrderBanner');
@@ -390,12 +405,16 @@
             // Verificar se há pedido específico na URL
             const urlParams = new URLSearchParams(window.location.search);
             const specificOrderId = urlParams.get('pedido');
+            console.log('[DEBUG] specificOrderId:', specificOrderId);
             
             let filteredOrders;
             
             if (specificOrderId) {
+                console.log('[DEBUG] Filtrando pedido específico:', specificOrderId);
                 // Mostrar apenas o pedido específico do link
                 filteredOrders = orders.filter(o => o.id.toString() === specificOrderId);
+                console.log('[DEBUG] Pedidos filtrados:', filteredOrders.length);
+                console.log('[DEBUG] Pedidos filtrados:', filteredOrders);
                 
                 // Mostrar banner de pedido específico
                 specificOrderBanner.classList.remove('hidden');
