@@ -12,8 +12,8 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
-EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakin t")
-WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "5512976021836")
+EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
+WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "5512981443806")  # Número do vendedor
 
 # -------------------- Models --------------------
 class Cliente(BaseModel):
