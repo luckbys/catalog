@@ -255,6 +255,17 @@ async def serve_status_page():
     else:
         return FileResponse(local_path, media_type="text/html")
 
+@app.get("/admin-pedidos.html")
+async def serve_admin_pedidos():
+    """Serve a página de gerenciamento de pedidos (admin)"""
+    file_name = "admin-pedidos.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
 # -------------------- Rotas auxiliares --------------------
 @app.post("/api/relay/n8n")
 def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_dep)):
