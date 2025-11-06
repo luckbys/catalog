@@ -308,6 +308,54 @@ async def security_headers(request: Request, call_next):
 def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
+@app.get("/api/orders")
+def get_orders():
+    """Retorna lista de pedidos do Supabase"""
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
+        
+        # Buscar pedidos do Supabase
+        orders_res = order_processor.supabase.table("orders").select("*").order("created_at", desc=True).limit(50).execute()
+        orders_data = getattr(orders_res, "data", []) or []
+        
+        # Formatar pedidos para o frontend
+        formatted_orders = []
+        for order in orders_data:
+            # Buscar itens do pedido
+            items_res = order_processor.supabase.table("order_items").select("*").eq("order_id", order["id"]).execute()
+            items_data = getattr(items_res, "data", []) or []
+            
+            formatted_orders.append({
+                "id": order["id"],
+                "customer": {
+                    "name": order.get("customer_name", "Cliente"),
+                    "phone": order.get("customer_phone", ""),
+                    "address": order.get("customer_address", "")
+                },
+                "items": [
+                    {
+                        "name": item.get("product_descricao", "Produto"),
+                        "quantity": item.get("quantity", 1),
+                        "price": float(item.get("unit_price", 0))
+                    }
+                    for item in items_data
+                ],
+                "total": float(order.get("total", 0)),
+                "status": order.get("status", "pending"),
+                "createdAt": order.get("created_at", ""),
+                "estimatedDelivery": "45-60 min",
+                "paymentMethod": order.get("payment_method", "")
+            })
+        
+        return {"orders": formatted_orders}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Erro ao buscar pedidos: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar pedidos: {str(e)}")
+
 @app.get("/api/order-status")
 def get_order_status(order_id: int):
     """Retorna detalhes do pedido e itens para acompanhamento de status"""

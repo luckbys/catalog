@@ -264,8 +264,35 @@
     </main>
 
     <script>
-        // Mock data - Em produção, isso viria de uma API
-        let orders = [
+        // Orders array - será preenchido pela API
+        let orders = [];
+        
+        // Carregar pedidos da API
+        async function fetchOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                if (response.ok) {
+                    const data = await response.json();
+                    orders = data.orders || [];
+                    console.log('Pedidos carregados:', orders.length);
+                } else {
+                    console.error('Erro ao carregar pedidos:', response.status);
+                    // Usar dados mock como fallback
+                    orders = mockOrders;
+                }
+            } catch (error) {
+                console.error('Erro ao buscar pedidos:', error);
+                // Usar dados mock como fallback
+                orders = mockOrders;
+            }
+            
+            // Atualizar interface
+            loadOrders();
+            updateStats();
+        }
+        
+        // Mock data - Fallback se API não estiver disponível
+        const mockOrders = [
             {
                 id: 71,
                 customer: {
@@ -318,9 +345,11 @@
         let currentFilter = 'todos';
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadOrders();
-            updateStats();
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Carregar pedidos da API primeiro
+            await fetchOrders();
+            
+            // Depois configurar a interface
             setupFilters();
             highlightOrderFromURL();
         });
@@ -617,7 +646,9 @@
 
         // Get time ago
         function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
+            // Converter string ISO para Date se necessário
+            const dateObj = typeof date === 'string' ? new Date(date) : date;
+            const seconds = Math.floor((new Date() - dateObj) / 1000);
             
             if (seconds < 60) return 'Agora mesmo';
             if (seconds < 3600) return `${Math.floor(seconds / 60)} min atrás`;
@@ -626,9 +657,9 @@
         }
 
         // Auto-refresh every 30 seconds
-        setInterval(() => {
-            // In production, fetch new orders from API
-            console.log('Auto-refresh...');
+        setInterval(async () => {
+            console.log('Auto-refresh: buscando pedidos...');
+            await fetchOrders();
         }, 30000);
     </script>
 
