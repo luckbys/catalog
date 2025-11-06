@@ -499,6 +499,7 @@
                     </div>
                     
                     <!-- Delivery Status -->
+                    ${order.status !== 'pendente' && order.status !== 'cancelado' ? `
                     <div class="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-200">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex items-center gap-2">
@@ -520,6 +521,7 @@
                             </select>
                         </div>
                     </div>
+                    ` : ''}
                     
                     <!-- Customer Info -->
                     <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 mb-4 border border-slate-200">
@@ -562,43 +564,46 @@
 
         // Get action buttons based on status
         function getActionButtons(order) {
-            const buttons = {
-                pendente: `
+            // Apenas botão de confirmar para pedidos pendentes
+            if (order.status === 'pendente') {
+                return `
                     <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="confirmar" data-order-id="${order.id}">
                         ✅ Confirmar Pedido
                     </button>
                     <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
-                        ❌
+                        ❌ Cancelar
                     </button>
-                `,
-                confirmado: `
-                    <button class="action-btn flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="preparar" data-order-id="${order.id}">
-                        📦 Iniciar Preparo
-                    </button>
-                `,
-                preparando: `
-                    <button class="action-btn flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="enviar" data-order-id="${order.id}">
-                        🚚 Enviar para Entrega
-                    </button>
-                `,
-                enviado: `
-                    <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="entregar" data-order-id="${order.id}">
-                        🎉 Marcar como Entregue
-                    </button>
-                `,
-                entregue: `
+                `;
+            }
+            
+            // Mensagem informativa para pedidos confirmados
+            if (order.status === 'confirmado' || order.status === 'preparando' || order.status === 'enviado') {
+                return `
+                    <div class="flex-1 text-center py-3 px-4 bg-blue-50 text-blue-700 font-medium rounded-xl border-2 border-blue-200">
+                        💡 Use o dropdown acima para atualizar o status de entrega
+                    </div>
+                `;
+            }
+            
+            // Pedido entregue
+            if (order.status === 'entregue') {
+                return `
                     <div class="flex-1 text-center py-3 px-4 bg-emerald-50 text-emerald-700 font-semibold rounded-xl border-2 border-emerald-200">
                         ✓ Pedido Concluído
                     </div>
-                `,
-                cancelado: `
+                `;
+            }
+            
+            // Pedido cancelado
+            if (order.status === 'cancelado') {
+                return `
                     <div class="flex-1 text-center py-3 px-4 bg-red-50 text-red-700 font-semibold rounded-xl border-2 border-red-200">
                         ✗ Pedido Cancelado
                     </div>
-                `
-            };
+                `;
+            }
             
-            return buttons[order.status] || '';
+            return '';
         }
 
         // Setup action buttons
@@ -682,11 +687,9 @@
                 return;
             }
             
+            // Apenas confirmar e cancelar são permitidos
             const statusMap = {
                 confirmar: 'confirmado',
-                preparar: 'preparando',
-                enviar: 'enviado',
-                entregar: 'entregue',
                 cancelar: 'cancelado'
             };
             
@@ -700,11 +703,7 @@
             
             // Mapear status do frontend para o banco
             const dbStatusMap = {
-                'pendente': 'pending',
                 'confirmado': 'confirmed',
-                'preparando': 'processing',
-                'enviado': 'shipped',
-                'entregue': 'delivered',
                 'cancelado': 'cancelled'
             };
             

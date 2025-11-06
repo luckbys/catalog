@@ -71,12 +71,33 @@ Agora retorna o campo `delivery_status` em cada pedido.
 1. **Execute a migration SQL** no Supabase
 2. **Reinicie o backend** para carregar as novas rotas
 3. **Acesse admin-pedidos.html**
-4. **Selecione o status de entrega** no dropdown de cada pedido
-5. **O status será atualizado automaticamente** no banco de dados
+4. **Confirme o pedido** clicando no botão "✅ Confirmar Pedido"
+5. **Após confirmado**, o dropdown de status de entrega aparecerá
+6. **Selecione o status de entrega** no dropdown
+7. **O status será atualizado automaticamente** no banco de dados
+
+## Fluxo Simplificado
+
+### Pedidos Pendentes
+- Exibe apenas botões: **Confirmar** e **Cancelar**
+- Dropdown de entrega **não aparece**
+
+### Pedidos Confirmados
+- Botões de ação são substituídos por mensagem informativa
+- **Dropdown de entrega é exibido** e habilitado
+- Admin controla todo o fluxo de entrega pelo dropdown
+
+### Pedidos Entregues/Cancelados
+- Exibe apenas mensagem de status final
+- Dropdown não aparece
 
 ## Diferença entre `status` e `delivery_status`
 
-- **status**: Status geral do pedido (pending, confirmed, processing, shipped, delivered, cancelled)
+- **status**: Status geral do pedido (pending, confirmed, cancelled)
+  - Controlado pelos botões de ação (apenas confirmar/cancelar)
+  
 - **delivery_status**: Status específico da entrega (pending, preparing, ready_for_pickup, in_transit, out_for_delivery, delivered, failed, returned)
+  - Controlado pelo dropdown após confirmação
+  - Permite rastreamento granular do processo de entrega
 
-Isso permite um controle mais granular do processo de entrega, independente do status geral do pedido.
+Isso elimina redundância e torna o fluxo mais intuitivo: primeiro confirma o pedido, depois gerencia a entrega.
