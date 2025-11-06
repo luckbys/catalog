@@ -295,7 +295,7 @@ Pedido registrado com sucesso! ✅"""
         ])
         
         # Link para o admin
-        admin_link = f"https://ma.devsible.com.br/admin-pedidos.html?pedido={order['id']}"
+        admin_link = f"https://hakimfarma.devsible.com.br/admin-pedidos.html?pedido={order['id']}"
         
         # Timestamp atual
         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
