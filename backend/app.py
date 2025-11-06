@@ -371,6 +371,7 @@ def get_orders():
                 ],
                 "total": float(order.get("total", 0)),
                 "status": frontend_status,
+                "delivery_status": order.get("delivery_status", "pending"),
                 "createdAt": order.get("created_at", ""),
                 "estimatedDelivery": "45-60 min",
                 "paymentMethod": order.get("payment_method", "")
@@ -434,6 +435,57 @@ def update_order_status(order_id: int, request: dict):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {str(e)}")
+
+@app.put("/api/orders/{order_id}/delivery-status")
+def update_delivery_status(order_id: int, request: dict):
+    """Atualiza o status de entrega de um pedido"""
+    try:
+        print(f"[API] PUT /api/orders/{order_id}/delivery-status")
+        print(f"[API] Request body: {request}")
+        
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            print("[API] ERROR: Order processor não disponível")
+            raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
+        
+        new_delivery_status = request.get("delivery_status")
+        if not new_delivery_status:
+            raise HTTPException(status_code=400, detail="delivery_status não fornecido")
+        
+        # Validar delivery_status
+        valid_delivery_statuses = [
+            'pending', 'preparing', 'ready_for_pickup', 'in_transit', 
+            'out_for_delivery', 'delivered', 'failed', 'returned'
+        ]
+        if new_delivery_status not in valid_delivery_statuses:
+            raise HTTPException(status_code=400, detail=f"delivery_status inválido: {new_delivery_status}")
+        
+        print(f"[API] Atualizando pedido {order_id} para delivery_status: {new_delivery_status}")
+        
+        # Atualizar no Supabase
+        result = order_processor.supabase.table("orders").update({
+            "delivery_status": new_delivery_status,
+            "updated_at": datetime.utcnow().isoformat()
+        }).eq("id", order_id).execute()
+        
+        if not result.data:
+            print(f"[API] ERROR: Pedido {order_id} não encontrado")
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+        
+        print(f"[API] Pedido {order_id} delivery_status atualizado com sucesso")
+        return {
+            "success": True,
+            "message": "Status de entrega atualizado com sucesso",
+            "order_id": order_id,
+            "new_delivery_status": new_delivery_status
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[API ERROR] Erro ao atualizar delivery_status: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar delivery_status: {str(e)}")
 
 @app.get("/api/order-status")
 def get_order_status(order_id: int):

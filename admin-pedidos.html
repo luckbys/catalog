@@ -124,6 +124,27 @@
             align-items: center;
             gap: 0.75rem;
         }
+        
+        .delivery-status-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .delivery-status-select:hover {
+            border-color: #10b981;
+        }
+        
+        .delivery-status-select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
@@ -477,6 +498,29 @@
                         </span>
                     </div>
                     
+                    <!-- Delivery Status -->
+                    <div class="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-200">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">🚚</span>
+                                <div>
+                                    <p class="text-xs font-semibold text-blue-600 uppercase">Status de Entrega</p>
+                                    <p class="text-sm text-blue-800 font-medium">${getDeliveryStatusLabel(order.delivery_status || 'pending')}</p>
+                                </div>
+                            </div>
+                            <select class="delivery-status-select" data-order-id="${order.id}" data-current-status="${order.delivery_status || 'pending'}">
+                                <option value="pending" ${(order.delivery_status || 'pending') === 'pending' ? 'selected' : ''}>⏳ Pendente</option>
+                                <option value="preparing" ${order.delivery_status === 'preparing' ? 'selected' : ''}>📦 Preparando</option>
+                                <option value="ready_for_pickup" ${order.delivery_status === 'ready_for_pickup' ? 'selected' : ''}>✅ Pronto</option>
+                                <option value="in_transit" ${order.delivery_status === 'in_transit' ? 'selected' : ''}>🚗 Em Trânsito</option>
+                                <option value="out_for_delivery" ${order.delivery_status === 'out_for_delivery' ? 'selected' : ''}>🚚 Saiu p/ Entrega</option>
+                                <option value="delivered" ${order.delivery_status === 'delivered' ? 'selected' : ''}>🎉 Entregue</option>
+                                <option value="failed" ${order.delivery_status === 'failed' ? 'selected' : ''}>❌ Falhou</option>
+                                <option value="returned" ${order.delivery_status === 'returned' ? 'selected' : ''}>↩️ Devolvido</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <!-- Customer Info -->
                     <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 mb-4 border border-slate-200">
                         <div class="flex items-start gap-3">
@@ -566,6 +610,66 @@
                     handleAction(action, orderId);
                 });
             });
+            
+            // Setup delivery status selects
+            document.querySelectorAll('.delivery-status-select').forEach(select => {
+                select.addEventListener('change', async function() {
+                    const orderId = parseInt(this.dataset.orderId);
+                    const currentStatus = this.dataset.currentStatus;
+                    const newStatus = this.value;
+                    
+                    if (newStatus === currentStatus) return;
+                    
+                    await updateDeliveryStatus(orderId, newStatus);
+                });
+            });
+        }
+        
+        // Update delivery status
+        async function updateDeliveryStatus(orderId, newStatus) {
+            console.log(`[DEBUG] Atualizando delivery_status do pedido ${orderId} para ${newStatus}`);
+            
+            try {
+                const response = await fetch(`/api/orders/${orderId}/delivery-status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ delivery_status: newStatus })
+                });
+                
+                console.log(`[DEBUG] Response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log(`[DEBUG] Resultado:`, result);
+                    
+                    // Update order locally
+                    const order = orders.find(o => o.id === orderId);
+                    if (order) {
+                        order.delivery_status = newStatus;
+                    }
+                    
+                    // Show notification
+                    showNotification(`Status de entrega atualizado para: ${getDeliveryStatusLabel(newStatus)}`);
+                    
+                    // Reload orders from API
+                    await fetchOrders();
+                } else {
+                    const errorText = await response.text();
+                    console.error(`[ERROR] Erro ao atualizar: ${errorText}`);
+                    showNotification(`Erro ao atualizar status de entrega`, 'error');
+                    
+                    // Reload to reset select
+                    await fetchOrders();
+                }
+            } catch (error) {
+                console.error(`[ERROR] Exceção ao atualizar:`, error);
+                showNotification(`Erro ao atualizar status de entrega: ${error.message}`, 'error');
+                
+                // Reload to reset select
+                await fetchOrders();
+            }
         }
 
         // Handle actions
@@ -651,6 +755,21 @@
                 enviado: 'enviado para entrega',
                 entregue: 'entregue',
                 cancelado: 'cancelado'
+            };
+            return labels[status] || status;
+        }
+        
+        // Get delivery status label (global scope for template)
+        function getDeliveryStatusLabel(status) {
+            const labels = {
+                'pending': 'Pendente',
+                'preparing': 'Preparando Pedido',
+                'ready_for_pickup': 'Pronto para Retirada',
+                'in_transit': 'Em Trânsito',
+                'out_for_delivery': 'Saiu para Entrega',
+                'delivered': 'Entregue',
+                'failed': 'Falha na Entrega',
+                'returned': 'Devolvido'
             };
             return labels[status] || status;
         }
