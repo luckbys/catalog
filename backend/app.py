@@ -277,6 +277,17 @@ async def serve_test_api_orders():
     else:
         return FileResponse(local_path, media_type="text/html")
 
+@app.get("/entregador.html")
+async def serve_entregador():
+    """Serve a página do entregador"""
+    file_name = "entregador.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
 # -------------------- Rotas auxiliares --------------------
 @app.post("/api/relay/n8n")
 def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_dep)):
@@ -436,8 +447,81 @@ def update_order_status(order_id: int, request: dict):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {str(e)}")
 
+# Função auxiliar para enviar link do entregador via WhatsApp
+async def send_delivery_link_to_driver(order_id: int, order_data: dict):
+    """Envia link da tela do entregador via Evolution API"""
+    try:
+        # Configurações da Evolution API
+        EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
+        EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
+        EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
+        DRIVER_PHONE = "5512976025888"  # Número do entregador
+        
+        if not EVOLUTION_API_URL or not EVOLUTION_API_KEY:
+            print("[WARNING] Evolution API não configurada")
+            return
+        
+        # Construir URL da tela do entregador
+        base_url = os.getenv("CLIENT_BASE_URL", "http://localhost:8000")
+        # Remover /catalogo.html se existir
+        if base_url.endswith('/catalogo.html'):
+            base_url = base_url.replace('/catalogo.html', '')
+        
+        delivery_url = f"{base_url}/entregador.html?pedido={order_id}"
+        
+        # Construir mensagem
+        customer_name = order_data.get("customer_name", "Cliente")
+        customer_address = order_data.get("customer_address", "Endereço não informado")
+        total = float(order_data.get("total", 0))
+        
+        message = f"""🚚 *Nova Entrega Disponível!*
+
+📦 *Pedido #{order_id}*
+👤 Cliente: {customer_name}
+📍 Endereço: {customer_address}
+💰 Valor: R$ {total:.2f}
+
+🔗 Acesse os detalhes da entrega:
+{delivery_url}
+
+_Clique no link para ver o mapa e informações completas._"""
+        
+        # Preparar payload para Evolution API
+        from urllib.parse import quote
+        instance_segment = quote(EVOLUTION_INSTANCE_NAME, safe="")
+        url = f"{EVOLUTION_API_URL}/message/sendText/{instance_segment}"
+        
+        payload = {
+            "number": DRIVER_PHONE,
+            "text": message
+        }
+        
+        headers = {
+            "Content-Type": "application/json",
+            "apikey": EVOLUTION_API_KEY
+        }
+        
+        print(f"[WHATSAPP] Enviando link do entregador para {DRIVER_PHONE}")
+        print(f"[WHATSAPP] URL: {url}")
+        print(f"[WHATSAPP] Link: {delivery_url}")
+        
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code == 201 or response.status_code == 200:
+            print(f"[WHATSAPP] Link enviado com sucesso para o entregador")
+            return {"success": True, "message": "Link enviado"}
+        else:
+            print(f"[WHATSAPP ERROR] Erro ao enviar: {response.status_code} - {response.text}")
+            return {"success": False, "error": response.text}
+            
+    except Exception as e:
+        print(f"[WHATSAPP ERROR] Exceção ao enviar link: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}
+
 @app.put("/api/orders/{order_id}/delivery-status")
-def update_delivery_status(order_id: int, request: dict):
+async def update_delivery_status(order_id: int, request: dict):
     """Atualiza o status de entrega de um pedido"""
     try:
         print(f"[API] PUT /api/orders/{order_id}/delivery-status")
@@ -472,6 +556,15 @@ def update_delivery_status(order_id: int, request: dict):
             raise HTTPException(status_code=404, detail="Pedido não encontrado")
         
         print(f"[API] Pedido {order_id} delivery_status atualizado com sucesso")
+        
+        # Enviar link do entregador via WhatsApp quando status for in_transit ou out_for_delivery
+        if new_delivery_status in ['in_transit', 'out_for_delivery']:
+            try:
+                await send_delivery_link_to_driver(order_id, result.data[0])
+            except Exception as e:
+                print(f"[WARNING] Erro ao enviar link para entregador: {str(e)}")
+                # Não falha a requisição se o envio do WhatsApp falhar
+        
         return {
             "success": True,
             "message": "Status de entrega atualizado com sucesso",
