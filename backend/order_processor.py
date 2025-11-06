@@ -13,7 +13,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
 EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
-WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "5512981443806")  # Número do vendedor
+WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "5512976025888")  # Número do vendedor
 
 # -------------------- Models --------------------
 class Cliente(BaseModel):
@@ -84,21 +84,33 @@ class OrderProcessor:
             # 3. Criar itens do pedido
             order_items = self._create_order_items(order_id, payload.produtos)
             
-            # 4. Formatar mensagem
-            message = self._format_message(order_result, order_items)
+            # 4. Formatar mensagem para o cliente
+            message_cliente = self._format_message(order_result, order_items)
             
-            # 5. Enviar mensagem WhatsApp
-            whatsapp_result = self._send_whatsapp_message(message)
+            # 5. Enviar mensagem WhatsApp para o cliente
+            whatsapp_result = self._send_whatsapp_message(
+                message_cliente, 
+                order_result['customer_phone']
+            )
+            
+            # 6. Enviar notificação para o vendedor
+            message_vendedor = self._format_seller_notification(order_result, order_items)
+            seller_result = self._send_whatsapp_message(
+                message_vendedor,
+                WHATSAPP_PHONE  # Número do vendedor
+            )
             
             return {
                 "success": True,
                 "order_id": order_id,
                 "message": "Pedido processado com sucesso",
                 "whatsapp_sent": whatsapp_result.get("success", False),
+                "seller_notified": seller_result.get("success", False),
                 "data": {
                     "order": order_result,
                     "items": order_items,
-                    "whatsapp_response": whatsapp_result
+                    "whatsapp_response": whatsapp_result,
+                    "seller_notification": seller_result
                 }
             }
             
@@ -272,14 +284,56 @@ Pedido registrado com sucesso! ✅"""
         
         return message
     
-    def _send_whatsapp_message(self, message: str) -> Dict[str, Any]:
-        """Envia mensagem WhatsApp (equivalente ao 'Enviar Mensagem WhatsApp')"""
+    def _format_seller_notification(self, order: Dict[str, Any], items: List[Dict[str, Any]]) -> str:
+        """Formata mensagem de notificação para o vendedor com link do admin"""
+        from datetime import datetime
+        
+        # Montar lista de produtos
+        produtos_text = "\n".join([
+            f"{idx}. *{item['product_descricao']}*\n   Qtd: {item['quantity']} | R$ {item['unit_price']:.2f}"
+            for idx, item in enumerate(items, 1)
+        ])
+        
+        # Link para o admin
+        admin_link = f"https://ma.devsible.com.br/admin-pedidos.html?pedido={order['id']}"
+        
+        # Timestamp atual
+        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        
+        message = f"""🔔 *NOVO PEDIDO RECEBIDO!*
+
+📋 *Pedido:* #{order['id']}
+⏰ *Horário:* {timestamp}
+
+👤 *CLIENTE*
+Nome: {order['customer_name']}
+📱 Telefone: {order['customer_phone']}
+📍 Endereço: {order['customer_address']}
+
+🛒 *PRODUTOS*
+{produtos_text}
+
+💰 *TOTAL:* R$ {order['total']:.2f}
+💳 *Pagamento:* {order['payment_method']}
+
+🔗 *GERENCIAR PEDIDO:*
+{admin_link}
+
+✅ Acesse o link acima para confirmar e gerenciar este pedido!"""
+        
+        return message
+    
+    def _send_whatsapp_message(self, message: str, phone_number: str = None) -> Dict[str, Any]:
+        """Envia mensagem WhatsApp para um número específico"""
         if not EVOLUTION_API_URL or not EVOLUTION_API_KEY:
             return {
                 "success": False,
                 "error": "Evolution API não configurada",
                 "message": "Configurações do WhatsApp não encontradas"
             }
+        
+        # Usar número fornecido ou padrão (vendedor)
+        target_phone = phone_number or WHATSAPP_PHONE
         
         try:
             headers = {
@@ -288,7 +342,7 @@ Pedido registrado com sucesso! ✅"""
             }
             
             payload = {
-                "number": WHATSAPP_PHONE,
+                "number": target_phone,
                 "text": message
             }
             

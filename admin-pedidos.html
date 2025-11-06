@@ -203,7 +203,7 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-2xl p-4 shadow-md mb-6">
+        <div id="filtersSection" class="bg-white rounded-2xl p-4 shadow-md mb-6">
             <div class="flex flex-wrap gap-2">
                 <button class="filter-chip active status-badge status-pendente" data-status="todos">
                     📋 Todos
@@ -226,6 +226,26 @@
                 <button class="filter-chip status-badge status-cancelado" data-status="cancelado">
                     ❌ Cancelados
                 </button>
+            </div>
+        </div>
+
+        <!-- Specific Order Banner -->
+        <div id="specificOrderBanner" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-bold text-blue-800">Visualizando Pedido Específico</p>
+                        <p class="text-sm text-blue-600" id="specificOrderText">Pedido #<span id="specificOrderNumber"></span></p>
+                    </div>
+                </div>
+                <a href="admin-pedidos.html" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                    Ver Todos os Pedidos
+                </a>
             </div>
         </div>
 
@@ -335,10 +355,39 @@
         function loadOrders() {
             const ordersList = document.getElementById('ordersList');
             const emptyState = document.getElementById('emptyState');
+            const specificOrderBanner = document.getElementById('specificOrderBanner');
+            const specificOrderNumber = document.getElementById('specificOrderNumber');
             
-            const filteredOrders = currentFilter === 'todos' 
-                ? orders 
-                : orders.filter(o => o.status === currentFilter);
+            // Verificar se há pedido específico na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const specificOrderId = urlParams.get('pedido');
+            
+            let filteredOrders;
+            
+            if (specificOrderId) {
+                // Mostrar apenas o pedido específico do link
+                filteredOrders = orders.filter(o => o.id.toString() === specificOrderId);
+                
+                // Mostrar banner de pedido específico
+                specificOrderBanner.classList.remove('hidden');
+                specificOrderNumber.textContent = specificOrderId;
+                
+                // Esconder filtros e estatísticas
+                document.getElementById('filtersSection').classList.add('hidden');
+                document.querySelector('.grid.grid-cols-2').classList.add('hidden');
+            } else {
+                // Esconder banner
+                specificOrderBanner.classList.add('hidden');
+                
+                // Mostrar filtros e estatísticas
+                document.getElementById('filtersSection').classList.remove('hidden');
+                document.querySelector('.grid.grid-cols-2').classList.remove('hidden');
+                
+                // Mostrar todos ou filtrados por status
+                filteredOrders = currentFilter === 'todos' 
+                    ? orders 
+                    : orders.filter(o => o.status === currentFilter);
+            }
             
             if (filteredOrders.length === 0) {
                 ordersList.innerHTML = '';

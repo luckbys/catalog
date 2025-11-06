@@ -8,7 +8,7 @@ Write-Host ""
 $API_URL = "https://evo.devsible.com.br"
 $API_KEY = "B6D711FCDE4D-4183-9385-D5C9B6E1E119"
 $INSTANCE = "hakim"
-$PHONE = "5512981443806"
+$PHONE = "5512976025888"
 
 # Mensagem de teste
 $timestamp = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
