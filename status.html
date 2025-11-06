@@ -197,6 +197,7 @@
     .timeline {
       position: relative;
       padding-left: 32px;
+      transition: opacity 0.3s ease;
     }
 
     .timeline::before {
@@ -227,18 +228,31 @@
       border-radius: 50%;
       border: 2px solid var(--border);
       background: var(--surface);
-      transition: all 0.3s;
+      transition: all 0.5s ease;
     }
 
     .timeline-marker.completed {
       background: var(--success);
       border-color: var(--success);
+      animation: scaleIn 0.5s ease;
     }
 
     .timeline-marker.current {
       background: var(--primary);
       border-color: var(--primary);
       box-shadow: 0 0 0 4px rgb(5 150 105 / 0.1);
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .timeline-content h3 {
@@ -324,6 +338,12 @@
     .text-center { text-align: center; }
     .mb-4 { margin-bottom: 16px; }
     .mt-4 { margin-top: 16px; }
+
+    /* Pulse animation for auto-refresh indicator */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
   </style>
 </head>
 <body>
@@ -401,6 +421,10 @@
               <h2 id="orderTitle">Pedido #49</h2>
               <p class="order-meta" id="orderMeta">Estimativa: 45-60 min</p>
             </div>
+            <div id="autoRefreshIndicator" class="hidden" style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted);">
+              <div style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite;"></div>
+              <span>Atualizando...</span>
+            </div>
           </div>
 
           <div class="timeline" id="timeline">
@@ -448,17 +472,21 @@
     const customerInfo = document.getElementById('customerInfo');
     const customerName = document.getElementById('customerName');
     const customerAddress = document.getElementById('customerAddress');
+    const autoRefreshIndicator = document.getElementById('autoRefreshIndicator');
 
     // Status mapping - mapeando os status do backend para o frontend
     const statusMap = {
       'pending': { title: 'Pedido Recebido', desc: 'Seu pedido foi confirmado' },
       'preparing': { title: 'Preparando', desc: 'Estamos preparando seu pedido' },
-      'ready': { title: 'Pronto', desc: 'Pedido pronto para entrega' },
+      'ready_for_pickup': { title: 'Pronto', desc: 'Pedido pronto para retirada' },
+      'in_transit': { title: 'Em Trânsito', desc: 'A caminho do destino' },
       'out_for_delivery': { title: 'Saiu para Entrega', desc: 'A caminho do destino' },
-      'delivered': { title: 'Entregue', desc: 'Pedido entregue com sucesso' }
+      'delivered': { title: 'Entregue', desc: 'Pedido entregue com sucesso' },
+      'failed': { title: 'Falha na Entrega', desc: 'Não foi possível entregar' },
+      'returned': { title: 'Devolvido', desc: 'Pedido foi devolvido' }
     };
 
-    const statusOrder = ['pending', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
+    const statusOrder = ['pending', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered'];
 
     // Show/Hide sections
     function showSection(section) {
@@ -547,6 +575,118 @@
       if (e.key === 'Enter') searchOrder();
     });
 
+    // Auto-refresh interval
+    let autoRefreshInterval = null;
+    let currentOrderId = null;
+
+    // Start auto-refresh
+    function startAutoRefresh() {
+      // Clear existing interval
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+      }
+      
+      // Refresh every 10 seconds
+      autoRefreshInterval = setInterval(() => {
+        if (currentOrderId && !statusCard.classList.contains('hidden')) {
+          console.log('[AUTO-REFRESH] Atualizando status do pedido...');
+          searchOrder(true); // Silent refresh (sem loading skeleton)
+        }
+      }, 10000); // 10 segundos
+    }
+
+    // Stop auto-refresh
+    function stopAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+
+    // Update only status and timeline (for silent refresh)
+    function updateStatusOnly(data) {
+      // Update only ETA
+      orderMeta.textContent = data.eta?.text || 'Estimativa: 45-60 min';
+      
+      // Update timeline with smooth transition
+      const currentTimeline = timeline.innerHTML;
+      createTimeline(data.order.status, data.timestamps || {});
+      
+      // Add fade effect if content changed
+      if (currentTimeline !== timeline.innerHTML) {
+        timeline.style.opacity = '0.5';
+        setTimeout(() => {
+          timeline.style.opacity = '1';
+        }, 200);
+      }
+    }
+
+    // Search order (modificado para suportar refresh silencioso)
+    async function searchOrder(silentRefresh = false) {
+      const orderId = orderIdInput.value.trim();
+      if (!orderId) return;
+
+      currentOrderId = orderId;
+      
+      if (!silentRefresh) {
+        showSection(loadingSkeleton);
+      } else {
+        // Show refresh indicator during silent refresh
+        autoRefreshIndicator.classList.remove('hidden');
+      }
+      buscarBtn.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/order-status?order_id=${orderId}`);
+        
+        if (!response.ok) {
+          throw new Error('Pedido não encontrado');
+        }
+
+        const data = await response.json();
+        
+        if (silentRefresh) {
+          // Silent refresh: update only status and timeline
+          updateStatusOnly(data);
+        } else {
+          // Full refresh: update everything
+          orderTitle.textContent = `Pedido #${data.order.order_number || data.order.id}`;
+          orderMeta.textContent = data.eta?.text || 'Estimativa: 45-60 min';
+          
+          // Update customer info
+          customerName.textContent = data.order.customer_name || 'Nome não informado';
+          customerAddress.textContent = data.order.customer_address || 'Endereço não informado';
+          
+          // Create timeline usando o status do pedido
+          createTimeline(data.order.status, data.timestamps || {});
+          
+          showSection(statusCard);
+        }
+        
+        // Hide refresh indicator after update
+        if (silentRefresh) {
+          setTimeout(() => {
+            autoRefreshIndicator.classList.add('hidden');
+          }, 1000);
+        }
+        
+        // Start auto-refresh after first successful load
+        if (!autoRefreshInterval) {
+          startAutoRefresh();
+        }
+        
+      } catch (error) {
+        console.error('Erro ao buscar pedido:', error);
+        if (!silentRefresh) {
+          showSection(errorCard);
+        }
+        autoRefreshIndicator.classList.add('hidden');
+        stopAutoRefresh();
+      } finally {
+        buscarBtn.disabled = false;
+      }
+    }
+
     // Auto-search on page load if order ID is present
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -558,6 +698,20 @@
       } else if (orderIdInput.value.trim()) {
         searchOrder();
       }
+    });
+
+    // Stop auto-refresh when page is hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopAutoRefresh();
+      } else if (currentOrderId && !statusCard.classList.contains('hidden')) {
+        startAutoRefresh();
+      }
+    });
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', () => {
+      stopAutoRefresh();
     });
   </script>
 </body>

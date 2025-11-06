@@ -502,15 +502,31 @@ def get_order_status(order_id: int):
         items_res = order_processor.supabase.table("order_items").select("*").eq("order_id", order_id).execute()
         items_data = getattr(items_res, "data", []) or []
 
-        status = (order_data.get("status") or "pending").lower()
+        # Usar delivery_status ao invés de status geral
+        delivery_status = (order_data.get("delivery_status") or "pending").lower()
+        
+        # Timeline baseada no delivery_status
         timeline_steps = [
             {"key": "pending", "label": "Pedido recebido"},
             {"key": "preparing", "label": "Em preparação"},
+            {"key": "ready_for_pickup", "label": "Pronto para retirada"},
             {"key": "out_for_delivery", "label": "Saiu para entrega"},
             {"key": "delivered", "label": "Entregue"},
         ]
 
-        status_index = next((i for i, s in enumerate(timeline_steps) if s["key"] == status), 0)
+        # Mapear delivery_status para índice da timeline
+        status_map = {
+            "pending": 0,
+            "preparing": 1,
+            "ready_for_pickup": 2,
+            "in_transit": 3,
+            "out_for_delivery": 3,
+            "delivered": 4,
+            "failed": 3,
+            "returned": 3
+        }
+        
+        status_index = status_map.get(delivery_status, 0)
         for i, s in enumerate(timeline_steps):
             s["done"] = i <= status_index
 
@@ -534,13 +550,20 @@ def get_order_status(order_id: int):
         remaining_min = max(TOTAL_MIN - elapsed_mins, 0)
         remaining_max = max(TOTAL_MAX - elapsed_mins, 0)
 
-        if status == "delivered":
+        if delivery_status == "delivered":
             eta_text = "Entregue ✅"
+        elif delivery_status == "failed":
+            eta_text = "Falha na entrega ❌"
+        elif delivery_status == "returned":
+            eta_text = "Pedido devolvido ↩️"
         else:
             eta_text = f"Estimativa de entrega: ~{remaining_min}–{remaining_max} min"
 
+        # Incluir delivery_status no retorno para o frontend usar
+        order_data_with_status = {**order_data, "status": delivery_status}
+
         return {
-            "order": order_data,
+            "order": order_data_with_status,
             "items": items_data,
             "timeline": timeline_steps,
             "server_time": now.isoformat(),
