@@ -463,11 +463,25 @@ async def send_delivery_link_to_driver(order_id: int, order_data: dict):
         
         # Construir URL da tela do entregador
         base_url = os.getenv("CLIENT_BASE_URL", "http://localhost:8000")
-        # Remover /catalogo.html se existir
-        if base_url.endswith('/catalogo.html'):
-            base_url = base_url.replace('/catalogo.html', '')
         
+        # Limpar e construir URL corretamente
+        # Se CLIENT_BASE_URL tem /catalogo.html, remover
+        if '/catalogo.html' in base_url:
+            base_url = base_url.split('/catalogo.html')[0]
+        
+        # Se não tem protocolo, adicionar https://
+        if not base_url.startswith('http://') and not base_url.startswith('https://'):
+            base_url = f"https://{base_url}"
+        
+        # Remover barra final se existir
+        base_url = base_url.rstrip('/')
+        
+        # Construir URL completa
         delivery_url = f"{base_url}/entregador.html?pedido={order_id}"
+        
+        print(f"[DEBUG] CLIENT_BASE_URL original: {os.getenv('CLIENT_BASE_URL')}")
+        print(f"[DEBUG] Base URL processada: {base_url}")
+        print(f"[DEBUG] URL final do entregador: {delivery_url}")
         
         # Construir mensagem
         customer_name = order_data.get("customer_name", "Cliente")
