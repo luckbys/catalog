@@ -569,9 +569,14 @@
         }
 
         // Handle actions
-        function handleAction(action, orderId) {
+        async function handleAction(action, orderId) {
+            console.log(`[DEBUG] handleAction: ${action} para pedido ${orderId}`);
+            
             const order = orders.find(o => o.id === orderId);
-            if (!order) return;
+            if (!order) {
+                console.error(`[ERROR] Pedido ${orderId} não encontrado`);
+                return;
+            }
             
             const statusMap = {
                 confirmar: 'confirmado',
@@ -582,20 +587,60 @@
             };
             
             const newStatus = statusMap[action];
-            if (!newStatus) return;
+            if (!newStatus) {
+                console.error(`[ERROR] Ação ${action} não mapeada`);
+                return;
+            }
             
-            // Update order status
-            order.status = newStatus;
+            console.log(`[DEBUG] Novo status: ${newStatus}`);
             
-            // Show notification
-            showNotification(`Pedido #${orderId} ${getStatusLabel(newStatus)}!`);
+            // Mapear status do frontend para o banco
+            const dbStatusMap = {
+                'pendente': 'pending',
+                'confirmado': 'confirmed',
+                'preparando': 'processing',
+                'enviado': 'shipped',
+                'entregue': 'delivered',
+                'cancelado': 'cancelled'
+            };
             
-            // Reload orders
-            loadOrders();
-            updateStats();
+            const dbStatus = dbStatusMap[newStatus];
+            console.log(`[DEBUG] Status do banco: ${dbStatus}`);
             
-            // In production, send to API
-            console.log(`Order ${orderId} updated to ${newStatus}`);
+            try {
+                // Enviar para API
+                console.log(`[DEBUG] Enviando para /api/orders/${orderId}/status`);
+                const response = await fetch(`/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: dbStatus })
+                });
+                
+                console.log(`[DEBUG] Response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log(`[DEBUG] Resultado:`, result);
+                    
+                    // Update order status locally
+                    order.status = newStatus;
+                    
+                    // Show notification
+                    showNotification(`Pedido #${orderId} ${getStatusLabel(newStatus)}!`);
+                    
+                    // Reload orders from API
+                    await fetchOrders();
+                } else {
+                    const errorText = await response.text();
+                    console.error(`[ERROR] Erro ao atualizar: ${errorText}`);
+                    showNotification(`Erro ao atualizar pedido: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                console.error(`[ERROR] Exceção ao atualizar:`, error);
+                showNotification(`Erro ao atualizar pedido: ${error.message}`, 'error');
+            }
         }
 
         // Get status label

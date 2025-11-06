@@ -387,6 +387,54 @@ def get_orders():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao buscar pedidos: {str(e)}")
 
+@app.put("/api/orders/{order_id}/status")
+def update_order_status(order_id: int, request: dict):
+    """Atualiza o status de um pedido"""
+    try:
+        print(f"[API] PUT /api/orders/{order_id}/status")
+        print(f"[API] Request body: {request}")
+        
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            print("[API] ERROR: Order processor não disponível")
+            raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
+        
+        new_status = request.get("status")
+        if not new_status:
+            raise HTTPException(status_code=400, detail="Status não fornecido")
+        
+        # Validar status
+        valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
+        if new_status not in valid_statuses:
+            raise HTTPException(status_code=400, detail=f"Status inválido: {new_status}")
+        
+        print(f"[API] Atualizando pedido {order_id} para status: {new_status}")
+        
+        # Atualizar no Supabase
+        result = order_processor.supabase.table("orders").update({
+            "status": new_status,
+            "updated_at": datetime.utcnow().isoformat()
+        }).eq("id", order_id).execute()
+        
+        if not result.data:
+            print(f"[API] ERROR: Pedido {order_id} não encontrado")
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+        
+        print(f"[API] Pedido {order_id} atualizado com sucesso")
+        return {
+            "success": True,
+            "message": "Status atualizado com sucesso",
+            "order_id": order_id,
+            "new_status": new_status
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[API ERROR] Erro ao atualizar status: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {str(e)}")
+
 @app.get("/api/order-status")
 def get_order_status(order_id: int):
     """Retorna detalhes do pedido e itens para acompanhamento de status"""
