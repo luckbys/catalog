@@ -121,6 +121,59 @@ class SelecaoItem(Base):
 
 Base.metadata.create_all(bind=engine)
 
+# -------------------- Config Dinâmica de Contatos --------------------
+# Arquivo JSON para armazenar números de vendedores e entregadores
+CONTACTS_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "contacts.json")
+
+def _ensure_contacts_file():
+    """Garante que o arquivo de contatos existe com defaults sensatos"""
+    if not os.path.exists(CONTACTS_CONFIG_PATH):
+        default_cfg = {
+            "seller_phones": [os.getenv("WHATSAPP_PHONE", "5512976025888")],
+            "driver_phones": [os.getenv("DRIVER_PHONE", "5512976025888")]
+        }
+        try:
+            import json
+            with open(CONTACTS_CONFIG_PATH, "w", encoding="utf-8") as f:
+                json.dump(default_cfg, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[CONFIG] Falha ao criar contacts.json: {e}")
+
+def load_contacts_config() -> Dict[str, List[str]]:
+    """Carrega configuração de contatos (vendedores/entregadores) do JSON"""
+    import json
+    _ensure_contacts_file()
+    try:
+        with open(CONTACTS_CONFIG_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            # Normalizar
+            sellers = [str(x).strip() for x in (data.get("seller_phones") or []) if str(x).strip()]
+            drivers = [str(x).strip() for x in (data.get("driver_phones") or []) if str(x).strip()]
+            return {"seller_phones": sellers, "driver_phones": drivers}
+    except Exception as e:
+        print(f"[CONFIG] Erro ao ler contacts.json: {e}")
+        return {
+            "seller_phones": [os.getenv("WHATSAPP_PHONE", "5512976025888")],
+            "driver_phones": [os.getenv("DRIVER_PHONE", "5512976025888")]
+        }
+
+def save_contacts_config(cfg: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    """Salva configuração de contatos no JSON, com validação simples"""
+    import json
+    def _valid_phone(p: str) -> bool:
+        p = (p or "").strip()
+        return p.isdigit() and len(p) >= 11
+    sellers = [p for p in (cfg.get("seller_phones") or []) if _valid_phone(p)]
+    drivers = [p for p in (cfg.get("driver_phones") or []) if _valid_phone(p)]
+    normalized = {"seller_phones": sellers, "driver_phones": drivers}
+    try:
+        with open(CONTACTS_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(normalized, f, ensure_ascii=False, indent=2)
+        return normalized
+    except Exception as e:
+        print(f"[CONFIG] Erro ao salvar contacts.json: {e}")
+        raise HTTPException(status_code=500, detail="Falha ao salvar configuração de contatos")
+
 # -------------------- Schemas --------------------
 class ProdutoIn(BaseModel):
     id: int
@@ -152,6 +205,11 @@ class SelecionarPayload(BaseModel):
     produtos_selecionados: List[SelecionarItemIn]
     cliente_telefone: Optional[str] = None
     forma_pagamento: Optional[str] = None  # Novo campo para forma de pagamento
+
+# -------------------- Schemas de Configuração --------------------
+class ContactsPayload(BaseModel):
+    seller_phones: Optional[List[str]] = None
+    driver_phones: Optional[List[str]] = None
 
 # -------------------- Utils --------------------
 def build_catalog_url(request: Request, sessao_id: str) -> str:
@@ -288,6 +346,17 @@ async def serve_entregador():
     else:
         return FileResponse(local_path, media_type="text/html")
 
+@app.get("/admin-config.html")
+async def serve_admin_config():
+    """Serve a página de configuração de contatos (admin-config)"""
+    file_name = "admin-config.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
 # -------------------- Rotas auxiliares --------------------
 @app.post("/api/relay/n8n")
 def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_dep)):
@@ -315,6 +384,22 @@ async def serve_favicon():
     else:
         # Local development environment
         return FileResponse("../favicon.ico", media_type="image/x-icon")
+
+# -------------------- API de Configuração de Contatos --------------------
+@app.get("/api/config/contacts")
+def get_contacts_config():
+    """Obtém números de vendedores e entregadores"""
+    return load_contacts_config()
+
+@app.put("/api/config/contacts")
+def update_contacts_config(payload: ContactsPayload):
+    """Atualiza números de vendedores e entregadores"""
+    cfg = {
+        "seller_phones": payload.seller_phones or [],
+        "driver_phones": payload.driver_phones or []
+    }
+    saved = save_contacts_config(cfg)
+    return {"success": True, "data": saved}
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
@@ -541,7 +626,13 @@ async def send_delivery_link_to_driver(order_id: int, order_data: dict, base_url
         EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
         EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
         EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
-        DRIVER_PHONE = "5512976025888"  # Número do entregador
+        # Carregar números de entregadores dinamicamente
+        cfg = load_contacts_config()
+        driver_phones = [p for p in (cfg.get("driver_phones") or []) if p]
+        # Fallback: se não houver configuração, usar env ou default
+        if not driver_phones:
+            env_driver = os.getenv("DRIVER_PHONE", "5512976025888")
+            driver_phones = [env_driver] if env_driver else ["5512976025888"]
         
         if not EVOLUTION_API_URL or not EVOLUTION_API_KEY:
             print("[WARNING] Evolution API não configurada")
@@ -603,28 +694,46 @@ _Clique no link para ver o mapa e informações completas._"""
         instance_segment = quote(EVOLUTION_INSTANCE_NAME, safe="")
         url = f"{EVOLUTION_API_URL}/message/sendText/{instance_segment}"
         
-        payload = {
-            "number": DRIVER_PHONE,
-            "text": message
-        }
-        
         headers = {
             "Content-Type": "application/json",
             "apikey": EVOLUTION_API_KEY
         }
         
-        print(f"[WHATSAPP] Enviando link do entregador para {DRIVER_PHONE}")
+        print(f"[WHATSAPP] Enviando link do entregador para {len(driver_phones)} número(s): {', '.join(driver_phones)}")
         print(f"[WHATSAPP] URL: {url}")
         print(f"[WHATSAPP] Link: {delivery_url}")
         
-        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        results = []
+        success_count = 0
+        for phone in driver_phones:
+            payload = {
+                "number": phone,
+                "text": message
+            }
+            try:
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+                ok = 200 <= response.status_code < 300
+                results.append({
+                    "phone": phone,
+                    "status_code": response.status_code,
+                    "ok": ok,
+                    "response": (response.json() if ok else response.text)
+                })
+                if ok:
+                    success_count += 1
+            except Exception as e:
+                results.append({
+                    "phone": phone,
+                    "ok": False,
+                    "error": str(e)
+                })
         
-        if response.status_code == 201 or response.status_code == 200:
-            print(f"[WHATSAPP] Link enviado com sucesso para o entregador")
-            return {"success": True, "message": "Link enviado"}
+        if success_count > 0:
+            print(f"[WHATSAPP] Link enviado com sucesso para {success_count} entregador(es)")
+            return {"success": True, "sent": success_count, "results": results}
         else:
-            print(f"[WHATSAPP ERROR] Erro ao enviar: {response.status_code} - {response.text}")
-            return {"success": False, "error": response.text}
+            print(f"[WHATSAPP ERROR] Falha ao enviar link para todos os entregadores")
+            return {"success": False, "sent": 0, "results": results}
             
     except Exception as e:
         print(f"[WHATSAPP ERROR] Exceção ao enviar link: {str(e)}")

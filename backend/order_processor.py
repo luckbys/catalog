@@ -14,6 +14,7 @@ EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
 EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
 WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "5512976025888")  # Número do vendedor
+CONTACTS_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "contacts.json")
 
 # -------------------- Models --------------------
 class Cliente(BaseModel):
@@ -69,6 +70,21 @@ class OrderProcessor:
             print(f"[ORDER PROCESSOR] ERRO ao criar cliente Supabase: {e}")
             raise
     
+    def _load_seller_phones(self) -> List[str]:
+        """Carrega números de vendedores do contacts.json com fallback ao env."""
+        try:
+            import json
+            if os.path.exists(CONTACTS_CONFIG_PATH):
+                with open(CONTACTS_CONFIG_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    sellers = [str(x).strip() for x in (data.get("seller_phones") or []) if str(x).strip()]
+                    if sellers:
+                        return sellers
+        except Exception as e:
+            print(f"[ORDER PROCESSOR] Aviso: falha ao ler contacts.json: {e}")
+        # Fallback
+        return [WHATSAPP_PHONE] if WHATSAPP_PHONE else []
+    
     def process_order(self, payload: OrderPayload) -> Dict[str, Any]:
         """
         Processa um pedido completo seguindo o fluxo do n8n:
@@ -100,22 +116,30 @@ class OrderProcessor:
             
             # 6. Enviar notificação para o vendedor
             message_vendedor = self._format_seller_notification(order_result, order_items)
-            seller_result = self._send_whatsapp_message(
-                message_vendedor,
-                WHATSAPP_PHONE  # Número do vendedor
-            )
+            # Enviar para todos os números de vendedores configurados dinamicamente
+            sellers = self._load_seller_phones()
+            sellers = sellers or [WHATSAPP_PHONE]
+            seller_results: List[Dict[str, Any]] = []
+            success_any = False
+            for phone in sellers:
+                try:
+                    r = self._send_whatsapp_message(message_vendedor, phone)
+                    seller_results.append({"phone": phone, **r})
+                    success_any = success_any or bool(r.get("success"))
+                except Exception as e:
+                    seller_results.append({"phone": phone, "success": False, "error": str(e)})
             
             return {
                 "success": True,
                 "order_id": order_id,
                 "message": "Pedido processado com sucesso",
                 "whatsapp_sent": whatsapp_result.get("success", False),
-                "seller_notified": seller_result.get("success", False),
+                "seller_notified": success_any,
                 "data": {
                     "order": order_result,
                     "items": order_items,
                     "whatsapp_response": whatsapp_result,
-                    "seller_notification": seller_result
+                    "seller_notification": seller_results
                 }
             }
             

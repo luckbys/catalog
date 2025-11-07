@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configuração de Contatos • Vendedores e Entregadores</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --ring: #60a5fa;
+    }
+    body {
+      margin: 0; padding: 24px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    header { display:flex; align-items:center; gap:16px; margin-bottom: 24px; }
+    header h1 { font-size: 20px; margin: 0; }
+    header small { color: var(--muted); }
+    .container { display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card { background: var(--panel); border-radius: 12px; padding: 16px; box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset; }
+    .card h2 { font-size: 16px; margin: 0 0 8px; }
+    .list { display:flex; flex-direction:column; gap:8px; }
+    .row { display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center; }
+    input[type=text] {
+      background:#0b1020; border:1px solid #1f2937; border-radius:8px; padding:10px 12px; color:var(--text);
+      outline: none; width: 100%;
+    }
+    input[type=text]:focus { border-color: var(--ring); box-shadow: 0 0 0 3px rgba(96,165,250,0.25); }
+    .btn { padding:10px 12px; border-radius:8px; border:1px solid #1f2937; background:#0b1020; color:var(--text); cursor:pointer; }
+    .btn:hover { border-color:#2a3648; }
+    .btn-accent { background: #0b3a24; border-color:#134e4a; color:#a7f3d0; }
+    .btn-accent:hover { background:#0c4a34; }
+    .btn-danger { background:#3a0b0b; border-color:#4c1d1d; color:#fecaca; }
+    .btn-danger:hover { background:#4c2222; }
+    .footer { display:flex; justify-content:flex-end; gap:12px; margin-top: 20px; }
+    .hint { color: var(--muted); font-size: 12px; }
+    .badge { display:inline-block; font-size: 12px; padding:2px 8px; border-radius:999px; background:#0b1020; border:1px solid #1f2937; color: var(--muted); }
+    .invalid { border-color: var(--danger); }
+    .status { margin-top: 10px; font-size: 13px; }
+    .status.ok { color: #22c55e; }
+    .status.err { color: #ef4444; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="badge">⚙️ Admin</span>
+    <h1>Configuração de Contatos</h1>
+    <small>Gerencie números de vendedores e entregadores (Evolution API)</small>
+  </header>
+
+  <div class="container">
+    <section class="card" id="sellers-card">
+      <h2>📣 Vendedores</h2>
+      <div class="hint">Informe números no formato `5511999999999` (com DDI e DDD).</div>
+      <div class="list" id="sellers-list"></div>
+      <div style="margin-top:10px;">
+        <button class="btn" id="add-seller">➕ Adicionar vendedor</button>
+      </div>
+    </section>
+
+    <section class="card" id="drivers-card">
+      <h2>🚚 Entregadores</h2>
+      <div class="hint">Informe números no formato `5511999999999` (com DDI e DDD).</div>
+      <div class="list" id="drivers-list"></div>
+      <div style="margin-top:10px;">
+        <button class="btn" id="add-driver">➕ Adicionar entregador</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer">
+    <button class="btn" id="reload">↻ Recarregar</button>
+    <button class="btn btn-accent" id="save">💾 Salvar alterações</button>
+  </div>
+  <div class="status" id="status"></div>
+
+  <script>
+    const sellersList = document.getElementById('sellers-list');
+    const driversList = document.getElementById('drivers-list');
+    const statusEl = document.getElementById('status');
+
+    const isValidPhone = (p) => /^[0-9]{11,}$/i.test((p||'').trim());
+    const showStatus = (msg, ok=true) => {
+      statusEl.textContent = msg;
+      statusEl.className = 'status ' + (ok ? 'ok' : 'err');
+    };
+
+    function rowTemplate(value='') {
+      const div = document.createElement('div');
+      div.className = 'row';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = '5511999999999';
+      input.value = value || '';
+      input.addEventListener('input', () => {
+        input.classList.toggle('invalid', !isValidPhone(input.value));
+      });
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'btn';
+      clearBtn.textContent = '🧹 Limpar';
+      clearBtn.addEventListener('click', () => { input.value=''; input.dispatchEvent(new Event('input')); });
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn btn-danger';
+      removeBtn.textContent = '🗑️ Remover';
+      removeBtn.addEventListener('click', () => div.remove());
+      div.appendChild(input);
+      div.appendChild(clearBtn);
+      div.appendChild(removeBtn);
+      return div;
+    }
+
+    function render(listEl, values=[]) {
+      listEl.innerHTML = '';
+      if (!values.length) values = [''];
+      values.forEach(v => listEl.appendChild(rowTemplate(v)));
+    }
+
+    async function loadConfig() {
+      try {
+        showStatus('Carregando configuração…');
+        const res = await fetch('/api/config/contacts');
+        if (!res.ok) throw new Error('Falha ao carregar configuração');
+        const data = await res.json();
+        render(sellersList, data.seller_phones || []);
+        render(driversList, data.driver_phones || []);
+        showStatus('Configuração carregada ✅', true);
+      } catch (e) {
+        console.error(e);
+        showStatus('Erro ao carregar configuração ❌', false);
+      }
+    }
+
+    function collect(listEl) {
+      return Array.from(listEl.querySelectorAll('input[type=text]'))
+        .map(i => (i.value||'').trim())
+        .filter(v => v)
+        .filter(isValidPhone);
+    }
+
+    async function saveConfig() {
+      const seller_phones = collect(sellersList);
+      const driver_phones = collect(driversList);
+      if (!seller_phones.length && !driver_phones.length) {
+        showStatus('Informe ao menos um número válido antes de salvar.', false);
+        return;
+      }
+      try {
+        showStatus('Salvando…');
+        const res = await fetch('/api/config/contacts', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ seller_phones, driver_phones })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Falha ao salvar');
+        showStatus('Configuração salva com sucesso ✅');
+      } catch (e) {
+        console.error(e);
+        showStatus('Erro ao salvar configuração ❌', false);
+      }
+    }
+
+    document.getElementById('add-seller').addEventListener('click', () => {
+      sellersList.appendChild(rowTemplate(''));
+    });
+    document.getElementById('add-driver').addEventListener('click', () => {
+      driversList.appendChild(rowTemplate(''));
+    });
+    document.getElementById('reload').addEventListener('click', loadConfig);
+    document.getElementById('save').addEventListener('click', saveConfig);
+
+    // Inicialização
+    loadConfig();
+  </script>
+</body>
+</html>
