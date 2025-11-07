@@ -2482,12 +2482,42 @@
                     <label class="block text-slate-700 text-sm font-bold mb-3">Forma de Pagamento</label>
                     <div class="space-y-3">
                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                            <input type="radio" name="paymentMethod" value="dinheiro" class="mr-3 text-blue-600" required>
+                            <input type="radio" name="paymentMethod" value="dinheiro" class="mr-3 text-blue-600" required id="paymentCash">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-green-600"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
                                 <span class="font-medium">Dinheiro</span>
                             </div>
                         </label>
+                        
+                        <!-- Campo de Troco (aparece apenas quando Dinheiro é selecionado) -->
+                        <div id="changeAmountContainer" class="hidden ml-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <label class="block text-slate-700 text-sm font-bold mb-2">
+                                💵 Troco para quanto?
+                            </label>
+                            <input 
+                                type="number" 
+                                id="changeAmount" 
+                                name="changeAmount"
+                                placeholder="Ex: 50.00"
+                                step="0.01"
+                                min="0"
+                                class="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            >
+                            <div id="changeDisplay" class="mt-3 p-3 bg-white rounded-lg border border-green-300 hidden">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-slate-600">Total do pedido:</span>
+                                    <span class="font-bold text-slate-800" id="changeOrderTotal">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm mt-2">
+                                    <span class="text-slate-600">Valor recebido:</span>
+                                    <span class="font-bold text-slate-800" id="changeReceived">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between items-center mt-2 pt-2 border-t border-green-200">
+                                    <span class="text-green-700 font-bold">Troco:</span>
+                                    <span class="font-bold text-green-700 text-lg" id="changeValue">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
                         
                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
                             <input type="radio" name="paymentMethod" value="pix" class="mr-3 text-blue-600" required>
@@ -3172,7 +3202,21 @@
         const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
         if (selectedPaymentMethod) {
             const paymentMethodText = selectedPaymentMethod.nextElementSibling.textContent.trim();
-            message += `*Forma de Pagamento:* ${paymentMethodText}\n\n`;
+            message += `*Forma de Pagamento:* ${paymentMethodText}\n`;
+            
+            // Se for dinheiro, adicionar informação de troco
+            if (selectedPaymentMethod.value === 'dinheiro') {
+                const changeAmountInput = document.getElementById('changeAmount');
+                const changeAmount = parseFloat(changeAmountInput.value) || 0;
+                
+                if (changeAmount > 0) {
+                    const orderTotal = calculateTotal();
+                    const change = changeAmount - orderTotal;
+                    message += `💵 *Troco para:* ${formatCurrency(changeAmount)}\n`;
+                    message += `💰 *Troco:* ${formatCurrency(change)}\n`;
+                }
+            }
+            message += `\n`;
         }
         
         // Adiciona dados de entrega à mensagem
@@ -3991,6 +4035,20 @@ ${adminLink}
             alert('Por favor, selecione uma forma de pagamento.');
             return;
         }
+        
+        // Validação do troco para pagamento em dinheiro
+        if (selectedPaymentMethod.value === 'dinheiro') {
+            const changeAmountInput = document.getElementById('changeAmount');
+            const changeAmount = parseFloat(changeAmountInput.value) || 0;
+            const orderTotal = calculateTotal();
+            
+            if (changeAmount > 0 && changeAmount < orderTotal) {
+                console.log('❌ [DEBUG] Erro: Valor do troco menor que o total do pedido');
+                alert(`O valor informado (${formatCurrency(changeAmount)}) é menor que o total do pedido (${formatCurrency(orderTotal)}). Por favor, informe um valor maior ou igual ao total.`);
+                changeAmountInput.focus();
+                return;
+            }
+        }
 
         console.log('🔍 [DEBUG] Validações básicas passaram');
         
@@ -4204,6 +4262,69 @@ ${adminLink}
         renderProducts();
         renderCart();
         updateCartCounter();
+        
+        // ========================================
+        // CONTROLE DO CAMPO DE TROCO
+        // ========================================
+        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+        const changeAmountContainer = document.getElementById('changeAmountContainer');
+        const changeAmountInput = document.getElementById('changeAmount');
+        const changeDisplay = document.getElementById('changeDisplay');
+        const changeOrderTotal = document.getElementById('changeOrderTotal');
+        const changeReceived = document.getElementById('changeReceived');
+        const changeValue = document.getElementById('changeValue');
+        
+        // Função para formatar moeda
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+        
+        // Função para calcular o troco
+        function calculateChange() {
+            const orderTotal = calculateTotal();
+            const receivedAmount = parseFloat(changeAmountInput.value) || 0;
+            const change = receivedAmount - orderTotal;
+            
+            if (receivedAmount > 0) {
+                changeDisplay.classList.remove('hidden');
+                changeOrderTotal.textContent = formatCurrency(orderTotal);
+                changeReceived.textContent = formatCurrency(receivedAmount);
+                
+                if (change >= 0) {
+                    changeValue.textContent = formatCurrency(change);
+                    changeValue.classList.remove('text-red-700');
+                    changeValue.classList.add('text-green-700');
+                } else {
+                    changeValue.textContent = formatCurrency(Math.abs(change)) + ' (falta)';
+                    changeValue.classList.remove('text-green-700');
+                    changeValue.classList.add('text-red-700');
+                }
+            } else {
+                changeDisplay.classList.add('hidden');
+            }
+        }
+        
+        // Mostrar/ocultar campo de troco baseado na forma de pagamento
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', function() {
+                if (this.value === 'dinheiro') {
+                    changeAmountContainer.classList.remove('hidden');
+                    changeAmountInput.focus();
+                } else {
+                    changeAmountContainer.classList.add('hidden');
+                    changeAmountInput.value = '';
+                    changeDisplay.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Calcular troco quando o valor é digitado
+        if (changeAmountInput) {
+            changeAmountInput.addEventListener('input', calculateChange);
+        }
         
         // Garantir que o botão de limpar carrinho seja inicializado corretamente
         const clearCartBtn = document.getElementById('clearCartBtn');
