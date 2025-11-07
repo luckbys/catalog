@@ -2434,7 +2434,7 @@
     <div id="deliveryModal" role="dialog" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-60 z-[102] hidden items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto my-4">
             <h2 class="text-2xl font-bold mb-4">Informações para Entrega</h2>
-            <form id="deliveryForm">
+            <form id="deliveryForm" novalidate>
                 <div class="mb-4">
                     <label for="customerName" class="block text-slate-700 text-sm font-bold mb-2">Nome Completo</label>
                     <input type="text" id="customerName" class="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:shadow-outline" required>
@@ -3707,8 +3707,7 @@ ${adminLink}
         console.log('🔍 [DEBUG] deliveryDetails:', deliveryDetails);
         
         if (!sessionId) {
-            console.log('❌ [DEBUG] postSelection: sessionId não encontrado');
-            return false;
+            console.log('⚠️ [DEBUG] postSelection: sessionId não encontrado — pulando registro no backend e seguindo com processamento independente');
         }
         
         // Preparar dados dos produtos selecionados
@@ -3728,24 +3727,30 @@ ${adminLink}
         try {
             console.log('🔍 [DEBUG] Iniciando chamada para API backend...');
             
-            // 1. Registrar seleção no backend (mantém funcionalidade existente)
-            const res = await fetch(`${API_BASE}/api/produtos/${sessionId}/selecionar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    produtos_selecionados,
-                    cliente_telefone: sessionPhone || undefined,
-                    forma_pagamento: formaPagamento
-                })
-            });
-            
-            console.log('🔍 [DEBUG] Resposta da API backend:', res.status, res.statusText);
-            
-            if (!res.ok) {
-                console.warn('⚠️ [DEBUG] Falha ao registrar seleção no backend');
+            // 1. Registrar seleção no backend (mantém funcionalidade existente, se houver sessionId)
+            if (sessionId) {
+                try {
+                    const res = await fetch(`${API_BASE}/api/produtos/${sessionId}/selecionar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            produtos_selecionados,
+                            cliente_telefone: sessionPhone || undefined,
+                            forma_pagamento: formaPagamento
+                        })
+                    });
+                    console.log('🔍 [DEBUG] Resposta da API backend:', res.status, res.statusText);
+                    if (!res.ok) {
+                        console.warn('⚠️ [DEBUG] Falha ao registrar seleção no backend');
+                    } else {
+                        const backendResult = await res.json();
+                        console.log('🔍 [DEBUG] Resultado do backend:', backendResult);
+                    }
+                } catch (regError) {
+                    console.warn('⚠️ [DEBUG] Erro ao registrar seleção no backend (continuando):', regError);
+                }
             } else {
-                const backendResult = await res.json();
-                console.log('🔍 [DEBUG] Resultado do backend:', backendResult);
+                console.log('🔍 [DEBUG] Registro no backend pulado por ausência de sessionId');
             }
 
             // 2. Enviar dados completos para webhook do n8n (se tiver dados de entrega)
@@ -4073,11 +4078,9 @@ ${adminLink}
             console.log('🔍 [DEBUG] Campos obrigatórios preenchidos');
             
             try {
-                // Evita erro genérico quando a página foi aberta sem ?sessao_id=
+                // Prosseguir mesmo sem ?sessao_id= (fluxo independente)
                 if (!sessionId) {
-                    console.log('❌ [DEBUG] Erro: Sessão não identificada');
-                    alert('Sessão não identificada. Abra o catálogo pelo link com "?sessao_id=..." ou gere uma sessão em /api/demo/criar-sessao.');
-                    return;
+                    console.log('⚠️ [DEBUG] Sessão não identificada — prosseguindo com processamento independente');
                 }
                 
                 console.log('🔍 [DEBUG] SessionId encontrado:', sessionId);
@@ -4123,6 +4126,7 @@ ${adminLink}
             console.log('Nome:', deliveryDetails.name);
             console.log('Rua:', deliveryDetails.street);
             console.log('Número:', deliveryDetails.number);
+            alert('Por favor, preencha Nome, CEP, Rua e Número e selecione a forma de pagamento.');
         }
     });
 
