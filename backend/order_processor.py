@@ -264,6 +264,15 @@ class OrderProcessor:
             f"- {item['product_descricao']} (Qtd: {item['quantity']}) - R$ {item['subtotal']:.2f}"
             for item in items
         ])
+
+        # Construir link de rastreio para o cliente (status.html)
+        base_url = os.getenv("CLIENT_BASE_URL", "http://localhost:8000")
+        if '/catalogo.html' in base_url:
+            base_url = base_url.split('/catalogo.html')[0]
+        if not base_url.startswith('http://') and not base_url.startswith('https://'):
+            base_url = f"https://{base_url}"
+        base_url = base_url.rstrip('/')
+        status_link = f"{base_url}/status.html?id={order['id']}"
         
         message = f"""**Informações do Pedido**
 
@@ -279,6 +288,9 @@ class OrderProcessor:
 **Valor Total:** R$ {order['total']:.2f}
 
 **Número do Pedido:** #{order['id']}
+
+🔗 *Acompanhe o status do seu pedido:*
+<{status_link}>
 
 Pedido registrado com sucesso! ✅"""
         
