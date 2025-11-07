@@ -511,7 +511,7 @@ def update_order_status(order_id: int, request: dict):
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {str(e)}")
 
 # Função auxiliar para enviar link do entregador via WhatsApp
-async def send_delivery_link_to_driver(order_id: int, order_data: dict):
+async def send_delivery_link_to_driver(order_id: int, order_data: dict, base_url_override: Optional[str] = None):
     """Envia link da tela do entregador via Evolution API"""
     try:
         # Configurações da Evolution API
@@ -525,7 +525,7 @@ async def send_delivery_link_to_driver(order_id: int, order_data: dict):
             return
         
         # Construir URL da tela do entregador
-        base_url = os.getenv("CLIENT_BASE_URL", "http://localhost:8000")
+        base_url = base_url_override or os.getenv("CLIENT_BASE_URL", "http://localhost:8000")
         
         # Limpar e construir URL corretamente
         # Se CLIENT_BASE_URL tem /catalogo.html, remover
@@ -538,6 +538,18 @@ async def send_delivery_link_to_driver(order_id: int, order_data: dict):
         
         # Remover barra final se existir
         base_url = base_url.rstrip('/')
+
+        # Validar se domínio parece válido para linkificação do WhatsApp
+        try:
+            parsed = urlparse(base_url)
+            host = parsed.netloc or parsed.path
+            # Se host não tem um ponto (TLD ausente), o WhatsApp pode não tornar clicável
+            if host and '.' not in host and base_url_override:
+                # Preferir override quando disponível (Origin/Host da requisição)
+                base_url = base_url_override.rstrip('/')
+        except Exception:
+            # Em caso de parsing falho, manter base_url como está
+            pass
         
         # Construir URL completa
         delivery_url = f"{base_url}/entregador.html?pedido={order_id}"
@@ -559,7 +571,7 @@ async def send_delivery_link_to_driver(order_id: int, order_data: dict):
 💰 Valor: R$ {total:.2f}
 
 🔗 Acesse os detalhes da entrega:
-{delivery_url}
+<{delivery_url}>
 
 _Clique no link para ver o mapa e informações completas._"""
         
@@ -598,17 +610,17 @@ _Clique no link para ver o mapa e informações completas._"""
         return {"success": False, "error": str(e)}
 
 @app.put("/api/orders/{order_id}/delivery-status")
-async def update_delivery_status(order_id: int, request: dict):
+async def update_delivery_status(order_id: int, request: Request, payload: dict):
     """Atualiza o status de entrega de um pedido"""
     try:
         print(f"[API] PUT /api/orders/{order_id}/delivery-status")
-        print(f"[API] Request body: {request}")
+        print(f"[API] Request body: {payload}")
         
         if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
             print("[API] ERROR: Order processor não disponível")
             raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
         
-        new_delivery_status = request.get("delivery_status")
+        new_delivery_status = payload.get("delivery_status")
         if not new_delivery_status:
             raise HTTPException(status_code=400, detail="delivery_status não fornecido")
         
@@ -637,7 +649,18 @@ async def update_delivery_status(order_id: int, request: dict):
         # Enviar link do entregador via WhatsApp quando status for in_transit ou out_for_delivery
         if new_delivery_status in ['in_transit', 'out_for_delivery']:
             try:
-                await send_delivery_link_to_driver(order_id, result.data[0])
+                # Construir base usando Origin/Host da requisição para garantir domínio válido
+                origin = request.headers.get("origin")
+                if not origin:
+                    host = request.headers.get("host")
+                    scheme = request.url.scheme
+                    if host:
+                        origin = f"{scheme}://{host}"
+                    else:
+                        # Fallback: usar base da própria URL da requisição sem path
+                        origin = str(request.url).split(request.url.path)[0].rstrip('/')
+
+                await send_delivery_link_to_driver(order_id, result.data[0], base_url_override=origin)
             except Exception as e:
                 print(f"[WARNING] Erro ao enviar link para entregador: {str(e)}")
                 # Não falha a requisição se o envio do WhatsApp falhar
