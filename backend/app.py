@@ -322,7 +322,9 @@ async def security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "no-referrer"
+    # Permitir envio do Referer para serviços externos (Google Maps/Geocoder)
+    # mantendo privacidade razoável. Isso é necessário para chaves restritas por HTTP referrer.
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
 # -------------------- Endpoints --------------------
@@ -398,6 +400,67 @@ def get_orders():
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao buscar pedidos: {str(e)}")
+
+@app.get("/api/orders/{order_id}")
+def get_order_by_id(order_id: int):
+    """Retorna os detalhes de um pedido específico."""
+    try:
+        print(f"[API] GET /api/orders/{order_id} - Iniciando...")
+
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            print("[API] ERROR: Order processor não disponível")
+            raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
+
+        # Buscar pedido do Supabase
+        order_res = order_processor.supabase.table("orders").select("*").eq("id", order_id).single().execute()
+        order_data = getattr(order_res, "data", None)
+
+        if not order_data:
+            print(f"[API] ERROR: Pedido {order_id} não encontrado")
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+
+        print(f"[API] Pedido {order_id} encontrado.")
+
+        # Buscar itens do pedido
+        items_res = order_processor.supabase.table("order_items").select("*").eq("order_id", order_id).execute()
+        items_data = getattr(items_res, "data", []) or []
+        print(f"[API] Itens do pedido encontrados: {len(items_data)}")
+
+        # Formatar a resposta
+        formatted_order = {
+            "order": {
+                "id": order_data["id"],
+                "customer_name": order_data.get("customer_name", "Cliente"),
+                "customer_phone": order_data.get("customer_phone", ""),
+                "customer_address": order_data.get("customer_address", ""),
+                "total": float(order_data.get("total", 0)),
+                "status": order_data.get("status", "pending"),
+                "delivery_status": order_data.get("delivery_status", "pending"),
+                "created_at": order_data.get("created_at", ""),
+                "payment_method": order_data.get("payment_method", ""),
+                "payment_status": order_data.get("payment_status", "pending"),
+                "notes": order_data.get("notes", "")
+            },
+            "items": [
+                {
+                    "product_descricao": item.get("product_descricao", "Produto"),
+                    "quantity": item.get("quantity", 1),
+                    "unit_price": float(item.get("unit_price", 0))
+                }
+                for item in items_data
+            ]
+        }
+
+        print(f"[API] Retornando pedido {order_id} formatado.")
+        return formatted_order
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[API ERROR] Erro ao buscar pedido {order_id}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar pedido: {str(e)}")
 
 @app.put("/api/orders/{order_id}/status")
 def update_order_status(order_id: int, request: dict):

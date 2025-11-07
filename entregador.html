@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entregador - Hakim Farma</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+    <title>Detalhes da Entrega</title>
+    <!-- Google Maps API não requer CSS externo -->
     <style>
         * {
             margin: 0;
@@ -171,9 +168,7 @@
             flex-shrink: 0;
         }
 
-        .info-content {
-            flex: 1;
-        }
+        .info-content { flex: 1; }
 
         .info-label {
             font-size: 0.875rem;
@@ -226,12 +221,7 @@
             border-radius: 8px;
         }
 
-        .item-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
+        .item-info { display: flex; align-items: center; gap: 0.75rem; }
         .item-qty {
             width: 32px;
             height: 32px;
@@ -244,15 +234,8 @@
             font-weight: 600;
             font-size: 0.875rem;
         }
-
-        .item-name {
-            font-weight: 500;
-        }
-
-        .item-price {
-            font-weight: 600;
-            color: var(--primary);
-        }
+        .item-name { font-weight: 500; }
+        .item-price { font-weight: 600; color: var(--primary); }
 
         /* Total */
         .total-section {
@@ -263,25 +246,11 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        .total-label {
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-
-        .total-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
+        .total-label { font-size: 1.125rem; font-weight: 600; }
+        .total-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 
         /* Action Buttons */
-        .actions {
-            display: grid;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-        }
-
+        .actions { display: grid; gap: 0.75rem; margin-top: 1.5rem; }
         .btn {
             padding: 1rem;
             border: none;
@@ -295,39 +264,14 @@
             justify-content: center;
             gap: 0.5rem;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--white);
-            color: var(--text);
-            border: 2px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .btn-secondary { background: var(--white); color: var(--text); border: 2px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-danger { background: var(--danger); color: white; }
 
         /* Loading */
-        .loading {
-            text-align: center;
-            padding: 3rem;
-        }
-
+        .loading { text-align: center; padding: 3rem; }
         .spinner {
             width: 48px;
             height: 48px;
@@ -337,31 +281,61 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Responsive */
         @media (min-width: 768px) {
-            .container {
-                padding: 2rem;
-            }
-
-            #map {
-                height: 500px;
-            }
-
-            .actions {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .container { padding: 2rem; }
+            #map { height: 500px; }
+            .actions { grid-template-columns: repeat(2, 1fr); }
         }
 
         /* Hidden */
-        .hidden {
-            display: none;
+        .hidden { display: none; }
+
+        /* Estilos da fonte Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        /* Estilos do popup de entrega */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: #fff;
+            color: #333;
+        }
+        .leaflet-popup-content {
+            margin: 15px;
+            padding: 0;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+        .leaflet-popup-tip-container {
+            display: none; /* Oculta a seta do popup */
+        }
+        .delivery-popup {
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+        .delivery-popup strong {
+            font-weight: 600;
+            font-size: 16px;
+            color: #111;
+        }
+        .delivery-popup span {
+            font-size: 14px;
+            color: #555;
+            word-wrap: break-word;
+            white-space: normal;
+            display: block;
+            max-width: 220px; /* Largura máxima para o endereço */
+        }
+
+        /* Estilos para o ícone de marcador personalizado */
+        .custom-marker {
+            transition: transform 0.2s ease-out;
         }
     </style>
+    <link rel="stylesheet" href="/public/styles.css">
 </head>
 <body>
     <!-- Header -->
@@ -386,6 +360,28 @@
         <div id="loadingState" class="loading">
             <div class="spinner"></div>
             <p>Carregando informações da entrega...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚠️</div>
+                    <h2 class="card-title">Problema ao carregar</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">🧪</div>
+                        <div class="info-content">
+                            <div class="info-label">Mensagem</div>
+                            <div class="info-value" id="errorMessage">Erro ao carregar informações do pedido.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="retryBtn" class="btn btn-primary">🔄 Tentar novamente</button>
+                </div>
+            </div>
         </div>
 
         <!-- Content -->
@@ -504,64 +500,594 @@
         </div>
     </main>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Google Maps JS -->
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBC7acm1x1qmoo_rYt3VA6Ny6ejfXKy35M&language=pt-BR"></script>
     
     <script>
         // Configuration
         const GEOAPIFY_API_KEY = '2d2edc07a3ed4f97ae8264363fad3242';
         const API_BASE = window.location.origin;
         
-        // Global variables
-        let map;
-        let deliveryMarker;
-        let currentOrderId;
-        let customerCoordinates;
-
         // Get order ID from URL
         function getOrderIdFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('pedido') || urlParams.get('order_id');
         }
 
-        // Initialize map
-        function initMap(lat = -23.5505, lng = -46.6333) {
-            map = L.map('map').setView([lat, lng], 15);
-            
-            // Add tile layer using Geoapify
-            L.tileLayer(`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_API_KEY}`, {
-                attribution: '© <a href="https://www.geoapify.com/">Geoapify</a> | © OpenStreetMap',
-                maxZoom: 20
-            }).addTo(map);
-            
-            // Add delivery marker
-            const deliveryIcon = L.divIcon({
-                html: '<div style="background: #10b981; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">📍</div>',
-                className: 'custom-marker',
-                iconSize: [40, 40],
-                iconAnchor: [20, 40]
+        // Initialize Google Map
+        function initMap(lat = -23.2237, lng = -45.9009) {
+            const center = { lat, lng };
+            map = new google.maps.Map(document.getElementById('map'), {
+                center,
+                zoom: 15,
+                mapTypeId: 'roadmap',
+                disableDefaultUI: false,
+                gestureHandling: 'greedy'
             });
-            
-            deliveryMarker = L.marker([lat, lng], { icon: deliveryIcon }).addTo(map);
+
+            deliveryMarker = new google.maps.Marker({
+                position: center,
+                map,
+                title: 'Local de Entrega'
+            });
+
+            infoWindow = new google.maps.InfoWindow({ content: '' });
         }
 
-        // Geocode address using Geoapify
-        async function geocodeAddress(address) {
+        // Habilita controles para exploração quando o pin não estiver exato
+        function enableExplorationControls() {
             try {
-                const response = await fetch(
-                    `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(address)}&apiKey=${GEOAPIFY_API_KEY}&lang=pt&limit=1`
+                map.setOptions({
+                    draggable: true,
+                    scrollwheel: true,
+                    disableDoubleClickZoom: false,
+                    zoomControl: true
+                });
+                console.log('[Map] Controles de exploração habilitados (drag/zoom)');
+            } catch (e) {
+                console.warn('[Map] Falha ao habilitar controles:', e);
+            }
+        }
+
+        // Geocode address using Nominatim (OSM) com rate limit, cache e fallback
+        const geocodeCache = new Map();
+        let lastGeocodeTime = 0;
+        const GEOCODE_MIN_INTERVAL_MS = 1000; // rate limit básico: 1 req/segundo
+        const DEFAULT_COORDS = { lat: -23.2237, lng: -45.9009 }; // São José dos Campos como fallback padrão
+
+        async function geocodeAddress(address) {
+            if (!address || typeof address !== 'string') {
+                console.warn('[Geocode] Endereço inválido, usando fallback padrão');
+                return { ...DEFAULT_COORDS, zoomHint: 16, source: 'default' };
+            }
+
+            const originalKey = address.trim().toLowerCase();
+            if (geocodeCache.has(originalKey)) {
+                const cached = geocodeCache.get(originalKey);
+                console.debug('[Geocode] Cache hit para:', address, '→', cached);
+                return cached;
+            }
+
+            // Normalização de endereço BR
+            function buildBrazilianVariants(addr) {
+                // Quebrar por ' - '
+                const parts = addr.split(' - ').map(s => s.trim());
+                const streetPart = parts[0] || addr;
+                const neighborhood = parts.length > 2 ? parts[1] : (parts[1] && /\//.test(parts[1]) ? '' : parts[1] || '');
+                const cityStatePart = parts.find(p => /\/[A-Z]{2}\b/.test(p)) || '';
+                let city = '';
+                let state = '';
+                if (cityStatePart) {
+                    const cs = cityStatePart.split('/');
+                    city = cs[0].replace(/\s*,?\s*CEP.*$/i, '').trim();
+                    state = (cs[1] || '').trim();
+                }
+
+                // Extrair número e nome da rua do primeiro segmento
+                const streetName = streetPart
+                    .replace(/,\s*CEP.*$/i, '')
+                    .replace(/,?\s*N[º°\.\s]*\d+.*/i, '') // remove "Nº 207" e o que vier depois
+                    .trim();
+                const numMatch = streetPart.match(/(\d{1,6})/);
+                const number = numMatch ? numMatch[1] : '';
+
+                const variants = [];
+                const baseStreetNum = number ? `${streetName} ${number}` : streetName;
+                // 1) Com bairro
+                if (neighborhood) variants.push(`${baseStreetNum}, ${neighborhood}, ${city}, ${state}, Brazil`);
+                // 2) Sem bairro
+                variants.push(`${baseStreetNum}, ${city}, ${state}, Brazil`);
+                // 3) Só rua + cidade/UF
+                variants.push(`${streetName}, ${city}, ${state}, Brazil`);
+                // 4) Só cidade/UF
+                if (city && state) variants.push(`${city}, ${state}, Brazil`);
+
+                // Se nada extraído, usa original + Brazil
+                variants.push(`${addr}, Brazil`);
+                // Remover duplicatas e vazio
+                return [...new Set(variants.filter(v => v && v.replace(/\s+/g,' ').trim().length > 0))];
+            }
+
+            const headers = { 'Accept-Language': (navigator.language || 'pt-BR') };
+            const variants = buildBrazilianVariants(address);
+            console.log('[Geocode] Variantes para Google Geocoder:', variants);
+
+            // Helper para escolher melhor candidato entre múltiplos resultados
+            function pickBestCandidate(items, streetName, number, neighborhood) {
+                const norm = s => (s || '').toLowerCase();
+                const nStreet = norm(streetName);
+                const nNumber = norm(number);
+                const nNeighborhood = norm(neighborhood);
+                let best = null;
+                let bestScore = -Infinity;
+                for (const it of items) {
+                    let score = 0;
+                    const disp = norm(it.display_name);
+                    const addr = it.address || {};
+                    const road = norm(addr.road);
+                    const suburb = norm(addr.suburb || addr.neighbourhood);
+                    const city = norm(addr.city || addr.town || addr.village);
+                    const state = norm(addr.state);
+                    const house = norm(addr.house_number);
+
+                    if (road.includes(nStreet) || disp.includes(nStreet)) score += 50;
+                    if (house && nNumber && house === nNumber) score += 20;
+                    if (suburb && nNeighborhood && suburb.includes(nNeighborhood)) score += 15;
+                    if (city.includes('são josé dos campos')) score += 12;
+                    if ((it.class === 'highway') || (it.type === 'residential') || (it.type === 'tertiary')) score += 10;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = it;
+                    }
+                }
+                if (best) {
+                    console.log('[Geocode] Escolhido entre múltiplos resultados (score=', bestScore, '):', best);
+                }
+                return best;
+            }
+
+            // Extrair componentes estruturados para tentativa dedicada (rua+número+cidade+UF+CEP)
+            const partsAll = address.split(' - ').map(s => s.trim());
+            const streetSeg = partsAll[0] || address;
+            const streetOnly = streetSeg
+                .replace(/,\s*CEP.*$/i, '')
+                .replace(/,?\s*N[º°\.\s]*\d+.*/i, '')
+                .trim();
+            const numSeg = streetSeg.match(/(\d{1,6})/);
+            const houseNum = numSeg ? numSeg[1] : '';
+            const cityStateSeg = partsAll.find(p => /\/[^\s]{2}\b/.test(p)) || '';
+            let cityName = '';
+            let stateUF = '';
+            if (cityStateSeg) {
+                const cs = cityStateSeg.split('/');
+                cityName = cs[0].replace(/\s*,?\s*CEP.*$/i, '').trim();
+                stateUF = (cs[1] || '').trim();
+            }
+            const cepMatch = address.match(/CEP\s*(\d{5}-?\d{3})/i);
+            const postalCode = cepMatch ? cepMatch[1] : '';
+
+            // Bias global e bounds da cidade antes de qualquer tentativa
+            const cityBias = cityName || 'São José dos Campos';
+            const stateBias = stateUF || 'SP';
+            const cityBounds = await getGoogleCityBounds(cityBias, stateBias);
+
+            function isInsideBounds(lat, lng, bounds) {
+                try {
+                    return Boolean(bounds && typeof bounds.contains === 'function' && bounds.contains(new google.maps.LatLng(lat, lng)));
+                } catch (_) { return false; }
+            }
+
+            // Helper Google Geocoder
+            let GOOGLE_GEOCODER_DISABLED = false;
+
+            function geocodeGoogle(query, opts = {}) {
+                return new Promise((resolve, reject) => {
+                    if (GOOGLE_GEOCODER_DISABLED) {
+                        console.warn('[Geocode] Google geocoder desabilitado nesta sessão. Pulando tentativa.');
+                        return reject(new Error('Google geocoder disabled'));
+                    }
+                    try {
+                        const geocoder = new google.maps.Geocoder();
+                        const request = { address: query, region: 'br' };
+                        const comps = { country: 'BR' };
+                        if (opts.componentRestrictions) {
+                            Object.assign(comps, opts.componentRestrictions);
+                        }
+                        request.componentRestrictions = comps;
+                        if (opts.bounds) request.bounds = opts.bounds;
+                        geocoder.geocode(request, (results, status) => {
+                            if (status === 'OK' && results && results.length) {
+                                resolve(results);
+                            } else {
+                                if (status === 'REQUEST_DENIED' || status === 'INVALID_REQUEST' || status === 'OVER_QUERY_LIMIT') {
+                                    GOOGLE_GEOCODER_DISABLED = true;
+                                    console.warn('[Geocode] Google geocoder desabilitado por status:', status);
+                                }
+                                reject(new Error(`Geocoder status: ${status}`));
+                            }
+                        });
+                    } catch (e) { reject(e); }
+                });
+            }
+
+            // Helper Geoapify Geocoder
+            async function geocodeGeoapify(query, { limit = 3, biasCity = 'São José dos Campos', state = 'SP' } = {}) {
+                const params = new URLSearchParams({
+                    text: query,
+                    lang: 'pt',
+                    limit: String(limit),
+                    apiKey: GEOAPIFY_API_KEY,
+                });
+                // Filtra Brasil e dá viés para SJC
+                params.set('filter', 'countrycode:br');
+                params.set('bias', `city:${encodeURIComponent(biasCity)}`);
+                const url = `https://api.geoapify.com/v1/geocode/search?${params.toString()}`;
+                console.log('[Geocode] Geoapify URL:', url);
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                const features = Array.isArray(data.features) ? data.features : [];
+                return features;
+            }
+
+            function pickBestGeoapify(features, streetName, number, neighborhood, cityBias) {
+                const norm = s => (s || '').toLowerCase();
+                const nStreet = norm(streetName);
+                const nNumber = norm(number);
+                const nNeighborhood = norm(neighborhood);
+                const nCityBias = norm(cityBias || 'São José dos Campos');
+                let best = null;
+                let bestScore = -Infinity;
+                for (const f of features) {
+                    const p = f.properties || {};
+                    let score = 0;
+                    const disp = norm(p.formatted);
+                    const road = norm(p.street);
+                    const house = norm(p.housenumber);
+                    const suburb = norm(p.suburb || p.neighbourhood);
+                    const city = norm(p.city);
+                    const conf = Number(p.rank?.confidence || p.confidence || 0);
+                    if (road.includes(nStreet) || disp.includes(nStreet)) score += 50;
+                    if (house && nNumber && house === nNumber) score += 25;
+                    if (suburb && nNeighborhood && suburb.includes(nNeighborhood)) score += 15;
+                    if (city.includes(nCityBias)) score += 12;
+                    score += conf; // leve peso na confiança
+                    if (score > bestScore) { bestScore = score; best = f; }
+                }
+                if (best) console.log('[Geocode] Geoapify melhor candidato (score=', bestScore, '):', best);
+                return best;
+            }
+
+            function preferResultForCity(results, cityBias, bounds) {
+                const lc = (cityBias || '').toLowerCase();
+                let best = null;
+                let bestScore = -Infinity;
+                for (const r of results) {
+                    const comps = r.address_components || [];
+                    const hasLocalityMatch = comps.some(c => (c.types || []).includes('locality') && (c.long_name || '').toLowerCase().includes(lc));
+                    const hasAdmMatch = comps.some(c => (c.types || []).includes('administrative_area_level_2') && (c.long_name || '').toLowerCase().includes(lc));
+                    const isStreetAddress = (r.types || []).includes('street_address');
+                    const loc = r.geometry && r.geometry.location;
+                    const insideBounds = Boolean(bounds && loc && typeof bounds.contains === 'function' && bounds.contains(loc));
+
+                    let score = 0;
+                    if (hasLocalityMatch) score += 100;
+                    if (hasAdmMatch) score += 60;
+                    if (insideBounds) score += 80;
+                    if (isStreetAddress) score += 20;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = r;
+                    }
+                }
+                if (best) {
+                    console.log('[Geocode] Preferência por cidade/bounds → score', bestScore, best);
+                    return best;
+                }
+                // Sem correspondência: evitar pegar o primeiro aleatório fora da cidade; tentar o primeiro dentro dos bounds
+                const fallback = results.find(r => {
+                    const loc = r.geometry && r.geometry.location;
+                    return bounds && loc && typeof bounds.contains === 'function' && bounds.contains(loc);
+                }) || results[0];
+                console.warn('[Geocode] Sem match explícito, usando fallback com bounds/primeiro:', fallback);
+                return fallback;
+            }
+
+        async function getGoogleCityBounds(city, state) {
+            try {
+                const results = await geocodeGoogle(`${city}, ${state}, Brazil`, { componentRestrictions: { locality: city, administrativeArea: state } });
+                const r = results.find(x => (x.types || []).includes('locality')) || results[0];
+                const vp = r.geometry && r.geometry.viewport;
+                if (vp) return vp;
+                const loc = r.geometry.location;
+                const d = 0.05; // ~5km
+                return new google.maps.LatLngBounds(
+                    new google.maps.LatLng(loc.lat() - d, loc.lng() - d),
+                    new google.maps.LatLng(loc.lat() + d, loc.lng() + d)
                 );
-                const data = await response.json();
-                
-                if (data.features && data.features.length > 0) {
-                    const coords = data.features[0].geometry.coordinates;
-                    return { lat: coords[1], lng: coords[0] };
+            } catch (e) {
+                console.warn('[Geocode] Falha ao obter bounds Google para cidade:', city, state, e);
+                // Fallback: usar bounding box via OSM (Nominatim)
+                try {
+                    const bbox = await getCityBoundingBox(city, state);
+                    if (bbox) {
+                        const [left, top, right, bottom] = bbox.split(',').map(parseFloat);
+                        // left,top,right,bottom → LatLngBounds(SW, NE)
+                        return new google.maps.LatLngBounds(
+                            new google.maps.LatLng(bottom, left),
+                            new google.maps.LatLng(top, right)
+                        );
+                    }
+                } catch (e2) {
+                    console.warn('[Geocode] Fallback OSM bounds falhou:', e2);
                 }
                 return null;
-            } catch (error) {
-                console.error('Erro ao geocodificar endereço:', error);
-                return null;
             }
+        }
+
+        // Buscar bounding box da cidade para limitar pesquisa por rua
+        async function getCityBoundingBox(name, uf) {
+            const qCity = `${name}, ${uf}, Brazil`;
+            const urlCity = `https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&countrycodes=br&q=${encodeURIComponent(qCity)}`;
+            console.log('[Geocode] Obtendo bounding box da cidade:', qCity);
+            const r = await fetch(urlCity, { headers });
+            if (r.ok) {
+                const d = await r.json();
+                if (Array.isArray(d) && d.length > 0 && d[0].boundingbox) {
+                    const bb = d[0].boundingbox; // [south, north, west, east]
+                    const south = parseFloat(bb[0]);
+                    const north = parseFloat(bb[1]);
+                    const west  = parseFloat(bb[2]);
+                    const east  = parseFloat(bb[3]);
+                    const viewbox = `${west},${north},${east},${south}`; // left,top,right,bottom
+                    console.log('[Geocode] Bounding box cidade:', viewbox);
+                    return viewbox;
+                }
+            }
+            return null;
+        }
+
+        async function searchStreetBounded(streetQuery, viewbox) {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&countrycodes=br&bounded=1&viewbox=${encodeURIComponent(viewbox)}&q=${encodeURIComponent(streetQuery)}`;
+            console.log('[Geocode] Busca rua com viewbox:', streetQuery, '→', url);
+            const resp = await fetch(url, { headers });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            return Array.isArray(data) ? data : [];
+        }
+
+        // Geocodificação estruturada por CEP (Nominatim) como primeira tentativa precisa
+        async function geocodeByStructuredCep({ streetName, houseNum, city, state, postalCode }) {
+            if (!postalCode || !/\d{5}-?\d{3}/.test(postalCode)) return null;
+            const cepDigits = postalCode.replace(/\D/g, '');
+            const params = new URLSearchParams({
+                format: 'json', addressdetails: '1', countrycodes: 'br',
+                street: houseNum ? `${streetName} ${houseNum}` : streetName,
+                city, state, country: 'Brazil', postalcode: cepDigits, limit: '3'
+            });
+            const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
+            console.log('[Geocode] Estruturado por CEP:', url);
+            const resp = await fetch(url, { headers });
+            if (!resp.ok) return null;
+            const data = await resp.json();
+            if (Array.isArray(data) && data.length) {
+                const best = pickBestCandidate(data, streetName, houseNum, '');
+                if (best) return { lat: parseFloat(best.lat), lng: parseFloat(best.lon), zoomHint: 17, source: 'nominatim-cep' };
+            }
+            return null;
+        }
+
+            // 0) Tentar geocodificação estruturada por CEP com Nominatim
+            try {
+                const structured = await geocodeByStructuredCep({ streetName: streetOnly, houseNum: houseNum, city: cityName || 'São José dos Campos', state: stateUF || 'SP', postalCode });
+                if (structured && (!cityBounds || isInsideBounds(structured.lat, structured.lng, cityBounds))) {
+                    geocodeCache.set(originalKey, structured);
+                    console.log('[Geocode] Sucesso (estruturado por CEP):', structured);
+                    return structured;
+                }
+            } catch (e) { console.warn('[Geocode] Falha tentativa estruturada por CEP:', e); }
+
+            // 1) Tentar Geoapify com viés para São José dos Campos/SP
+            try {
+                const fullText = `${houseNum ? `${streetOnly} ${houseNum}` : streetOnly}${partsAll[1] ? `, ${partsAll[1]}` : ''}, ${cityName || 'São José dos Campos'}, ${stateUF || 'SP'}, Brazil`;
+                console.log('[Geocode] Geoapify tentativa principal:', fullText);
+                const features = await geocodeGeoapify(fullText, { limit: 3, biasCity: cityName || 'São José dos Campos', state: stateUF || 'SP' });
+                if (features.length > 0) {
+                    const chosen = pickBestGeoapify(features, streetOnly, houseNum, partsAll[1] || '', cityName || 'São José dos Campos');
+                    const ft = chosen || features[0];
+                    const coordsG = { lat: Number(ft.geometry.coordinates[1]), lng: Number(ft.geometry.coordinates[0]), zoomHint: 17, source: 'geoapify' };
+                    if (!cityBounds || isInsideBounds(coordsG.lat, coordsG.lng, cityBounds)) {
+                        geocodeCache.set(originalKey, coordsG);
+                        console.log('[Geocode] Geoapify sucesso (dentro dos bounds SJC):', coordsG);
+                        return coordsG;
+                    } else {
+                        console.warn('[Geocode] Geoapify retornou ponto fora dos bounds de SJC. Ignorando.');
+                    }
+                } else {
+                    console.warn('[Geocode] Geoapify não retornou resultados. Irei tentar variantes e Google.');
+                }
+            } catch (e) {
+                console.warn('[Geocode] Geoapify falhou, vou tentar Google:', e);
+            }
+
+            // Tentativa 1: rua+número(+bairro) com restrição de cidade/UF e bounds
+            try {
+                const fullQuery = `${houseNum ? `${streetOnly} ${houseNum}` : streetOnly}${partsAll[1] ? `, ${partsAll[1]}` : ''}, ${cityBias}, ${stateBias}, Brazil`;
+                console.log('[Geocode] Google tentativa específica (cidade+UF+bounds):', fullQuery);
+                const results = await geocodeGoogle(fullQuery, {
+                    componentRestrictions: { locality: cityBias, administrativeArea: stateBias },
+                    bounds: cityBounds
+                });
+                if (Array.isArray(results) && results.length > 0) {
+                    const best = preferResultForCity(results, cityBias, cityBounds);
+                    const loc = best.geometry.location;
+                    const coords = { lat: loc.lat(), lng: loc.lng(), zoomHint: 17, source: 'google-specific-city' };
+                    if (!cityBounds || isInsideBounds(coords.lat, coords.lng, cityBounds)) {
+                        geocodeCache.set(originalKey, coords);
+                        console.log('[Geocode] Sucesso específico (cidade restrita):', coords);
+                        return coords;
+                    } else {
+                        console.warn('[Geocode] Resultado específico fora dos bounds de SJC. Continuando buscas...');
+                    }
+                }
+            } catch (e) {
+                console.warn('[Geocode] Falha na tentativa específica restrita:', e);
+            }
+
+            // Tentativa 2: adicionar "São José dos Campos, SP" no final e usar bounds
+            try {
+                const forcedCityQuery = `${streetOnly}${houseNum ? ` ${houseNum}` : ''}${partsAll[1] ? `, ${partsAll[1]}` : ''}, São José dos Campos, SP, Brazil`;
+                console.log('[Geocode] Google tentativa com cidade forçada:', forcedCityQuery);
+                const results = await geocodeGoogle(forcedCityQuery, { bounds: cityBounds });
+                if (Array.isArray(results) && results.length > 0) {
+                    const best = preferResultForCity(results, 'São José dos Campos', cityBounds);
+                    const loc = best.geometry.location;
+                    const coords = { lat: loc.lat(), lng: loc.lng(), zoomHint: 17, source: 'google-forced-city' };
+                    if (!cityBounds || isInsideBounds(coords.lat, coords.lng, cityBounds)) {
+                        geocodeCache.set(originalKey, coords);
+                        console.log('[Geocode] Sucesso com cidade forçada:', coords);
+                        return coords;
+                    } else {
+                        console.warn('[Geocode] Resultado com cidade forçada fora dos bounds de SJC. Continuando...');
+                    }
+                }
+            } catch (e) {
+                console.warn('[Geocode] Falha na tentativa com cidade forçada:', e);
+            }
+
+            for (let i = 0; i < variants.length; i++) {
+                const q = variants[i];
+                // Respeitar intervalo mínimo entre requisições
+                const now = Date.now();
+                const diff = now - lastGeocodeTime;
+                if (diff < GEOCODE_MIN_INTERVAL_MS) {
+                    await new Promise(r => setTimeout(r, GEOCODE_MIN_INTERVAL_MS - diff));
+                }
+                lastGeocodeTime = Date.now();
+
+                // Capturar componentes para seleção posterior
+                const parts = address.split(' - ').map(s => s.trim());
+                const streetPart = parts[0] || address;
+                const streetName = streetPart
+                    .replace(/,\s*CEP.*$/i, '')
+                    .replace(/,?\s*N[º°\.\s]*\d+.*/i, '')
+                    .trim();
+                const numMatch = streetPart.match(/(\d{1,6})/);
+                const number = numMatch ? numMatch[1] : '';
+                const neighborhood = parts.length > 2 ? parts[1] : (parts[1] && /\//.test(parts[1]) ? '' : parts[1] || '');
+
+                try {
+                    console.log(`[Geocode] Google tentativa ${i+1}:`, q);
+                    const results = await geocodeGoogle(q, { componentRestrictions: { locality: cityBias, administrativeArea: stateBias } });
+                    if (Array.isArray(results) && results.length > 0) {
+                        const best = preferResultForCity(results, cityBias, cityBounds);
+                        const loc = best.geometry.location;
+                        const isCityLevel = (best.types || []).includes('locality');
+                        const coords = { lat: loc.lat(), lng: loc.lng(), zoomHint: isCityLevel ? 15 : 16, source: 'google-geocoder' };
+                        if (!cityBounds || isInsideBounds(coords.lat, coords.lng, cityBounds)) {
+                            geocodeCache.set(originalKey, coords);
+                            console.log('[Geocode] Google sucesso:', coords);
+                            return coords;
+                        } else {
+                            console.warn('[Geocode] Variante Google fora dos bounds de SJC. Tentando próxima variante...');
+                        }
+                    } else {
+                        console.warn('[Geocode] Sem resultados para variante (Google):', q);
+                    }
+                } catch (err) {
+                    console.warn('[Geocode] Erro Google para variante:', q, err);
+                }
+            }
+
+            // Tentativa adicional: restringir busca da rua à cidade via viewbox
+            try {
+                const bbox = await getCityBoundingBox(cityName || 'São José dos Campos', stateUF || 'SP');
+                if (bbox) {
+                    const boundedResults = await searchStreetBounded(`${streetOnly}, São José dos Campos, SP, Brazil`, bbox);
+                    if (boundedResults.length > 0) {
+                        const chosenB = pickBestCandidate(boundedResults, streetOnly, houseNum, partsAll[1] || '');
+                        const itemB = chosenB || boundedResults[0];
+                        const isCityLevelB = (itemB.type === 'city' || itemB.class === 'place' && /city|town/.test(itemB.type || ''));
+                        const coordsB = { lat: parseFloat(itemB.lat), lng: parseFloat(itemB.lon), zoomHint: isCityLevelB ? 15 : 16, source: 'nominatim-bounded' };
+                        geocodeCache.set(originalKey, coordsB);
+                        console.log('[Geocode] Sucesso com busca limitada à cidade:', coordsB);
+                        return coordsB;
+                    } else {
+                        console.warn('[Geocode] Bounded search sem resultados');
+                    }
+                }
+            } catch (e) {
+                console.warn('[Geocode] Erro na bounded search:', e);
+            }
+
+            // Fallback: tentar bairro com Google, enviesado para SJC
+            try {
+                const parts = address.split(' - ').map(s => s.trim());
+                const neighborhood = parts.length > 2 ? parts[1] : (parts[1] && /\//.test(parts[1]) ? '' : parts[1] || '');
+                const cityStatePart = parts.find(p => /\/[A-Z]{2}\b/.test(p)) || 'São José dos Campos/SP';
+                const qBairro = `${neighborhood || 'Vila Cândida'}, ${cityStatePart}, Brazil`;
+                console.warn('[Geocode] Tentando fallback por bairro (Google):', qBairro);
+                const resultsB = await geocodeGoogle(qBairro, { componentRestrictions: { locality: cityBias, administrativeArea: stateBias }, bounds: cityBounds });
+                if (Array.isArray(resultsB) && resultsB.length > 0) {
+                    const b = preferResultForCity(resultsB, cityBias, cityBounds);
+                    const loc = b.geometry.location;
+                    const coords = { lat: loc.lat(), lng: loc.lng(), zoomHint: 15, source: 'google-bairro' };
+                    if (!cityBounds || isInsideBounds(coords.lat, coords.lng, cityBounds)) {
+                        geocodeCache.set(originalKey, coords);
+                        console.log('[Geocode] Fallback bairro sucesso (Google):', coords);
+                        return coords;
+                    } else {
+                        console.warn('[Geocode] Fallback por bairro fora dos bounds de SJC. Ignorando.');
+                    }
+                }
+            } catch (e) {
+                console.warn('[Geocode] Falha no fallback por bairro (Google):', e);
+            }
+
+            // Fallback final: central da cidade
+            try {
+                const resultsCity = await geocodeGoogle(`${cityBias}, ${stateBias}, Brazil`, { componentRestrictions: { locality: cityBias, administrativeArea: stateBias } });
+                if (Array.isArray(resultsCity) && resultsCity.length > 0) {
+                    const bestCity = preferResultForCity(resultsCity, cityBias, cityBounds);
+                    const loc = bestCity.geometry.location;
+                    const coords = { lat: loc.lat(), lng: loc.lng(), zoomHint: 15, source: 'google-city' };
+                    if (!cityBounds || isInsideBounds(coords.lat, coords.lng, cityBounds)) {
+                        geocodeCache.set(originalKey, coords);
+                        console.log('[Geocode] Fallback cidade:', coords);
+                        return coords;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Geocode] Fallback cidade falhou:', e);
+            }
+
+            console.warn('[Geocode] Todas as variantes falharam, usando fallback padrão');
+            return { ...DEFAULT_COORDS, zoomHint: 15, source: 'default' };
+        }
+
+        // UI helpers
+        function showLoading() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('content').classList.add('hidden');
+        }
+
+        function showContent() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+        }
+
+        function showError(message, { showRetry = true } = {}) {
+            const errorEl = document.getElementById('errorMessage');
+            const retryBtn = document.getElementById('retryBtn');
+            errorEl.textContent = message;
+            retryBtn.classList.toggle('hidden', !showRetry);
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('content').classList.add('hidden');
         }
 
         // Load order data
@@ -569,25 +1095,48 @@
             const orderId = getOrderIdFromURL();
             
             if (!orderId) {
-                alert('ID do pedido não fornecido');
+                showError('ID do pedido não fornecido. Verifique o link.', { showRetry: false });
                 return;
             }
 
             currentOrderId = orderId;
 
             try {
-                const response = await fetch(`${API_BASE}/api/order-status?order_id=${orderId}`);
-                
+                showLoading();
+
+                // Timeout com AbortController para detectar problemas de conexão
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+                const response = await fetch(`${API_BASE}/api/orders/${orderId}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
-                    throw new Error('Pedido não encontrado');
+                    // Diferenciar mensagens por status
+                    if (response.status === 404) {
+                        showError('Pedido não encontrado. Verifique o ID.', { showRetry: false });
+                        return;
+                    }
+                    if (response.status === 500 || response.status === 503) {
+                        showError('Servidor indisponível. Tente novamente.', { showRetry: true });
+                        return;
+                    }
+                    showError(`Erro ao carregar pedido (status ${response.status}).`, { showRetry: true });
+                    return;
                 }
 
                 const data = await response.json();
                 displayOrderData(data);
+                showContent();
                 
             } catch (error) {
                 console.error('Erro ao carregar pedido:', error);
-                alert('Erro ao carregar informações do pedido');
+                // Erros de conexão / timeout
+                const msg = (error && (error.name === 'AbortError' ||
+                           /Failed to fetch|NetworkError|conectar-se ao servidor/i.test(String(error))))
+                           ? 'Erro de conexão. Verifique sua internet.'
+                           : 'Erro ao carregar informações do pedido';
+                showError(msg, { showRetry: true });
             }
         }
 
@@ -642,23 +1191,36 @@
 
             // Geocode and update map
             if (order.customer_address) {
+                console.log('[Delivery] Endereço recebido do backend:', order.customer_address);
                 const coords = await geocodeAddress(order.customer_address);
                 if (coords) {
+                    console.log('[Delivery] Coordenadas obtidas da geocodificação:', coords);
                     customerCoordinates = coords;
-                    map.setView([coords.lat, coords.lng], 16);
-                    deliveryMarker.setLatLng([coords.lat, coords.lng]);
-                    deliveryMarker.bindPopup(`
-                        <div style="text-align: center;">
+                    const targetZoom = (coords.zoomHint || 16);
+                    console.log('[Map] Centralizando mapa nas coordenadas (Google):', { lat: coords.lat, lng: coords.lng, zoom: targetZoom });
+                    map.setCenter({ lat: coords.lat, lng: coords.lng });
+                    map.setZoom(targetZoom);
+                    deliveryMarker.setPosition({ lat: coords.lat, lng: coords.lng });
+                    const popupHtml = `
+                        <div class="delivery-popup">
                             <strong>${order.customer_name}</strong><br>
-                            ${order.customer_address}
-                        </div>
-                    `).openPopup();
+                            <span>${order.customer_address}</span>
+                        </div>`;
+                    infoWindow.setContent(popupHtml);
+                    infoWindow.open({ map, anchor: deliveryMarker });
+                    if (targetZoom <= 15) {
+                        enableExplorationControls();
+                    }
+                } else {
+                    console.warn('[Delivery] Geocodificação não retornou coordenadas. Mantendo fallback.');
                 }
             }
 
             // Show content
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
+            // Google Maps ajusta render automaticamente; manter log simples
+            console.log('[Map] Conteúdo exibido, mapa Google ativo');
         }
 
         // Open navigation
@@ -724,6 +1286,13 @@
         window.addEventListener('DOMContentLoaded', () => {
             initMap();
             loadOrderData();
+            // Retry button handler
+            const retryBtn = document.getElementById('retryBtn');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    loadOrderData();
+                });
+            }
         });
     </script>
 </body>
