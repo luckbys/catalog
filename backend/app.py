@@ -348,6 +348,21 @@ def get_orders():
         orders_data = getattr(orders_res, "data", []) or []
         print(f"[API] Pedidos encontrados: {len(orders_data)}")
         
+        # Função auxiliar para extrair dados de dinheiro/troco das notas
+        def _extract_cash_info(notes: str):
+            try:
+                if not notes:
+                    return None, None
+                import re
+                # Aceita com ou sem emojis
+                rx_received = re.search(r"(Troco\s*para|Valor\s*recebido)\s*:\s*R\$\s*([0-9]+(?:[\.,][0-9]{1,2})?)", notes, re.IGNORECASE)
+                rx_change = re.search(r"Troco\s*:\s*R\$\s*([0-9]+(?:[\.,][0-9]{1,2})?)", notes, re.IGNORECASE)
+                received = float(rx_received.group(2).replace(',', '.')) if rx_received else None
+                change = float(rx_change.group(1).replace(',', '.')) if rx_change else None
+                return received, change
+            except Exception:
+                return None, None
+
         # Formatar pedidos para o frontend
         formatted_orders = []
         for order in orders_data:
@@ -367,6 +382,10 @@ def get_orders():
             db_status = order.get("status", "pending")
             frontend_status = status_map.get(db_status, "pendente")
             
+            # Extrair notas para valores de dinheiro/troco
+            notes_text = order.get("notes", "") or ""
+            cash_received, cash_change = _extract_cash_info(notes_text)
+
             formatted_orders.append({
                 "id": order["id"],
                 "customer": {
@@ -387,7 +406,11 @@ def get_orders():
                 "delivery_status": order.get("delivery_status", "pending"),
                 "createdAt": order.get("created_at", ""),
                 "estimatedDelivery": "45-60 min",
-                "paymentMethod": order.get("payment_method", "")
+                "paymentMethod": order.get("payment_method", ""),
+                # Campos extras para pagamento em dinheiro
+                "cashReceived": cash_received,
+                "cashChange": cash_change,
+                "notes": notes_text
             })
         
         print(f"[API] Retornando {len(formatted_orders)} pedidos formatados")

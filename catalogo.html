@@ -3808,6 +3808,26 @@ ${adminLink}
             console.log('🔍 [DEBUG] produtos processados:', produtos);
             console.log('🔍 [DEBUG] total calculado:', total);
 
+            // Extrair valor recebido e troco quando pagamento for dinheiro
+            let valorRecebido = null;
+            let valorTroco = null;
+            try {
+                if (formaPagamento && formaPagamento.toUpperCase() === 'DINHEIRO') {
+                    const changeInput = document.getElementById('changeAmount');
+                    if (changeInput) {
+                        const raw = String(changeInput.value || '').trim().replace(',', '.');
+                        const recebido = parseFloat(raw);
+                        if (!isNaN(recebido) && recebido > 0) {
+                            valorRecebido = recebido;
+                            const trocoCalc = Math.max(recebido - total, 0);
+                            valorTroco = trocoCalc;
+                        }
+                    }
+                }
+            } catch (errTroco) {
+                console.warn('⚠️ [DEBUG] Falha ao extrair valor de troco:', errTroco);
+            }
+
             // Estruturar payload JSON completo para o novo sistema
             const webhookPayload = {
                 cliente: {
@@ -3823,10 +3843,12 @@ ${adminLink}
                     cidade: deliveryDetails.city,
                     estado: deliveryDetails.state
                 },
-                pagamento: {
-                    forma_pagamento: formaPagamento,
-                    valor_total: total
-                },
+                pagamento: (() => {
+                    const p = { forma_pagamento: formaPagamento, valor_total: total };
+                    if (valorRecebido != null) p.valor_recebido = valorRecebido;
+                    if (valorTroco != null) p.troco = valorTroco;
+                    return p;
+                })(),
                 produtos: produtos
             };
 

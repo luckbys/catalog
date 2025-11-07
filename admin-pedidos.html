@@ -536,6 +536,24 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Payment Info -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 mb-4 border border-emerald-200">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-lg">💳</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-emerald-800">Forma de Pagamento: ${getPaymentLabel(order.paymentMethod)}</p>
+                                ${order.paymentMethod === 'cash' ? `
+                                    <div class="mt-2 text-sm text-emerald-700">
+                                        <p>💵 Valor recebido: ${order.cashReceived != null ? 'R$ ' + Number(order.cashReceived).toFixed(2) : 'não informado'}</p>
+                                        <p>💰 Troco: ${order.cashChange != null ? 'R$ ' + Number(order.cashChange).toFixed(2) : (order.cashReceived != null ? 'R$ ' + Number(Math.max(order.cashReceived - order.total, 0)).toFixed(2) : '—')}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Items -->
                     <div class="mb-4">
@@ -756,6 +774,18 @@
                 cancelado: 'cancelado'
             };
             return labels[status] || status;
+        }
+
+        // Get payment method label (pt-BR)
+        function getPaymentLabel(method) {
+            const map = {
+                'cash': 'Dinheiro',
+                'pix': 'PIX',
+                'credit_card': 'Cartão de crédito',
+                'debit_card': 'Cartão de débito',
+                'bank_transfer': 'Transferência bancária'
+            };
+            return map[method] || (method || '').toUpperCase();
         }
         
         // Get delivery status label (global scope for template)

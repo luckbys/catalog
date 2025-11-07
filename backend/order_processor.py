@@ -32,6 +32,11 @@ class Entrega(BaseModel):
 class Pagamento(BaseModel):
     forma_pagamento: str
     valor_total: float
+    # Campos opcionais para pagamento em dinheiro
+    # valor_recebido: quanto o cliente entregou
+    # troco: quanto deve ser devolvido ao cliente
+    valor_recebido: Optional[float] = None
+    troco: Optional[float] = None
 
 class Produto(BaseModel):
     nome: str
@@ -168,6 +173,21 @@ class OrderProcessor:
         # Limitar a 20 caracteres por segurança (E.164 geralmente <= 15)
         safe_phone = phone_digits[:20]
         
+        # Preparar notas (notes) com informações de troco quando aplicável
+        notes_lines = []
+        if payment_method == "cash":
+            try:
+                received = payload.pagamento.valor_recebido or 0
+                total_value = payload.pagamento.valor_total or 0
+                # Se valor recebido foi informado e é positivo, calcula troco
+                if received and received > 0:
+                    change_value = max(received - total_value, 0)
+                    notes_lines.append(f"💵 Troco para: R$ {received:.2f}")
+                    notes_lines.append(f"💰 Troco: R$ {change_value:.2f}")
+            except Exception:
+                # Não bloquear pedido por erro nas notas
+                pass
+
         return {
             "order_number": order_number,
             "customer_name": payload.cliente.nome,
@@ -178,7 +198,9 @@ class OrderProcessor:
             "total": payload.pagamento.valor_total,
             "status": "pending",
             "payment_status": "pending",
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.utcnow().isoformat(),
+            # Adiciona notas amigáveis para uso no admin
+            "notes": "\n".join(notes_lines) if notes_lines else ""
         }
     
     def _create_order(self, order_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -299,6 +321,7 @@ Pedido registrado com sucesso! ✅"""
     def _format_seller_notification(self, order: Dict[str, Any], items: List[Dict[str, Any]]) -> str:
         """Formata mensagem de notificação para o vendedor com link do admin"""
         from datetime import datetime
+        import re
         
         # Montar lista de produtos
         produtos_text = "\n".join([
@@ -311,6 +334,30 @@ Pedido registrado com sucesso! ✅"""
         
         # Timestamp atual
         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        # Extra: extrair valor recebido e troco das notas quando pagamento for dinheiro
+        cash_block = ""
+        try:
+            method = (order.get("payment_method") or "").lower()
+            if method == "cash":
+                notes_text = (order.get("notes") or "")
+                rx_received = re.search(r"(Troco\s*para|Valor\s*recebido)\s*:\s*R\$\s*([0-9]+(?:[\.,][0-9]{1,2})?)", notes_text, re.IGNORECASE)
+                rx_change = re.search(r"Troco\s*:\s*R\$\s*([0-9]+(?:[\.,][0-9]{1,2})?)", notes_text, re.IGNORECASE)
+                received = float(rx_received.group(2).replace(',', '.')) if rx_received else None
+                change = float(rx_change.group(1).replace(',', '.')) if rx_change else None
+                # Fallback: calcular troco se temos recebido
+                if change is None and received is not None:
+                    try:
+                        change = max(received - float(order.get("total", 0) or 0), 0)
+                    except Exception:
+                        change = None
+                cash_block = "\n" + (
+                    f"💵 Valor recebido: {'R$ ' + received.__format__('%.2f') if received is not None else 'não informado'}\n"
+                    f"💰 Troco: {'R$ ' + change.__format__('%.2f') if change is not None else '—'}\n"
+                )
+        except Exception:
+            # Silencioso: se não conseguir extrair, não quebra a mensagem
+            cash_block = ""
         
         message = f"""🔔 *NOVO PEDIDO RECEBIDO!*
 
@@ -327,6 +374,7 @@ Nome: {order['customer_name']}
 
 💰 *TOTAL:* R$ {order['total']:.2f}
 💳 *Pagamento:* {order['payment_method']}
+{cash_block}
 
 🔗 *GERENCIAR PEDIDO:*
 {admin_link}
