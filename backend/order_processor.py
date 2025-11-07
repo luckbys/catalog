@@ -311,13 +311,30 @@ class OrderProcessor:
             for item in items
         ])
 
-        # Construir link de rastreio para o cliente (status.html)
+        # Construir link de rastreio para o cliente (status.html), garantindo link clicável no WhatsApp
         base_url = os.getenv("CLIENT_BASE_URL", "http://localhost:8000")
+        # Remover caminhos específicos se presentes
         if '/catalogo.html' in base_url:
             base_url = base_url.split('/catalogo.html')[0]
+        if '/status.html' in base_url:
+            base_url = base_url.split('/status.html')[0]
+        # Garantir protocolo
         if not base_url.startswith('http://') and not base_url.startswith('https://'):
             base_url = f"https://{base_url}"
         base_url = base_url.rstrip('/')
+        # Se host não tiver um ponto, usar fallback de domínio público para link ficar clicável
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(base_url)
+            host = parsed.hostname or ""
+            if host and "." not in host:
+                public_base = os.getenv("PUBLIC_BASE_URL", "https://hakimfarma.devsible.com.br")
+                base_url = public_base.rstrip('/')
+        except Exception:
+            # Fallback silencioso em caso de erro ao parsear
+            public_base = os.getenv("PUBLIC_BASE_URL", "https://hakimfarma.devsible.com.br")
+            base_url = public_base.rstrip('/')
+
         status_link = f"{base_url}/status.html?id={order['id']}"
         
         message = f"""**Informações do Pedido**
@@ -336,7 +353,7 @@ class OrderProcessor:
 **Número do Pedido:** #{order['id']}
 
 🔗 *Acompanhe o status do seu pedido:*
-<{status_link}>
+{status_link}
 
 Pedido registrado com sucesso! ✅"""
         
