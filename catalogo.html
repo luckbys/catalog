@@ -2778,6 +2778,19 @@
 
     let cart = {};
 
+    // Calcula o total atual do carrinho
+    function calculateTotal() {
+        try {
+            return Object.values(cart).reduce((sum, item) => {
+                const qty = Number(item.quantity) || 0;
+                const price = Number(item.price) || 0;
+                return sum + (price * qty);
+            }, 0);
+        } catch (e) {
+            return 0;
+        }
+    }
+
     const productListContainer = document.getElementById('productList');
     const cartItemsContainer = document.getElementById('cartItems');
     const cartItemsList = document.getElementById('cartItemsList');
