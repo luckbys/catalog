@@ -203,6 +203,16 @@ if (selectedPaymentMethod.value === 'dinheiro') {
 - Resultado: Informação de troco incluída na mensagem
 - Status: ✅ Passou
 
+✅ **Cenário 7: Campo Vazio (Valor Exato)**
+- Ação: Selecionar "Dinheiro" e deixar campo vazio
+- Resultado: Pedido é enviado normalmente (cliente tem valor exato)
+- Status: ✅ Passou
+
+✅ **Cenário 8: Valor Inválido**
+- Ação: Informar valor negativo ou texto
+- Resultado: Alerta de valor inválido
+- Status: ✅ Passou
+
 ---
 
 ## 📱 Responsividade
@@ -296,9 +306,10 @@ if (selectedPaymentMethod.value === 'dinheiro') {
 
 ### Decisões de Design
 1. **Campo condicional:** Evita poluição visual quando não necessário
-2. **Cálculo em tempo real:** Feedback imediato para o usuário
-3. **Validação suave:** Permite valor menor (para casos especiais) mas alerta
-4. **Emojis na mensagem:** Facilita identificação visual rápida
+2. **Campo opcional:** Cliente pode deixar vazio se tiver valor exato
+3. **Cálculo em tempo real:** Feedback imediato para o usuário
+4. **Validação inteligente:** Só valida se o usuário informar um valor
+5. **Emojis na mensagem:** Facilita identificação visual rápida
 
 ### Considerações de UX
 - Campo ganha foco automaticamente quando dinheiro é selecionado

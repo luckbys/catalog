@@ -2492,8 +2492,11 @@
                         <!-- Campo de Troco (aparece apenas quando Dinheiro é selecionado) -->
                         <div id="changeAmountContainer" class="hidden ml-8 p-4 bg-green-50 border border-green-200 rounded-lg">
                             <label class="block text-slate-700 text-sm font-bold mb-2">
-                                💵 Troco para quanto?
+                                💵 Troco para quanto? <span class="text-slate-500 font-normal text-xs">(opcional)</span>
                             </label>
+                            <p class="text-xs text-slate-600 mb-2">
+                                Deixe em branco se tiver o valor exato
+                            </p>
                             <input 
                                 type="number" 
                                 id="changeAmount" 
@@ -4036,18 +4039,32 @@ ${adminLink}
             return;
         }
         
-        // Validação do troco para pagamento em dinheiro
+        // Validação do troco para pagamento em dinheiro (OPCIONAL)
         if (selectedPaymentMethod.value === 'dinheiro') {
             const changeAmountInput = document.getElementById('changeAmount');
-            const changeAmount = parseFloat(changeAmountInput.value) || 0;
-            const orderTotal = calculateTotal();
+            const changeAmountValue = changeAmountInput.value.trim();
             
-            if (changeAmount > 0 && changeAmount < orderTotal) {
-                console.log('❌ [DEBUG] Erro: Valor do troco menor que o total do pedido');
-                alert(`O valor informado (${formatCurrency(changeAmount)}) é menor que o total do pedido (${formatCurrency(orderTotal)}). Por favor, informe um valor maior ou igual ao total.`);
-                changeAmountInput.focus();
-                return;
+            // Só valida se o usuário digitou algo
+            if (changeAmountValue !== '') {
+                const changeAmount = parseFloat(changeAmountValue);
+                const orderTotal = calculateTotal();
+                
+                if (isNaN(changeAmount) || changeAmount <= 0) {
+                    console.log('❌ [DEBUG] Erro: Valor do troco inválido');
+                    alert('Por favor, informe um valor válido para o troco.');
+                    changeAmountInput.focus();
+                    return;
+                }
+                
+                if (changeAmount < orderTotal) {
+                    console.log('❌ [DEBUG] Erro: Valor do troco menor que o total do pedido');
+                    alert(`O valor informado (${formatCurrency(changeAmount)}) é menor que o total do pedido (${formatCurrency(orderTotal)}). Por favor, informe um valor maior ou igual ao total.`);
+                    changeAmountInput.focus();
+                    return;
+                }
             }
+            // Se o campo estiver vazio, permite continuar (cliente tem valor exato)
+            console.log('✅ [DEBUG] Validação de troco passou (campo vazio = valor exato)');
         }
 
         console.log('🔍 [DEBUG] Validações básicas passaram');
