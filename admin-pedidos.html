@@ -428,7 +428,7 @@
                     </div>
                     <div>
                         <p class="font-bold text-blue-800">Visualizando Pedido Específico</p>
-                        <p class="text-sm text-blue-600" id="specificOrderText">Pedido #<span id="specificOrderNumber"></span></p>
+                        <p class="text-sm text-blue-600" id="specificOrderText"><span id="specificOrderNumber"></span></p>
                     </div>
                 </div>
                 <a href="admin-pedidos.html" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
@@ -725,7 +725,7 @@
                     <!-- Header -->
                     <div class="flex items-start justify-between mb-4">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">Pedido #${order.id}</h3>
+                            <h3 class="text-xl font-bold text-gray-800 mb-1">${order.order_number || order.id}</h3>
                             <p class="text-sm text-gray-500">${timeAgo}</p>
                         </div>
                         <span class="status-badge ${status.class}">
@@ -1080,6 +1080,14 @@
                     const order = orders.find(o => o.id === orderId);
                     if (order) {
                         order.delivery_status = newStatus;
+                        applyOrderStatusFromDelivery(order);
+                        // Atualiza DOM do card imediatamente
+                        const card = document.querySelector(`.order-card[data-order-id="${orderId}"]`);
+                        if (card) {
+                            updateOrderCardDOM(card, order);
+                            setupActionButtons();
+                            markUpdated(card.querySelector('[data-actions-section]'));
+                        }
                     }
                     
                     // Show notification
@@ -1101,6 +1109,24 @@
                 
                 // Reload to reset select
                 await fetchOrders();
+            }
+        }
+
+        // Mapeia delivery_status -> status do pedido para sincronizar UI
+        function applyOrderStatusFromDelivery(order) {
+            const mapToOrderStatus = {
+                'pending': 'confirmado',
+                'preparing': 'preparando',
+                'ready_for_pickup': 'preparando',
+                'in_transit': 'enviado',
+                'out_for_delivery': 'enviado',
+                'delivered': 'entregue',
+                'failed': 'enviado',
+                'returned': 'cancelado'
+            };
+            const next = mapToOrderStatus[order.delivery_status];
+            if (next && order.status !== next) {
+                order.status = next;
             }
         }
 
