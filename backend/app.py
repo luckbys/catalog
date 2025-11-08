@@ -324,6 +324,22 @@ async def serve_admin_pedidos():
     else:
         return FileResponse(local_path, media_type="text/html")
 
+@app.get("/admin-instancias.html")
+async def serve_admin_instancias_html():
+    """Serve a página de administração de instâncias WhatsApp"""
+    file_name = "admin-instancias.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
+@app.get("/admin-instancias")
+async def serve_admin_instancias_alias():
+    """Alias sem extensão para admin-instancias.html"""
+    return await serve_admin_instancias_html()
+
 @app.get("/test-api-orders.html")
 async def serve_test_api_orders():
     """Serve a página de teste da API de pedidos"""
