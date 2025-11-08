@@ -145,6 +145,113 @@
             border-color: #10b981;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
+
+        /* Mobile minimal overrides */
+        @media (max-width: 640px) {
+            header .container { padding: 0.5rem 1rem; }
+            header h1 { font-size: 1.125rem; }
+            header p { display: none; }
+
+            .status-badge {
+                gap: 0.25rem;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                border-width: 1px;
+            }
+            .status-pendente,
+            .status-confirmado,
+            .status-preparando,
+            .status-enviado,
+            .status-entregue,
+            .status-cancelado {
+                background: #F9FAFB;
+                box-shadow: none;
+            }
+
+            .order-card {
+                padding: 0.75rem !important;
+                border-width: 1px;
+                box-shadow: none;
+            }
+            .order-card:hover {
+                transform: none;
+                box-shadow: none;
+                border-color: #e5e7eb;
+            }
+
+            #filtersSection .flex {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                gap: 0.5rem;
+            }
+            .filter-chip {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                border: 1px solid #e5e7eb;
+                background: #fff;
+                box-shadow: none;
+            }
+            .filter-chip.active {
+                background: #10b981;
+                color: #fff;
+                box-shadow: none;
+            }
+
+            /* Ocultar estatísticas no mobile para foco na lista */
+            #statsGrid { display: none; }
+            #statsGrid.mobile-open { display: grid !important; }
+            main { padding-top: 0.5rem; }
+
+            /* Ações compactas (menu de 3 pontinhos) no mobile */
+            .actions-inline { display: none !important; }
+            .actions-menu { display: inline-block !important; }
+        }
+
+        /* Desktop mantém botões visíveis, menu oculto */
+        @media (min-width: 641px) {
+            .actions-inline { display: flex; }
+            .actions-menu { display: none; }
+        }
+
+        /* Estilos do menu de ações mobile */
+        .action-menu-trigger {
+            width: 2.25rem;
+            height: 2.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background: #fff;
+            color: #374151;
+        }
+        .action-menu-trigger:hover { border-color: #10b981; color: #065f46; }
+        .action-menu-list {
+            position: absolute;
+            right: 0;
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            min-width: 180px;
+            padding: 0.25rem;
+            z-index: 20;
+        }
+        .action-menu-list.drop-down { top: 2.75rem; }
+        .action-menu-list.drop-up { bottom: 2.75rem; }
+        .action-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #1f2937;
+        }
+        .action-menu-item:hover { background: #f3f4f6; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
@@ -162,13 +269,11 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                        </svg>
+                    <div class="w-12 h-12 rounded-xl overflow-hidden shadow-lg bg-white">
+                        <img src="public/logo.png" alt="Logo da Farmácia" class="w-full h-full object-contain p-1" />
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Hakim Farma</h1>
+                        <h1 class="text-2xl font-bold text-gray-800">Admin Pedidos</h1>
                         <p class="text-sm text-gray-600">Gerenciamento de Pedidos</p>
                     </div>
                 </div>
@@ -180,6 +285,11 @@
                     <a href="catalogo.html" class="text-sm text-gray-600 hover:text-emerald-600 transition-colors">
                         ← Voltar ao Catálogo
                     </a>
+                    <a href="admin-config.html" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-200 text-gray-600 bg-white hover:border-emerald-500 hover:text-emerald-600 transition-colors" aria-label="Configurar número de entrega e vendedor" title="Configurar número de entrega e vendedor">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.12 19.5 19.5 0 01-6-6 19.86 19.86 0 01-3.12-8.63A2 2 0 014.11 2h3a2 2 0 012 1.72 12.2 12.2 0 00.65 2.73 2 2 0 01-.45 2.1L8.09 9.91a16 16 0 006 6l1.36-1.36a2 2 0 012.1-.45 12.2 12.2 0 002.73.65A2 2 0 0122 16.92z"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
@@ -187,36 +297,66 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
+        <!-- Mobile: Toggle Stats -->
+        <div class="md:hidden mb-4">
+            <button id="toggleStatsBtn" class="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-200 rounded-xl py-2 px-3 text-sm font-semibold text-gray-700 shadow-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19h4v-6H4v6zm6 0h4V5h-4v14zm6 0h4v-10h-4v10z"></path>
+                </svg>
+                <span>Mostrar estatísticas</span>
+            </button>
+        </div>
         
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-yellow-200">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">⏳</span>
+                    <span class="text-2xl">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="M12 7v5l3 2"></path>
+                        </svg>
+                    </span>
                     <span class="text-2xl font-bold text-yellow-600" id="statPendente">0</span>
                 </div>
                 <p class="text-sm text-gray-600 font-medium">Pendentes</p>
             </div>
-            
+
             <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-blue-200">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">✅</span>
+                    <span class="text-2xl">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                    </span>
                     <span class="text-2xl font-bold text-blue-600" id="statConfirmado">0</span>
                 </div>
                 <p class="text-sm text-gray-600 font-medium">Confirmados</p>
             </div>
-            
+
             <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-purple-200">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">🚚</span>
+                    <span class="text-2xl">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 17h13v-6H9l-6 6z"></path>
+                            <path d="M16 11h3l3 3v3h-6v-6z"></path>
+                            <circle cx="7" cy="18" r="2"></circle>
+                            <circle cx="19" cy="18" r="2"></circle>
+                        </svg>
+                    </span>
                     <span class="text-2xl font-bold text-purple-600" id="statEnviado">0</span>
                 </div>
                 <p class="text-sm text-gray-600 font-medium">Em Entrega</p>
             </div>
-            
+
             <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-emerald-200">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">🎉</span>
+                    <span class="text-2xl">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="M9 12l2 2 4-4"></path>
+                        </svg>
+                    </span>
                     <span class="text-2xl font-bold text-emerald-600" id="statEntregue">0</span>
                 </div>
                 <p class="text-sm text-gray-600 font-medium">Entregues</p>
@@ -384,6 +524,7 @@
             
             // Depois configurar a interface
             setupFilters();
+            setupStatsToggle();
             highlightOrderFromURL();
         });
         
@@ -474,12 +615,12 @@
         // Create order card
         function createOrderCard(order) {
             const statusConfig = {
-                pendente: { icon: '⏳', label: 'Pendente', class: 'status-pendente' },
-                confirmado: { icon: '✅', label: 'Confirmado', class: 'status-confirmado' },
-                preparando: { icon: '📦', label: 'Preparando', class: 'status-preparando' },
-                enviado: { icon: '🚚', label: 'Em Entrega', class: 'status-enviado' },
-                entregue: { icon: '🎉', label: 'Entregue', class: 'status-entregue' },
-                cancelado: { icon: '❌', label: 'Cancelado', class: 'status-cancelado' }
+                pendente: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`, label: 'Pendente', class: 'status-pendente' },
+                confirmado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>`, label: 'Confirmado', class: 'status-confirmado' },
+                preparando: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"></path><path d="M3 7l9 4 9-4"></path></svg>`, label: 'Preparando', class: 'status-preparando' },
+                enviado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h13v-6H9l-6 6z"></path><path d="M16 11h3l3 3v3h-6v-6z"></path></svg>`, label: 'Em Entrega', class: 'status-enviado' },
+                entregue: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg>`, label: 'Entregue', class: 'status-entregue' },
+                cancelado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>`, label: 'Cancelado', class: 'status-cancelado' }
             };
             
             const status = statusConfig[order.status];
@@ -503,7 +644,14 @@
                     <div class="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-200">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex items-center gap-2">
-                                <span class="text-2xl">🚚</span>
+                                <span class="text-2xl">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 17h13v-6H9l-6 6z"></path>
+                                        <path d="M16 11h3l3 3v3h-6v-6z"></path>
+                                        <circle cx="7" cy="18" r="2"></circle>
+                                        <circle cx="19" cy="18" r="2"></circle>
+                                    </svg>
+                                </span>
                                 <div>
                                     <p class="text-xs font-semibold text-blue-600 uppercase">Status de Entrega</p>
                                     <p class="text-sm text-blue-800 font-medium">${getDeliveryStatusLabel(order.delivery_status || 'pending')}</p>
@@ -527,12 +675,27 @@
                     <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 mb-4 border border-slate-200">
                         <div class="flex items-start gap-3">
                             <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span class="text-white text-lg">👤</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                    <circle cx="12" cy="8" r="4"></circle>
+                                    <path d="M6 20c0-4 12-4 12 0"></path>
+                                </svg>
                             </div>
                             <div class="flex-1">
                                 <p class="font-semibold text-gray-800">${order.customer.name}</p>
-                                <p class="text-sm text-gray-600">📱 ${order.customer.phone}</p>
-                                <p class="text-sm text-gray-600">📍 ${order.customer.address}</p>
+                                <p class="text-sm text-gray-600">
+                                    <svg class="inline-block mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="7" y="2" width="10" height="20" rx="2"></rect>
+                                        <circle cx="12" cy="18" r="1"></circle>
+                                    </svg>
+                                    ${order.customer.phone}
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    <svg class="inline-block mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 21l-6-8a6 6 0 1 1 12 0l-6 8z"></path>
+                                        <circle cx="12" cy="11" r="2"></circle>
+                                    </svg>
+                                    ${order.customer.address}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -541,7 +704,10 @@
                     <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 mb-4 border border-emerald-200">
                         <div class="flex items-start gap-3">
                             <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span class="text-white text-lg">💳</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                                </svg>
                             </div>
                             <div class="flex-1">
                                 <p class="font-semibold text-emerald-800">Forma de Pagamento: ${getPaymentLabel(order.paymentMethod)}</p>
@@ -585,21 +751,85 @@
             // Apenas botão de confirmar para pedidos pendentes
             if (order.status === 'pendente') {
                 return `
-                    <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="confirmar" data-order-id="${order.id}">
-                        ✅ Confirmar Pedido
-                    </button>
-                    <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
-                        ❌ Cancelar
-                    </button>
+                    <div class="actions-inline w-full gap-2">
+                        <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="confirmar" data-order-id="${order.id}">
+                            Confirmar Pedido
+                        </button>
+                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
+                            Cancelar
+                        </button>
+                    </div>
+                    <div class="actions-menu relative">
+                        <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="5" r="2"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                                <circle cx="12" cy="19" r="2"></circle>
+                            </svg>
+                        </button>
+                        <div class="action-menu-list hidden">
+                            <button class="action-menu-item" data-action="confirmar" data-order-id="${order.id}">
+                                Confirmar Pedido
+                            </button>
+                            <button class="action-menu-item" data-action="cancelar" data-order-id="${order.id}">
+                                Cancelar Pedido
+                            </button>
+                        </div>
+                    </div>
                 `;
             }
             
             // Mensagem informativa para pedidos confirmados
             if (order.status === 'confirmado' || order.status === 'preparando' || order.status === 'enviado') {
+                const mobileMenu = (() => {
+                    if (order.status === 'confirmado') {
+                        return `
+                            <div class="actions-menu relative">
+                                <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+                                </button>
+                                <div class="action-menu-list hidden">
+                                    <button class="action-menu-item" data-delivery-status="preparing" data-order-id="${order.id}">Marcar em preparo</button>
+                                    <button class="action-menu-item" data-action="cancelar" data-order-id="${order.id}">Cancelar</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (order.status === 'preparando') {
+                        return `
+                            <div class="actions-menu relative">
+                                <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+                                </button>
+                                <div class="action-menu-list hidden">
+                                    <button class="action-menu-item" data-delivery-status="ready_for_pickup" data-order-id="${order.id}">Marcar pronto</button>
+                                    <button class="action-menu-item" data-delivery-status="out_for_delivery" data-order-id="${order.id}">Enviar para entrega</button>
+                                    <button class="action-menu-item" data-action="cancelar" data-order-id="${order.id}">Cancelar</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (order.status === 'enviado') {
+                        return `
+                            <div class="actions-menu relative">
+                                <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+                                </button>
+                                <div class="action-menu-list hidden">
+                                    <button class="action-menu-item" data-delivery-status="delivered" data-order-id="${order.id}">Marcar entregue</button>
+                                    <button class="action-menu-item" data-delivery-status="failed" data-order-id="${order.id}">Falha na entrega</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    return '';
+                })();
+
                 return `
-                    <div class="flex-1 text-center py-3 px-4 bg-blue-50 text-blue-700 font-medium rounded-xl border-2 border-blue-200">
-                        💡 Use o dropdown acima para atualizar o status de entrega
+                    <div class="actions-inline flex-1 text-center py-3 px-4 bg-blue-50 text-blue-700 font-medium rounded-xl border-2 border-blue-200">
+                        Use o dropdown acima para atualizar o status de entrega
                     </div>
+                    ${mobileMenu}
                 `;
             }
             
@@ -607,7 +837,7 @@
             if (order.status === 'entregue') {
                 return `
                     <div class="flex-1 text-center py-3 px-4 bg-emerald-50 text-emerald-700 font-semibold rounded-xl border-2 border-emerald-200">
-                        ✓ Pedido Concluído
+                        Pedido Concluído
                     </div>
                 `;
             }
@@ -616,7 +846,7 @@
             if (order.status === 'cancelado') {
                 return `
                     <div class="flex-1 text-center py-3 px-4 bg-red-50 text-red-700 font-semibold rounded-xl border-2 border-red-200">
-                        ✗ Pedido Cancelado
+                        Pedido Cancelado
                     </div>
                 `;
             }
@@ -646,6 +876,9 @@
                     await updateDeliveryStatus(orderId, newStatus);
                 });
             });
+
+            // Setup menus de ações mobile
+            setupMobileActionMenus();
         }
         
         // Update delivery status
@@ -693,6 +926,85 @@
                 // Reload to reset select
                 await fetchOrders();
             }
+        }
+
+        // Setup mobile action menus
+        function setupMobileActionMenus() {
+            // Toggle de abertura do menu
+            document.querySelectorAll('.action-menu-trigger').forEach(trigger => {
+                trigger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const container = this.parentElement;
+                    const menu = container.querySelector('.action-menu-list');
+                    // Fechar outros menus abertos
+                    document.querySelectorAll('.action-menu-list').forEach(m => {
+                        if (m !== menu) m.classList.add('hidden');
+                    });
+                    // Calcular orientação (abre para cima se faltar espaço abaixo)
+                    const rect = this.getBoundingClientRect();
+                    // Medir altura do menu (temporariamente mostrar invisível se estiver oculto)
+                    let menuHeight = menu.offsetHeight;
+                    if (!menuHeight || menu.classList.contains('hidden')) {
+                        menu.style.visibility = 'hidden';
+                        menu.classList.remove('hidden');
+                        menuHeight = menu.offsetHeight || 180;
+                        menu.classList.add('hidden');
+                        menu.style.visibility = '';
+                    }
+
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const spaceAbove = rect.top;
+                    menu.classList.remove('drop-up', 'drop-down');
+                    if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
+                        menu.classList.add('drop-up');
+                    } else {
+                        menu.classList.add('drop-down');
+                    }
+
+                    menu.classList.toggle('hidden');
+                    this.setAttribute('aria-expanded', String(!menu.classList.contains('hidden')));
+                });
+            });
+
+            // Fechar ao clicar fora
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.action-menu-list').forEach(m => m.classList.add('hidden'));
+                document.querySelectorAll('.action-menu-trigger[aria-expanded="true"]').forEach(t => t.setAttribute('aria-expanded', 'false'));
+            });
+
+            // Itens que atualizam delivery_status
+            document.querySelectorAll('[data-delivery-status]').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const orderId = parseInt(this.dataset.orderId);
+                    const dstatus = this.dataset.deliveryStatus;
+                    await updateDeliveryStatus(orderId, dstatus);
+                    const container = this.closest('.actions-menu');
+                    const menu = container ? container.querySelector('.action-menu-list') : null;
+                    if (menu) menu.classList.add('hidden');
+                    const trigger = container ? container.querySelector('.action-menu-trigger') : null;
+                    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                });
+            });
+        }
+
+        // Toggle de estatísticas no mobile
+        function setupStatsToggle() {
+            const btn = document.getElementById('toggleStatsBtn');
+            const grid = document.getElementById('statsGrid');
+            if (!btn || !grid) return;
+
+            function updateLabel() {
+                const open = grid.classList.contains('mobile-open');
+                const span = btn.querySelector('span');
+                if (span) span.textContent = open ? 'Ocultar estatísticas' : 'Mostrar estatísticas';
+            }
+
+            btn.addEventListener('click', function() {
+                grid.classList.toggle('mobile-open');
+                updateLabel();
+            });
+
+            updateLabel();
         }
 
         // Handle actions
