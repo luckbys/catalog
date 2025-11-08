@@ -260,6 +260,18 @@
 
         /* Forçar exibir botões inline no mobile quando necessário */
         .actions-inline--mobile { display: flex !important; }
+
+        /* Ajustes finos de suavidade */
+        .fade-update { animation: fadePulse 380ms ease-out; }
+        @keyframes fadePulse {
+            0% { box-shadow: 0 0 0 6px rgba(16,185,129,0.12); }
+            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.0); }
+        }
+
+        .card-enter { opacity: 0; transform: translateY(4px); }
+        .card-enter-active { opacity: 1; transform: translateY(0); transition: opacity 200ms ease-out, transform 200ms ease-out; }
+        .card-exit-active { opacity: 0; transition: opacity 180ms ease-out; }
+        .order-card { will-change: opacity, transform; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
@@ -442,10 +454,15 @@
     <script>
         // Orders array - será preenchido pela API
         let orders = [];
+        let initialRenderDone = false;
+        let lastOrdersSignature = '';
+        let isFetching = false;
         
         // Carregar pedidos da API
         async function fetchOrders() {
             console.log('[DEBUG] Iniciando fetchOrders...');
+            if (isFetching) { console.log('[DEBUG] fetch já em andamento, abortando chamada concorrente'); return; }
+            isFetching = true;
             try {
                 console.log('[DEBUG] Fazendo fetch para /api/orders');
                 const response = await fetch('/api/orders');
@@ -470,13 +487,37 @@
                 // Usar dados mock como fallback
                 orders = mockOrders;
                 console.log('[DEBUG] Usando mock orders (catch):', mockOrders.length);
+            } finally {
+                // Atualizar interface
+                const newSignature = computeOrdersSignature(orders);
+                const hasChanges = newSignature !== lastOrdersSignature;
+                if (!initialRenderDone) {
+                    console.log('[DEBUG] Primeira renderização: loadOrders');
+                    loadOrders();
+                    initialRenderDone = true;
+                } else if (hasChanges) {
+                    console.log('[DEBUG] Atualização silenciosa: updateOrdersQuietly');
+                    updateOrdersQuietly();
+                } else {
+                    console.log('[DEBUG] Sem mudanças de dados: atualizando somente tempo');
+                    updateTimeAgoOnly();
+                }
+                console.log('[DEBUG] Chamando updateStats...');
+                updateStats();
+                lastOrdersSignature = newSignature;
+                isFetching = false;
             }
-            
-            // Atualizar interface
-            console.log('[DEBUG] Chamando loadOrders...');
-            loadOrders();
-            console.log('[DEBUG] Chamando updateStats...');
-            updateStats();
+        }
+
+        function computeOrdersSignature(list) {
+            try {
+                return list
+                    .map(o => `${o.id}|${o.status}|${o.delivery_status||''}|${o.total}|${(o.items||[]).length}`)
+                    .sort()
+                    .join('::');
+            } catch (e) {
+                return JSON.stringify(list).slice(0, 2048);
+            }
         }
         
         // Mock data - Fallback se API não estiver disponível
@@ -627,18 +668,56 @@
             setupActionButtons();
         }
 
+        // Config de status (ícone/label/classe)
+        const STATUS_CONFIG = {
+            pendente: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`, label: 'Pendente', class: 'status-pendente' },
+            confirmado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>`, label: 'Confirmado', class: 'status-confirmado' },
+            preparando: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"></path><path d="M3 7l9 4 9-4"></path></svg>`, label: 'Preparando', class: 'status-preparando' },
+            enviado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h13v-6H9l-6 6z"></path><path d="M16 11h3l3 3v3h-6v-6z"></path></svg>`, label: 'Em Entrega', class: 'status-enviado' },
+            entregue: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg>`, label: 'Entregue', class: 'status-entregue' },
+            cancelado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>`, label: 'Cancelado', class: 'status-cancelado' }
+        };
+
+        // Seção de status de entrega (markup)
+        function getDeliverySection(order) {
+            if (order.status === 'pendente' || order.status === 'cancelado') {
+                return `<div data-delivery-section class="hidden"></div>`;
+            }
+            return `
+                <div data-delivery-section class="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-200">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 17h13v-6H9l-6 6z"></path>
+                                    <path d="M16 11h3l3 3v3h-6v-6z"></path>
+                                    <circle cx="7" cy="18" r="2"></circle>
+                                    <circle cx="19" cy="18" r="2"></circle>
+                                </svg>
+                            </span>
+                            <div>
+                                <p class="text-xs font-semibold text-blue-600 uppercase">Status de Entrega</p>
+                                <p class="text-sm text-blue-800 font-medium">${getDeliveryStatusLabel(order.delivery_status || 'pending')}</p>
+                            </div>
+                        </div>
+                        <select class="delivery-status-select" data-order-id="${order.id}" data-current-status="${order.delivery_status || 'pending'}" value="${order.delivery_status || 'pending'}">
+                            <option value="pending" ${(order.delivery_status || 'pending') === 'pending' ? 'selected' : ''}>⏳ Pendente</option>
+                            <option value="preparing" ${order.delivery_status === 'preparing' ? 'selected' : ''}>📦 Preparando</option>
+                            <option value="ready_for_pickup" ${order.delivery_status === 'ready_for_pickup' ? 'selected' : ''}>✅ Pronto</option>
+                            <option value="in_transit" ${order.delivery_status === 'in_transit' ? 'selected' : ''}>🚗 Em Trânsito</option>
+                            <option value="out_for_delivery" ${order.delivery_status === 'out_for_delivery' ? 'selected' : ''}>🚚 Saiu p/ Entrega</option>
+                            <option value="delivered" ${order.delivery_status === 'delivered' ? 'selected' : ''}>🎉 Entregue</option>
+                            <option value="failed" ${order.delivery_status === 'failed' ? 'selected' : ''}>❌ Falhou</option>
+                            <option value="returned" ${order.delivery_status === 'returned' ? 'selected' : ''}>↩️ Devolvido</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
         // Create order card
         function createOrderCard(order) {
-            const statusConfig = {
-                pendente: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`, label: 'Pendente', class: 'status-pendente' },
-                confirmado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>`, label: 'Confirmado', class: 'status-confirmado' },
-                preparando: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"></path><path d="M3 7l9 4 9-4"></path></svg>`, label: 'Preparando', class: 'status-preparando' },
-                enviado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h13v-6H9l-6 6z"></path><path d="M16 11h3l3 3v3h-6v-6z"></path></svg>`, label: 'Em Entrega', class: 'status-enviado' },
-                entregue: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg>`, label: 'Entregue', class: 'status-entregue' },
-                cancelado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>`, label: 'Cancelado', class: 'status-cancelado' }
-            };
-            
-            const status = statusConfig[order.status];
+            const status = STATUS_CONFIG[order.status];
             const timeAgo = getTimeAgo(order.createdAt);
             
             return `
@@ -655,36 +734,7 @@
                     </div>
                     
                     <!-- Delivery Status -->
-                    ${order.status !== 'pendente' && order.status !== 'cancelado' ? `
-                    <div class="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-200">
-                        <div class="flex items-center justify-between gap-3">
-                            <div class="flex items-center gap-2">
-                                <span class="text-2xl">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M3 17h13v-6H9l-6 6z"></path>
-                                        <path d="M16 11h3l3 3v3h-6v-6z"></path>
-                                        <circle cx="7" cy="18" r="2"></circle>
-                                        <circle cx="19" cy="18" r="2"></circle>
-                                    </svg>
-                                </span>
-                                <div>
-                                    <p class="text-xs font-semibold text-blue-600 uppercase">Status de Entrega</p>
-                                    <p class="text-sm text-blue-800 font-medium">${getDeliveryStatusLabel(order.delivery_status || 'pending')}</p>
-                                </div>
-                            </div>
-                            <select class="delivery-status-select" data-order-id="${order.id}" data-current-status="${order.delivery_status || 'pending'}">
-                                <option value="pending" ${(order.delivery_status || 'pending') === 'pending' ? 'selected' : ''}>⏳ Pendente</option>
-                                <option value="preparing" ${order.delivery_status === 'preparing' ? 'selected' : ''}>📦 Preparando</option>
-                                <option value="ready_for_pickup" ${order.delivery_status === 'ready_for_pickup' ? 'selected' : ''}>✅ Pronto</option>
-                                <option value="in_transit" ${order.delivery_status === 'in_transit' ? 'selected' : ''}>🚗 Em Trânsito</option>
-                                <option value="out_for_delivery" ${order.delivery_status === 'out_for_delivery' ? 'selected' : ''}>🚚 Saiu p/ Entrega</option>
-                                <option value="delivered" ${order.delivery_status === 'delivered' ? 'selected' : ''}>🎉 Entregue</option>
-                                <option value="failed" ${order.delivery_status === 'failed' ? 'selected' : ''}>❌ Falhou</option>
-                                <option value="returned" ${order.delivery_status === 'returned' ? 'selected' : ''}>↩️ Devolvido</option>
-                            </select>
-                        </div>
-                    </div>
-                    ` : ''}
+                    ${getDeliverySection(order)}
                     
                     <!-- Customer Info -->
                     <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 mb-4 border border-slate-200">
@@ -754,7 +804,7 @@
                     </div>
                     
                     <!-- Actions -->
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2" data-actions-section>
                         ${getActionButtons(order)}
                     </div>
                 </div>
@@ -777,57 +827,44 @@
                 `;
             }
             
-            // Mensagem informativa para pedidos confirmados
-            if (order.status === 'confirmado' || order.status === 'preparando' || order.status === 'enviado') {
-                const mobileMenu = (() => {
-                    if (order.status === 'confirmado') {
-                        return `
-                            <div class="actions-menu relative">
-                                <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
-                                </button>
-                                <div class="action-menu-list hidden">
-                                    <button class="action-menu-item" data-delivery-status="preparing" data-order-id="${order.id}">Marcar em preparo</button>
-                                    <button class="action-menu-item" data-action="cancelar" data-order-id="${order.id}">Cancelar</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    if (order.status === 'preparando') {
-                        return `
-                            <div class="actions-menu relative">
-                                <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
-                                </button>
-                                <div class="action-menu-list hidden">
-                                    <button class="action-menu-item" data-delivery-status="ready_for_pickup" data-order-id="${order.id}">Marcar pronto</button>
-                                    <button class="action-menu-item" data-delivery-status="out_for_delivery" data-order-id="${order.id}">Enviar para entrega</button>
-                                    <button class="action-menu-item" data-action="cancelar" data-order-id="${order.id}">Cancelar</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    if (order.status === 'enviado') {
-                        return `
-                            <div class="actions-menu relative">
-                                <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
-                                </button>
-                                <div class="action-menu-list hidden">
-                                    <button class="action-menu-item" data-delivery-status="delivered" data-order-id="${order.id}">Marcar entregue</button>
-                                    <button class="action-menu-item" data-delivery-status="failed" data-order-id="${order.id}">Falha na entrega</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    return '';
-                })();
-
+            // Botões diretos para todos os demais status
+            if (order.status === 'confirmado') {
                 return `
-                    <div class="actions-inline flex-1 text-center py-3 px-4 bg-blue-50 text-blue-700 font-medium rounded-xl border-2 border-blue-200">
-                        Use o dropdown acima para atualizar o status de entrega
+                    <div class="actions-inline actions-inline--mobile w-full gap-2">
+                        <button class="action-btn flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="preparing" data-order-id="${order.id}">
+                            Marcar em preparo
+                        </button>
+                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
+                            Cancelar
+                        </button>
                     </div>
-                    ${mobileMenu}
+                `;
+            }
+            if (order.status === 'preparando') {
+                return `
+                    <div class="actions-inline actions-inline--mobile w-full gap-2">
+                        <button class="action-btn flex-1 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="ready_for_pickup" data-order-id="${order.id}">
+                            Marcar pronto
+                        </button>
+                        <button class="action-btn flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="out_for_delivery" data-order-id="${order.id}">
+                            Enviar para entrega
+                        </button>
+                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
+                            Cancelar
+                        </button>
+                    </div>
+                `;
+            }
+            if (order.status === 'enviado') {
+                return `
+                    <div class="actions-inline actions-inline--mobile w-full gap-2">
+                        <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="delivered" data-order-id="${order.id}">
+                            Marcar entregue
+                        </button>
+                        <button class="action-btn bg-gray-700 hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="failed" data-order-id="${order.id}">
+                            Falha na entrega
+                        </button>
+                    </div>
                 `;
             }
             
@@ -855,6 +892,8 @@
         // Setup action buttons
         function setupActionButtons() {
             document.querySelectorAll('[data-action]').forEach(btn => {
+                if (btn.dataset.bound === 'true') return;
+                btn.dataset.bound = 'true';
                 btn.addEventListener('click', function() {
                     const action = this.dataset.action;
                     const orderId = parseInt(this.dataset.orderId);
@@ -864,6 +903,8 @@
             
             // Setup delivery status selects
             document.querySelectorAll('.delivery-status-select').forEach(select => {
+                if (select.dataset.bound === 'true') return;
+                select.dataset.bound = 'true';
                 select.addEventListener('change', async function() {
                     const orderId = parseInt(this.dataset.orderId);
                     const currentStatus = this.dataset.currentStatus;
@@ -875,8 +916,145 @@
                 });
             });
 
-            // Setup menus de ações mobile
-            setupMobileActionMenus();
+            // Botões diretos para atualizar delivery_status
+            document.querySelectorAll('[data-delivery-status]').forEach(btn => {
+                if (btn.dataset.bound === 'true') return;
+                btn.dataset.bound = 'true';
+                btn.addEventListener('click', async function() {
+                    const orderId = parseInt(this.dataset.orderId);
+                    const dstatus = this.dataset.deliveryStatus;
+                    await updateDeliveryStatus(orderId, dstatus);
+                });
+            });
+        }
+
+        // Atualização silenciosa sem re-render geral
+        function updateOrdersQuietly() {
+            const ordersList = document.getElementById('ordersList');
+            const emptyState = document.getElementById('emptyState');
+            const prevScroll = window.scrollY;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const specificOrderId = urlParams.get('pedido');
+
+            let filteredOrders;
+            if (specificOrderId) {
+                filteredOrders = orders.filter(o => o.id.toString() === specificOrderId);
+            } else {
+                filteredOrders = currentFilter === 'todos' ? orders : orders.filter(o => o.status === currentFilter);
+            }
+
+            // Estado vazio vs lista
+            if (filteredOrders.length === 0) {
+                ordersList.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                ordersList.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+
+            // Remover cartões que não existem mais
+            const existingCards = Array.from(ordersList.querySelectorAll('.order-card'));
+            const targetIds = new Set(filteredOrders.map(o => o.id.toString()));
+            existingCards.forEach(card => {
+                const id = card.getAttribute('data-order-id');
+                if (!targetIds.has(id)) {
+                    // animação de saída antes de remover
+                    card.classList.add('card-exit-active');
+                    setTimeout(() => card.remove(), 180);
+                }
+            });
+
+            // Atualizar existentes e adicionar novos
+            filteredOrders.forEach(order => {
+                const idStr = order.id.toString();
+                const card = ordersList.querySelector(`[data-order-id="${idStr}"]`);
+                if (card) {
+                    updateOrderCardDOM(card, order);
+                } else {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = createOrderCard(order);
+                    const el = wrapper.firstElementChild;
+                    // animação de entrada
+                    el.classList.add('card-enter');
+                    ordersList.appendChild(el);
+                    requestAnimationFrame(() => {
+                        el.classList.add('card-enter-active');
+                        setTimeout(() => {
+                            el.classList.remove('card-enter','card-enter-active');
+                        }, 220);
+                    });
+                }
+            });
+
+            setupActionButtons();
+            // preservar posição de scroll
+            window.scrollTo(0, prevScroll);
+        }
+
+        function updateOrderCardDOM(card, order) {
+            // Atualiza "time ago"
+            const timeEl = card.querySelector('p.text-sm.text-gray-500');
+            if (timeEl) {
+                const newTime = getTimeAgo(order.createdAt);
+                if (timeEl.textContent !== newTime) {
+                    timeEl.textContent = newTime;
+                }
+            }
+
+            // Atualiza badge de status
+            const badge = card.querySelector('.status-badge');
+            if (badge) {
+                badge.classList.remove('status-pendente','status-confirmado','status-preparando','status-enviado','status-entregue','status-cancelado');
+                const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG['pendente'];
+                const currentLabel = badge.textContent?.trim() || '';
+                const newHTML = `${cfg.icon} ${cfg.label}`;
+                // só altera se mudou
+                if (!badge.classList.contains(cfg.class)) {
+                    badge.classList.add(cfg.class);
+                }
+                if (badge.innerHTML !== newHTML) {
+                    badge.innerHTML = newHTML;
+                    markUpdated(badge);
+                }
+            }
+
+            // Atualiza seção de entrega
+            const deliverySection = card.querySelector('[data-delivery-section]');
+            const newSection = getDeliverySection(order);
+            if (deliverySection && deliverySection.outerHTML !== newSection) {
+                deliverySection.outerHTML = newSection;
+                markUpdated(card.querySelector('[data-delivery-section]'));
+            }
+
+            // Atualiza ações
+            const actions = card.querySelector('[data-actions-section]');
+            const newActions = getActionButtons(order);
+            if (actions && actions.innerHTML !== newActions) {
+                actions.innerHTML = newActions;
+                markUpdated(actions);
+            }
+        }
+
+        function markUpdated(el) {
+            if (!el) return;
+            el.classList.add('fade-update');
+            setTimeout(() => el && el.classList.remove('fade-update'), 420);
+        }
+
+        function updateTimeAgoOnly() {
+            const map = new Map(orders.map(o => [String(o.id), o]));
+            document.querySelectorAll('.order-card').forEach(card => {
+                const id = card.getAttribute('data-order-id');
+                const order = map.get(String(id));
+                if (!order) return;
+                const timeEl = card.querySelector('p.text-sm.text-gray-500');
+                if (!timeEl) return;
+                const newTime = getTimeAgo(order.createdAt);
+                if (timeEl.textContent !== newTime) {
+                    timeEl.textContent = newTime;
+                }
+            });
         }
         
         // Update delivery status
@@ -926,81 +1104,7 @@
             }
         }
 
-        // Setup mobile action menus
-        function setupMobileActionMenus() {
-            // Toggle de abertura do menu
-            document.querySelectorAll('.action-menu-trigger').forEach(trigger => {
-                trigger.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const container = this.parentElement;
-                    const menu = container.querySelector('.action-menu-list');
-                    // Fechar outros menus abertos
-                    document.querySelectorAll('.action-menu-list').forEach(m => {
-                        if (m !== menu) m.classList.add('hidden');
-                    });
-                    // Calcular orientação (abre para cima se faltar espaço abaixo)
-                    const rect = this.getBoundingClientRect();
-                    // Medir altura do menu (temporariamente mostrar invisível se estiver oculto)
-                    let menuHeight = menu.offsetHeight;
-                    let menuWidth = menu.offsetWidth;
-                    if (!menuHeight || menu.classList.contains('hidden')) {
-                        menu.style.visibility = 'hidden';
-                        menu.classList.remove('hidden');
-                        menuHeight = menu.offsetHeight || 180;
-                        menuWidth = menu.offsetWidth || 196;
-                        menu.classList.add('hidden');
-                        menu.style.visibility = '';
-                    }
-
-                    const spaceBelow = window.innerHeight - rect.bottom;
-                    const spaceAbove = rect.top;
-                    menu.classList.remove('drop-up', 'drop-down');
-                    if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
-                        menu.classList.add('drop-up');
-                    } else {
-                        menu.classList.add('drop-down');
-                    }
-
-                    // Alinhamento horizontal para evitar "quebrar" para fora da tela
-                    const spaceRight = window.innerWidth - rect.right;
-                    const spaceLeft = rect.left;
-                    menu.classList.remove('align-left', 'align-right', 'align-center');
-                    if (spaceRight < menuWidth + 8 && spaceLeft > menuWidth + 8) {
-                        // pouco espaço à direita, há espaço à esquerda → alinhar à esquerda do botão
-                        menu.classList.add('align-left');
-                    } else if (spaceLeft < menuWidth + 8 && spaceRight < menuWidth + 8) {
-                        // pouco espaço dos dois lados → centralizar
-                        menu.classList.add('align-center');
-                    } else {
-                        // padrão segura: alinhar à direita do botão
-                        menu.classList.add('align-right');
-                    }
-
-                    menu.classList.toggle('hidden');
-                    this.setAttribute('aria-expanded', String(!menu.classList.contains('hidden')));
-                });
-            });
-
-            // Fechar ao clicar fora
-            document.addEventListener('click', function() {
-                document.querySelectorAll('.action-menu-list').forEach(m => m.classList.add('hidden'));
-                document.querySelectorAll('.action-menu-trigger[aria-expanded="true"]').forEach(t => t.setAttribute('aria-expanded', 'false'));
-            });
-
-            // Itens que atualizam delivery_status
-            document.querySelectorAll('[data-delivery-status]').forEach(btn => {
-                btn.addEventListener('click', async function() {
-                    const orderId = parseInt(this.dataset.orderId);
-                    const dstatus = this.dataset.deliveryStatus;
-                    await updateDeliveryStatus(orderId, dstatus);
-                    const container = this.closest('.actions-menu');
-                    const menu = container ? container.querySelector('.action-menu-list') : null;
-                    if (menu) menu.classList.add('hidden');
-                    const trigger = container ? container.querySelector('.action-menu-trigger') : null;
-                    if (trigger) trigger.setAttribute('aria-expanded', 'false');
-                });
-            });
-        }
+        // (Removido) setupMobileActionMenus — menus substituídos por botões diretos
 
         // Toggle de estatísticas no mobile
         function setupStatsToggle() {
