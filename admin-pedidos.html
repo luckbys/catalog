@@ -229,15 +229,20 @@
         .action-menu-trigger:hover { border-color: #10b981; color: #065f46; }
         .action-menu-list {
             position: absolute;
-            right: 0;
             background: #fff;
             border: 2px solid #e5e7eb;
             border-radius: 0.75rem;
             box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-            min-width: 180px;
+            min-width: 196px;
+            max-width: min(90vw, 320px);
             padding: 0.25rem;
             z-index: 20;
+            will-change: transform, top, bottom, left, right;
         }
+        /* Alinhamento horizontal dinâmico */
+        .action-menu-list.align-right { right: 0; left: auto; transform: none; }
+        .action-menu-list.align-left { left: 0; right: auto; transform: none; }
+        .action-menu-list.align-center { left: 50%; right: auto; transform: translateX(-50%); }
         .action-menu-list.drop-down { top: 2.75rem; }
         .action-menu-list.drop-up { bottom: 2.75rem; }
         .action-menu-item {
@@ -252,6 +257,9 @@
             color: #1f2937;
         }
         .action-menu-item:hover { background: #f3f4f6; }
+
+        /* Forçar exibir botões inline no mobile quando necessário */
+        .actions-inline--mobile { display: flex !important; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
@@ -758,30 +766,13 @@
             // Apenas botão de confirmar para pedidos pendentes
             if (order.status === 'pendente') {
                 return `
-                    <div class="actions-inline w-full gap-2">
+                    <div class="actions-inline actions-inline--mobile w-full gap-2">
                         <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="confirmar" data-order-id="${order.id}">
                             Confirmar Pedido
                         </button>
                         <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
                             Cancelar
                         </button>
-                    </div>
-                    <div class="actions-menu relative">
-                        <button class="action-menu-trigger" aria-haspopup="true" aria-expanded="false" data-order-id="${order.id}">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <circle cx="12" cy="5" r="2"></circle>
-                                <circle cx="12" cy="12" r="2"></circle>
-                                <circle cx="12" cy="19" r="2"></circle>
-                            </svg>
-                        </button>
-                        <div class="action-menu-list hidden">
-                            <button class="action-menu-item" data-action="confirmar" data-order-id="${order.id}">
-                                Confirmar Pedido
-                            </button>
-                            <button class="action-menu-item" data-action="cancelar" data-order-id="${order.id}">
-                                Cancelar Pedido
-                            </button>
-                        </div>
                     </div>
                 `;
             }
@@ -951,10 +942,12 @@
                     const rect = this.getBoundingClientRect();
                     // Medir altura do menu (temporariamente mostrar invisível se estiver oculto)
                     let menuHeight = menu.offsetHeight;
+                    let menuWidth = menu.offsetWidth;
                     if (!menuHeight || menu.classList.contains('hidden')) {
                         menu.style.visibility = 'hidden';
                         menu.classList.remove('hidden');
                         menuHeight = menu.offsetHeight || 180;
+                        menuWidth = menu.offsetWidth || 196;
                         menu.classList.add('hidden');
                         menu.style.visibility = '';
                     }
@@ -966,6 +959,21 @@
                         menu.classList.add('drop-up');
                     } else {
                         menu.classList.add('drop-down');
+                    }
+
+                    // Alinhamento horizontal para evitar "quebrar" para fora da tela
+                    const spaceRight = window.innerWidth - rect.right;
+                    const spaceLeft = rect.left;
+                    menu.classList.remove('align-left', 'align-right', 'align-center');
+                    if (spaceRight < menuWidth + 8 && spaceLeft > menuWidth + 8) {
+                        // pouco espaço à direita, há espaço à esquerda → alinhar à esquerda do botão
+                        menu.classList.add('align-left');
+                    } else if (spaceLeft < menuWidth + 8 && spaceRight < menuWidth + 8) {
+                        // pouco espaço dos dois lados → centralizar
+                        menu.classList.add('align-center');
+                    } else {
+                        // padrão segura: alinhar à direita do botão
+                        menu.classList.add('align-right');
                     }
 
                     menu.classList.toggle('hidden');
