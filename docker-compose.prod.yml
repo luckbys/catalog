@@ -32,6 +32,8 @@ services:
       - "443:443"
     volumes:
       - ./catalogo.html:/usr/share/nginx/html/catalogo.html
+      - ./admin-instancias.html:/usr/share/nginx/html/admin-instancias.html:ro
+      - ./admin-pedidos.html:/usr/share/nginx/html/admin-pedidos.html:ro
       - ./demo.html:/usr/share/nginx/html/demo.html
       - ./public:/usr/share/nginx/html/public:ro
       - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf
