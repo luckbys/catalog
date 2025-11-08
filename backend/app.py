@@ -12,11 +12,11 @@ from botocore.config import Config
 # Carregar variáveis de ambiente
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, Response
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, HTMLResponse
 import io
 from urllib.parse import urlparse
 from pydantic import BaseModel, Field
@@ -70,6 +70,8 @@ ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5500,http://localhost:3000,http://localhost:8000,http://localhost:8010,http://localhost:8080"
 ).split(",")  # Permite origens comuns em dev/local
 N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
+ADMIN_INSTANCIAS_PASSWORD = os.getenv("ADMIN_INSTANCIAS_PASSWORD", "Devs2522*")
+ADMIN_INSTANCIAS_COOKIE_NAME = "admin_instancias_auth"
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
@@ -324,9 +326,78 @@ async def serve_admin_pedidos():
     else:
         return FileResponse(local_path, media_type="text/html")
 
+def _is_admin_instancias_authenticated(request: Request) -> bool:
+    return request.cookies.get(ADMIN_INSTANCIAS_COOKIE_NAME) == "ok"
+
 @app.get("/admin-instancias.html")
-async def serve_admin_instancias_html():
-    """Serve a página de administração de instâncias WhatsApp"""
+async def serve_admin_instancias_html(request: Request):
+    """Serve a página de administração de instâncias WhatsApp, com gate de senha."""
+    if not _is_admin_instancias_authenticated(request):
+        # Login minimalista com POST para /api/admin-instancias/login
+        html = """
+        <!doctype html>
+        <html lang="pt-br">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Login - Admin Instâncias</title>
+          <style>
+            body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,'Helvetica Neue',sans-serif;background:#0b1020;color:#e5e7eb;margin:0}
+            .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+            .card{background:#111827;border:1px solid #1f2937;border-radius:12px;max-width:360px;width:100%;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+            .title{font-size:18px;margin:0 0 12px;color:#93c5fd}
+            .desc{font-size:14px;color:#9ca3af;margin-bottom:16px}
+            label{font-size:12px;color:#9ca3af}
+            input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #374151;background:#0f172a;color:#e5e7eb;margin-top:6px}
+            button{width:100%;margin-top:16px;padding:10px;border-radius:8px;border:1px solid #2563eb;background:#1d4ed8;color:#fff;font-weight:600;cursor:pointer}
+            button:hover{background:#2563eb}
+            .error{margin-top:12px;color:#fca5a5;font-size:12px;display:none}
+          </style>
+        </head>
+        <body>
+          <div class="wrap">
+            <div class="card">
+              <h1 class="title">Admin Instâncias</h1>
+              <p class="desc">Insira a senha para continuar.</p>
+              <form id="loginForm">
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" placeholder="••••••••" required />
+                <button type="submit">Entrar</button>
+                <div id="error" class="error">Senha inválida. Tente novamente.</div>
+              </form>
+            </div>
+          </div>
+          <script>
+            const form = document.getElementById('loginForm');
+            const error = document.getElementById('error');
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              error.style.display = 'none';
+              const pwd = document.getElementById('password').value;
+              try {
+                const r = await fetch('/api/admin-instancias/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ password: pwd })
+                });
+                const j = await r.json();
+                if (r.ok && j?.ok) {
+                  window.location.href = '/admin-instancias.html';
+                } else {
+                  error.textContent = j?.error || 'Senha inválida.';
+                  error.style.display = 'block';
+                }
+              } catch (err) {
+                error.textContent = 'Erro de conexão.';
+                error.style.display = 'block';
+              }
+            });
+          </script>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html, status_code=401)
+
     file_name = "admin-instancias.html"
     docker_path = f"/app/{file_name}"
     local_path = os.path.join(BASE_DIR, file_name)
@@ -336,9 +407,33 @@ async def serve_admin_instancias_html():
         return FileResponse(local_path, media_type="text/html")
 
 @app.get("/admin-instancias")
-async def serve_admin_instancias_alias():
+async def serve_admin_instancias_alias(request: Request):
     """Alias sem extensão para admin-instancias.html"""
-    return await serve_admin_instancias_html()
+    return await serve_admin_instancias_html(request)
+
+# ---- Auth endpoints para Admin Instâncias ----
+@app.post("/api/admin-instancias/login")
+def admin_instancias_login(payload: dict, response: Response):
+    pwd = str(payload.get("password") or "")
+    if not pwd:
+        return {"ok": False, "error": "Senha não fornecida"}
+    if pwd != ADMIN_INSTANCIAS_PASSWORD:
+        return {"ok": False, "error": "Senha inválida"}
+    # Define cookie simples (gate básico)
+    max_age = 8 * 60 * 60  # 8 horas
+    response.set_cookie(
+        key=ADMIN_INSTANCIAS_COOKIE_NAME,
+        value="ok",
+        max_age=max_age,
+        httponly=True,
+        samesite="lax"
+    )
+    return {"ok": True}
+
+@app.post("/api/admin-instancias/logout")
+def admin_instancias_logout(response: Response):
+    response.delete_cookie(ADMIN_INSTANCIAS_COOKIE_NAME)
+    return {"ok": True}
 
 @app.get("/test-api-orders.html")
 async def serve_test_api_orders():
@@ -390,6 +485,77 @@ def relay_to_n8n(payload: dict, request: Request, _: None = Depends(rate_limit_d
         }
     except requests.RequestException as e:
         raise HTTPException(status_code=502, detail=f"Falha ao encaminhar para n8n: {str(e)}")
+
+# -------------------- Evolution API (Status) --------------------
+@app.get("/api/evolution/connection-state")
+def evolution_connection_state(instance: Optional[str] = None):
+    """Consulta o estado de conexão da instância na Evolution API via backend.
+    Evita problemas de CORS no navegador e unifica configuração usando variáveis de ambiente.
+
+    Query:
+    - instance: nome da instância (opcional, usa EVOLUTION_INSTANCE_NAME se ausente)
+    """
+    EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "").rstrip("/")
+    EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
+    DEFAULT_INSTANCE = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
+    name = (instance or DEFAULT_INSTANCE).strip()
+
+    if not EVOLUTION_API_URL or not EVOLUTION_API_KEY:
+        return {"ok": False, "connected": False, "error": "Evolution API não configurada"}
+
+    headers = {
+        "Accept": "application/json",
+        "apikey": EVOLUTION_API_KEY,
+        "x-api-key": EVOLUTION_API_KEY,
+        "Authorization": f"Bearer {EVOLUTION_API_KEY}",
+    }
+
+    from urllib.parse import quote
+    inst_q = quote(name, safe="")
+    urls = [
+        f"{EVOLUTION_API_URL}/instance/connectionState/{inst_q}",
+        f"{EVOLUTION_API_URL}/instance/connectionState?instance={inst_q}",
+        f"{EVOLUTION_API_URL}/instances/{inst_q}/connectionState",
+    ]
+
+    last_resp = None
+    data: Dict[str, any] = {}
+    used_url = None
+    try:
+        for u in urls:
+            try:
+                resp = requests.get(u, headers=headers, timeout=10)
+                last_resp = resp
+                used_url = u
+                try:
+                    data = resp.json()
+                except Exception:
+                    data = {"raw": resp.text}
+                if resp.ok:
+                    break
+            except requests.RequestException:
+                continue
+
+        # Normalizar estado
+        state_raw = str(data.get("state") or data.get("status") or data.get("connectionStatus") or "").lower()
+        connected_flag = (
+            bool(last_resp and last_resp.ok) and (
+                "connected" in state_raw or "open" in state_raw or bool(data.get("connected") is True) or
+                "connected" in str(data.get("result", "")).lower()
+            )
+        )
+
+        return {
+            "ok": bool(last_resp and last_resp.ok),
+            "connected": connected_flag,
+            "state": state_raw or None,
+            "status_code": getattr(last_resp, "status_code", None),
+            "url": used_url,
+            "data": data,
+            "instance": name,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Falha ao consultar Evolution API: {str(e)}")
 
 @app.get("/favicon.ico")
 async def serve_favicon():
