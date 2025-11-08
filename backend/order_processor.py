@@ -14,7 +14,8 @@ EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
 EVOLUTION_INSTANCE_NAME = os.getenv("EVOLUTION_INSTANCE_NAME", "hakimfarma")
 WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "5512976025888")  # Número do vendedor
-CONTACTS_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "contacts.json")
+# Caminho persistente para contacts.json; default aponta para volume /data
+CONTACTS_CONFIG_PATH = os.getenv("CONTACTS_CONFIG_PATH", "/data/contacts.json")
 
 # -------------------- Models --------------------
 class Cliente(BaseModel):

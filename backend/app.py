@@ -124,11 +124,34 @@ class SelecaoItem(Base):
 Base.metadata.create_all(bind=engine)
 
 # -------------------- Config Dinâmica de Contatos --------------------
-# Arquivo JSON para armazenar números de vendedores e entregadores
-CONTACTS_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "contacts.json")
+# Arquivo JSON para armazenar números de vendedores e entregadores (persistente)
+# Usa variável de ambiente `CONTACTS_CONFIG_PATH` com default para volume `/data`
+CONTACTS_CONFIG_PATH = os.getenv("CONTACTS_CONFIG_PATH", "/data/contacts.json")
 
 def _ensure_contacts_file():
-    """Garante que o arquivo de contatos existe com defaults sensatos"""
+    """Garante diretório e arquivo de contatos em volume persistente.
+
+    - Cria o diretório destino (ex.: /data) se necessário
+    - Migra arquivo legado de backend/contacts.json caso exista
+    - Inicializa com defaults sensatos se não houver arquivo
+    """
+    try:
+        target_dir = os.path.dirname(CONTACTS_CONFIG_PATH)
+        if target_dir:
+            os.makedirs(target_dir, exist_ok=True)
+    except Exception as e:
+        print(f"[CONFIG] Falha ao criar diretório de contatos: {e}")
+
+    if not os.path.exists(CONTACTS_CONFIG_PATH):
+        # Migração de caminho legado, se existir
+        legacy_path = os.path.join(os.path.dirname(__file__), "contacts.json")
+        try:
+            if os.path.exists(legacy_path):
+                import shutil
+                shutil.copyfile(legacy_path, CONTACTS_CONFIG_PATH)
+        except Exception as e:
+            print(f"[CONFIG] Falha ao migrar contacts.json legado: {e}")
+
     if not os.path.exists(CONTACTS_CONFIG_PATH):
         default_cfg = {
             "seller_phones": [os.getenv("WHATSAPP_PHONE", "5512976025888")],
