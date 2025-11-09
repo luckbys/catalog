@@ -482,11 +482,11 @@
                     </svg>
                     Ligar para Cliente
                 </button>
-                <button class="btn btn-primary" onclick="confirmDelivery()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12l5 5l10 -10"></path>
+                <button class="btn btn-primary" onclick="openWhatsApp()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.472-.148-.672.149-.198.297-.771.967-.945 1.166-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.607.134-.133.297-.347.446-.521.149-.173.198-.297.298-.496.099-.198.049-.372-.025-.521-.075-.149-.672-1.62-.922-2.216-.243-.583-.487-.504-.672-.512-.173-.009-.372-.009-.571-.009-.198 0-.521.074-.794.372-.273.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.148.198 2.095 3.2 5.07 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.007-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 3.67h-.003a8.76 8.76 0 01-4.709-1.364l-.337-.2-3.497.916.935-3.415-.219-.351a8.746 8.746 0 01-1.343-4.686c.003-4.82 3.927-8.744 8.749-8.744 2.339.001 4.532.913 6.177 2.561a8.727 8.727 0 012.56 6.186c-.004 4.82-3.928 8.744-8.747 8.744m7.482-16.227A10.7 10.7 0 0012.05 0C5.495 0 .292 5.2.29 11.743c0 2.065.54 4.087 1.566 5.871L0 24l6.542-1.712a11.73 11.73 0 005.487 1.4h.006c6.554 0 11.757-5.202 11.759-11.744a11.675 11.675 0 00-3.459-8.255"/>
                     </svg>
-                    Confirmar Entrega
+                    WhatsApp do Cliente
                 </button>
                 <button class="btn btn-danger" onclick="reportProblem()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1241,6 +1241,30 @@
             } else {
                 alert('Telefone do cliente não disponível');
             }
+        }
+
+        // Open WhatsApp chat with customer
+        function openWhatsApp() {
+            const phoneText = document.getElementById('customerPhone').textContent || '';
+            const normalized = (phoneText || '').replace(/\D/g, '');
+            let phone = normalized;
+            if (!phone) {
+                alert('WhatsApp do cliente não disponível');
+                return;
+            }
+            // Se não vier com DDI, assume Brasil (55)
+            if (!phone.startsWith('55')) {
+                if (phone.length >= 10) {
+                    phone = '55' + phone;
+                }
+            }
+
+            const orderId = (typeof currentOrderId !== 'undefined' && currentOrderId) ? currentOrderId : getOrderIdFromURL();
+            const text = `Olá! Sou o entregador da Hakim Farma.\n📦 Pedido #${orderId}\nPodemos alinhar um detalhe da entrega?`;
+            const msg = encodeURIComponent(text);
+            const url = `https://wa.me/${phone}?text=${msg}`;
+            // Abre em nova aba para não perder a navegação
+            window.open(url, '_blank');
         }
 
         // Confirm delivery
