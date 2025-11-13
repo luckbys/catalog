@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse, HTMLResponse
 import io
+import asyncio
 from urllib.parse import urlparse
 from pydantic import BaseModel, Field
 from sqlalchemy import (
@@ -72,6 +73,14 @@ ALLOWED_ORIGINS = os.getenv(
 N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
 ADMIN_INSTANCIAS_PASSWORD = os.getenv("ADMIN_INSTANCIAS_PASSWORD", "Devs2522*")
 ADMIN_INSTANCIAS_COOKIE_NAME = "admin_instancias_auth"
+
+# Configuração de follow-up/encerramento automático de pedidos
+# - AUTO_CLOSE_AFTER_HOURS: horas até encerrar automaticamente se não entregue
+# - FOLLOWUP_AFTER_HOURS: horas até enviar um lembrete ao cliente
+# - AUTO_CLOSE_CHECK_INTERVAL_SECONDS: intervalo de checagem do worker
+AUTO_CLOSE_AFTER_HOURS = float(os.getenv("AUTO_CLOSE_AFTER_HOURS", "3"))
+FOLLOWUP_AFTER_HOURS = float(os.getenv("FOLLOWUP_AFTER_HOURS", "2"))
+AUTO_CLOSE_CHECK_INTERVAL_SECONDS = int(os.getenv("AUTO_CLOSE_CHECK_INTERVAL_SECONDS", "180"))  # 3 min
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
@@ -2019,6 +2028,114 @@ def process_order(data: dict, _: None = Depends(rate_limit_dep)):
     except Exception as e:
         print(f"[PROCESS ORDER] Erro inesperado: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+# -------------------- Auto Close / Follow-up Worker --------------------
+
+def _parse_iso_dt(ts) -> Optional[datetime]:
+    try:
+        if isinstance(ts, str):
+            if ts.endswith("Z"):
+                ts = ts.replace("Z", "+00:00")
+            return datetime.fromisoformat(ts)
+    except Exception:
+        return None
+    return None
+
+def _compose_followup_message(order: Dict[str, any]) -> str:
+    name = (order.get("customer_name") or "cliente").strip()
+    order_id = order.get("id")
+    total = float(order.get("total") or 0)
+    return (
+        f"Olá {name}! 👋\n"
+        f"Estamos acompanhando seu pedido #{order_id}. Ainda não recebemos confirmação de entrega.\n"
+        f"Total: R$ {total:.2f}. Se já recebeu, tudo certo ✅.\n"
+        f"Se houve algum problema, responda aqui para te ajudarmos. 🧪💊"
+    )
+
+def _compose_autoclose_message(order: Dict[str, any]) -> str:
+    name = (order.get("customer_name") or "cliente").strip()
+    order_id = order.get("id")
+    return (
+        f"Oi {name}! ⏱️\n"
+        f"Encerramos automaticamente o pedido #{order_id} após 3 horas sem confirmação de entrega.\n"
+        f"Se você não recebeu ou precisa reabrir, responda esta mensagem que resolvemos rapidinho. 💬"
+    )
+
+async def _auto_close_loop():
+    if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+        print("[AUTO CLOSE] Order processor indisponível; worker não será iniciado")
+        return
+    print("[AUTO CLOSE] Worker iniciado. Intervalo:", AUTO_CLOSE_CHECK_INTERVAL_SECONDS, "s")
+    while True:
+        try:
+            res = order_processor.supabase.table("orders").select("*").execute()
+            orders = getattr(res, "data", []) or []
+            now = datetime.utcnow()
+            checked = 0
+            for order in orders:
+                try:
+                    status = (order.get("status") or "pending").lower()
+                    dstatus = (order.get("delivery_status") or "pending").lower()
+                    notes = (order.get("notes") or "")
+                    created_dt = _parse_iso_dt(order.get("created_at"))
+                    if not created_dt:
+                        continue
+                    elapsed_hours = (now - created_dt).total_seconds() / 3600.0
+
+                    # Follow-up (uma vez)
+                    if (
+                        elapsed_hours >= FOLLOWUP_AFTER_HOURS
+                        and "[FOLLOWUP_3H_SENT]" not in notes
+                        and dstatus != "delivered"
+                        and status != "cancelled"
+                    ):
+                        phone = order.get("customer_phone") or None
+                        if phone:
+                            try:
+                                order_processor._send_whatsapp_message(_compose_followup_message(order), phone)  # type: ignore
+                                notes = (notes + f"\n[FOLLOWUP_3H_SENT] {now.isoformat()}").strip()
+                                order_processor.supabase.table("orders").update({"notes": notes}).eq("id", order["id"]).execute()
+                                print(f"[AUTO CLOSE] Follow-up enviado para pedido {order['id']}")
+                            except Exception as e:
+                                print(f"[AUTO CLOSE] Erro ao enviar follow-up para {order.get('id')}: {e}")
+
+                    # Encerramento automático (uma vez)
+                    if (
+                        elapsed_hours >= AUTO_CLOSE_AFTER_HOURS
+                        and "[AUTO_CLOSED_3H]" not in notes
+                        and dstatus != "delivered"
+                        and status != "cancelled"
+                    ):
+                        phone = order.get("customer_phone") or None
+                        if phone:
+                            try:
+                                order_processor._send_whatsapp_message(_compose_autoclose_message(order), phone)  # type: ignore
+                            except Exception as e:
+                                print(f"[AUTO CLOSE] Erro ao enviar mensagem de encerramento para {order.get('id')}: {e}")
+
+                        updated = {
+                            "status": "cancelled",
+                            "delivery_status": "failed",
+                            "notes": (notes + f"\n[AUTO_CLOSED_3H] {now.isoformat()}").strip()
+                        }
+                        try:
+                            order_processor.supabase.table("orders").update(updated).eq("id", order["id"]).execute()
+                            print(f"[AUTO CLOSE] Pedido {order['id']} encerrado automaticamente")
+                        except Exception as e:
+                            print(f"[AUTO CLOSE] Erro ao atualizar pedido {order.get('id')}: {e}")
+                finally:
+                    checked += 1
+            print(f"[AUTO CLOSE] Loop: {checked} pedidos verificados")
+        except Exception as e:
+            print(f"[AUTO CLOSE] Erro no loop principal: {e}")
+        await asyncio.sleep(AUTO_CLOSE_CHECK_INTERVAL_SECONDS)
+
+@app.on_event("startup")
+async def _start_auto_close_worker():
+    try:
+        asyncio.create_task(_auto_close_loop())
+    except Exception as e:
+        print(f"[AUTO CLOSE] Falha ao iniciar worker: {e}")
 
 if __name__ == "__main__":
     import uvicorn

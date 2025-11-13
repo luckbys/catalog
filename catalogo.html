@@ -2204,32 +2204,7 @@
                     
                     <!-- Categories Navigation - Mobile Scroll Optimized -->
                     <div class="flex flex-col gap-3">
-                        <!-- Categories Row with Horizontal Scroll -->
-                        <div class="categories-scroll-container">
-                            <div class="categories-scroll-wrapper">
-                                <button class="category-chip active" data-category="">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                                    </svg>
-                                    Todos
-                                </button>
-                                <button class="category-chip" data-category="medicamentos">
-                                    💊 Medicamentos
-                                </button>
-                                <button class="category-chip" data-category="higiene">
-                                    🧼 Higiene
-                                </button>
-                                <button class="category-chip" data-category="beleza">
-                                    💄 Beleza
-                                </button>
-                                <button class="category-chip" data-category="suplementos">
-                                    💪 Suplementos
-                                </button>
-                                <button class="category-chip" data-category="infantil">
-                                    👶 Infantil
-                                </button>
-                            </div>
-                        </div>
+
                         
                         <!-- Sort Dropdown -->
                         <div class="flex items-center justify-between md:justify-end gap-2">
@@ -2252,73 +2227,6 @@
     <!-- Estilos para as categorias -->
     <style>
         /* Container de scroll das categorias */
-        .categories-scroll-container {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .categories-scroll-wrapper {
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 0.25rem 0;
-        }
-        
-        .categories-scroll-wrapper::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* Chips de categoria */
-        .category-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #64748b;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            flex-shrink: 0;
-            min-height: 44px;
-        }
-        
-        .category-chip:hover {
-            border-color: #10b981;
-            color: #10b981;
-            background: #f0fdf4;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-        }
-        
-        .category-chip.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-color: #10b981;
-            color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        
-        .category-chip.active:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-2px);
-        }
-        
-        /* Mobile: touch feedback */
-        @media (max-width: 768px) {
-            .category-chip:active {
-                transform: scale(0.95);
-            }
-        }
         
         .scrollbar-hide {
             -ms-overflow-style: none;
@@ -2529,6 +2437,27 @@
                                 <span class="font-medium">PIX</span>
                             </div>
                         </label>
+                        <!-- Chave PIX (aparece apenas quando PIX é selecionado) -->
+                        <div id="pixKeyContainer" class="hidden ml-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <label class="block text-slate-700 text-sm font-bold mb-2">🔑 Chave PIX da farmácia</label>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <code id="pixKeyValue" class="px-2 py-1 rounded bg-white border border-blue-200 text-slate-800 text-sm inline-block">52620952000101</code>
+                                <button type="button" id="copyPixKeyBtn" class="w-10 h-10 flex-none shrink-0 inline-flex items-center justify-center rounded-md text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors" aria-label="Copiar chave PIX" title="Copiar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <rect x="3" y="3" width="13" height="13" rx="2" ry="2"></rect>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="mt-3 p-3 bg-white rounded-lg border border-blue-200">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-slate-600">Total a pagar:</span>
+                                    <span id="pixOrderTotal" class="font-bold text-slate-800">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-600 mt-2">Use seu app bancário para pagar via PIX.</p>
+                            <div id="pixCopyFeedback" class="mt-2 text-green-700 text-sm hidden">Chave copiada! ✅</div>
+                        </div>
                         
                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
                             <input type="radio" name="paymentMethod" value="cartao_credito" class="mr-3 text-blue-600" required>
@@ -2697,6 +2626,54 @@
             <path d="M7 14L12 9L17 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </button>
+
+    <style>
+        .scroll-to-top-fab {
+            position: fixed;
+            bottom: 80px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8) translateY(10px);
+        }
+        .scroll-to-top-fab.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+        }
+        .scroll-to-top-fab:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+        .scroll-to-top-fab:active {
+            transform: scale(0.95) translateY(0);
+        }
+        #productList {
+            padding-bottom: 100px;
+        }
+        @media (min-width: 640px) {
+            .scroll-to-top-fab {
+                bottom: 24px;
+                right: 24px;
+            }
+            #productList {
+                padding-bottom: 24px;
+            }
+        }
+    </style>
 
     <!-- Toast de Carrinho (otimizado para mobile) -->
     <div id="toast" class="fixed bottom-4 sm:bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 sm:max-w-md rounded-xl shadow-2xl opacity-0 translate-y-10 transition-all duration-300 ease-out z-[1001] border border-green-600/20 will-change-transform" style="background-color: #16a34a !important; color: white !important; padding: 16px 20px;">
@@ -4329,6 +4306,11 @@ ${adminLink}
         const changeOrderTotal = document.getElementById('changeOrderTotal');
         const changeReceived = document.getElementById('changeReceived');
         const changeValue = document.getElementById('changeValue');
+        const pixKeyContainer = document.getElementById('pixKeyContainer');
+        const copyPixKeyBtn = document.getElementById('copyPixKeyBtn');
+        const pixKeyValueEl = document.getElementById('pixKeyValue');
+        const pixCopyFeedback = document.getElementById('pixCopyFeedback');
+        const pixOrderTotalEl = document.getElementById('pixOrderTotal');
         
         // Função para formatar moeda
         function formatCurrency(value) {
@@ -4362,6 +4344,16 @@ ${adminLink}
                 changeDisplay.classList.add('hidden');
             }
         }
+
+        // Atualiza valor total exibido no bloco PIX
+        function updatePixTotal() {
+            try {
+                if (pixOrderTotalEl) {
+                    const total = calculateTotal();
+                    pixOrderTotalEl.textContent = formatCurrency(total);
+                }
+            } catch (e) {}
+        }
         
         // Mostrar/ocultar campo de troco baseado na forma de pagamento
         paymentMethods.forEach(method => {
@@ -4369,10 +4361,20 @@ ${adminLink}
                 if (this.value === 'dinheiro') {
                     changeAmountContainer.classList.remove('hidden');
                     changeAmountInput.focus();
+                    if (pixKeyContainer) pixKeyContainer.classList.add('hidden');
                 } else {
                     changeAmountContainer.classList.add('hidden');
                     changeAmountInput.value = '';
                     changeDisplay.classList.add('hidden');
+                    if (pixKeyContainer) {
+                        if (this.value === 'pix') {
+                            pixKeyContainer.classList.remove('hidden');
+                            updatePixTotal();
+                        } else {
+                            pixKeyContainer.classList.add('hidden');
+                            if (pixCopyFeedback) pixCopyFeedback.classList.add('hidden');
+                        }
+                    }
                 }
             });
         });
@@ -4380,6 +4382,31 @@ ${adminLink}
         // Calcular troco quando o valor é digitado
         if (changeAmountInput) {
             changeAmountInput.addEventListener('input', calculateChange);
+        }
+
+        // Copiar chave PIX
+        if (copyPixKeyBtn && pixKeyValueEl) {
+            copyPixKeyBtn.addEventListener('click', async () => {
+                const text = (pixKeyValueEl.textContent || '').trim();
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    if (pixCopyFeedback) {
+                        pixCopyFeedback.classList.remove('hidden');
+                        setTimeout(() => pixCopyFeedback.classList.add('hidden'), 2000);
+                    }
+                } catch (_) {}
+            });
         }
         
         // Garantir que o botão de limpar carrinho seja inicializado corretamente
@@ -4420,25 +4447,7 @@ ${adminLink}
         // FILTROS AVANÇADOS E AUTOCOMPLETE
         // ========================================
         
-        // Event listeners para chips de categoria
-        let selectedCategory = '';
-        const categoryChips = document.querySelectorAll('.category-chip');
-        
-        categoryChips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                // Remover active de todos
-                categoryChips.forEach(c => c.classList.remove('active'));
-                // Adicionar active no clicado
-                chip.classList.add('active');
-                // Atualizar categoria selecionada
-                selectedCategory = chip.dataset.category;
-                // Renderizar produtos
-                renderProducts();
-            });
-        });
-        
-        // Variável global para categoria (usada no renderProducts)
-        window.getSelectedCategory = () => selectedCategory;
+
         
         // Event listener para ordenação
         const sortFilter = document.getElementById('sortFilter');
