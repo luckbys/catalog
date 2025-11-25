@@ -515,7 +515,6 @@
                                                                     <div id="previewBg"
                                                                         class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500">
                                                                     </div>
-
                                                                     <!-- Image (if present) -->
                                                                     <img id="previewImage" src=""
                                                                         class="absolute inset-0 w-full h-full object-cover hidden"
@@ -523,64 +522,29 @@
                                                                     <div id="previewOverlay"
                                                                         class="absolute inset-0 bg-black/20 hidden">
                                                                     </div>
-
-                                                                    <!-- Content -->
-                                                                    <div
-                                                                        class="relative h-full p-5 flex flex-col justify-between text-white z-10">
-                                                                        <div class="flex justify-between items-start">
-                                                                            <span id="previewBadge"
-                                                                                class="px-2.5 py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-bold tracking-wider uppercase border border-white/10">
-                                                                                🏷️ SUPER OFERTA
-                                                                            </span>
-                                                                            <div id="previewIconBg"
-                                                                                class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10">
-                                                                                <i id="previewIcon"
-                                                                                    class="fa-solid fa-pill text-sm"></i>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div>
-                                                                            <p id="previewSubtitle"
-                                                                                class="text-[10px] font-bold opacity-90 tracking-wider mb-1 uppercase">
-                                                                                ATÉ 50% OFF</p>
-                                                                            <h3 id="previewTitle"
-                                                                                class="text-xl font-bold leading-tight mb-1 drop-shadow-sm">
-                                                                                Oferta de
-                                                                                Verão</h3>
-                                                                            <p id="previewDesc"
-                                                                                class="text-xs opacity-90 line-clamp-1 font-medium">
-                                                                                Aproveite os melhores preços...</p>
-                                                                        </div>
-                                                                    </div>
                                                                 </div>
-
                                                             </div>
-                                                            <p class="text-center text-xs text-slate-400 mt-3">Esta é
-                                                                uma representação aproximada de
-                                                                como o banner aparecerá no catálogo.</p>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- Footer Actions -->
+                                                <!-- Modal Footer -->
                                                 <div
                                                     class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
-                                                    <button onclick="closeModal()"
-                                                        class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancelar</button>
-                                                    <button onclick="saveBanner()" id="saveBtn"
-                                                        class="px-6 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-500 rounded-lg shadow-lg shadow-primary-500/20 transition-all flex items-center gap-2">
-                                                        <i class="fa-solid fa-save"></i> Salvar Banner
-                                                    </button>
+                                                    <button type="button" onclick="closeModal()"
+                                                        class="px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
+                                                    <button type="button" id="saveBtn" onclick="saveBanner()"
+                                                        class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-500 shadow-lg shadow-primary-500/30 transition-all">Salvar
+                                                        Banner</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <script>
-                                        // --- API & State ---
-                                        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
-                                        let banners = [];
                                         let isEditing = false;
+                                        let banners = [];
+                                        const API_BASE = ''; // Relative path
 
                                         // --- Init ---
                                         document.addEventListener('DOMContentLoaded', () => {
@@ -621,6 +585,14 @@
 
                                         function getImageUrl(url) {
                                             if (!url) return '';
+
+                                            // Lógica específica para MinIO (igual ao catalogo.html)
+                                            if (url.includes('c4crm-minio.zv7gpn.easypanel.host')) {
+                                                const urlParts = url.split('/');
+                                                const fileName = urlParts[urlParts.length - 1];
+                                                return `${API_BASE}/api/minio-image?path=${fileName}`;
+                                            }
+
                                             if (url.startsWith('http')) {
                                                 return `${API_BASE}/api/proxy-image?url=${encodeURIComponent(url)}`;
                                             }
@@ -674,7 +646,7 @@
                             <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-up-1-9"></i> Pos: ${banner.posicao}</span>
                             <span class="flex items-center gap-1"><i class="fa-solid fa-tag"></i> ${banner.tipo_promocao}</span>
                         </div>
-                        
+
                         <div class="flex gap-2">
                             <button onclick="editBanner(${banner.id})" class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors">
                                 <i class="fa-solid fa-pen mr-1"></i> Editar
@@ -838,5 +810,4 @@
                                         }
                                     </script>
 </body>
-
 </html>
