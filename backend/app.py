@@ -2363,7 +2363,8 @@ def update_contacts_config(payload: ContactsConfigPayload):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Persistência de Instâncias (Simples JSON)
-INSTANCES_CONFIG_PATH = os.getenv("INSTANCES_CONFIG_PATH", "/data/instances.json")
+# Persistência de Instâncias (Simples JSON)
+INSTANCES_CONFIG_PATH = os.getenv("INSTANCES_CONFIG_PATH", "instances.json")
 
 def _ensure_instances_file():
     try:

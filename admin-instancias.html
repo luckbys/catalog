@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Instâncias - Evolution API</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="evolution-api-config.js"></script>
+  <script src="public/evolution-api-config.js"></script>
   <link rel="icon" href="favicon.ico" />
   <style>
     .mono {
@@ -318,9 +318,16 @@
     };
 
     const loadInstances = () => {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return JSON.parse(data) || [];
+      } catch (e) {
+        return [];
+      }
     };
-    const saveInstances = (list) => localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    const saveInstances = (list) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    };
     const getDefaultId = () => localStorage.getItem(DEFAULT_KEY);
     const setDefaultId = (id) => localStorage.setItem(DEFAULT_KEY, id);
 
@@ -431,21 +438,10 @@
       }
     };
 
-    const tryLoadFromBackend = async () => {
-      try {
-        const port = window.location.port;
-        const API_BASE = (port === '3000' || port === '5500' || port === '8080') ? 'http://localhost:8000' : '';
-        const url = API_BASE + '/api/evolution/instances';
-        console.log('LoadBackend:', { API_BASE, url });
-        const r = await fetch(url);
-        if (!r.ok) return null;
-        const data = await r.json();
-        return Array.isArray(data) ? data : null;
-      } catch { return null; }
-    };
 
-    const renderInstances = () => {
-      const list = loadInstances();
+
+    const renderInstances = (data = null) => {
+      const list = data || loadInstances();
       const container = document.getElementById('instancesList');
       const empty = document.getElementById('emptyState');
 
@@ -530,6 +526,15 @@
     const closeForm = () => {
       document.getElementById('formSection').classList.add('hidden');
       editingId = null;
+    };
+
+    const closeQrModal = () => {
+      const modal = document.getElementById('qrModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }, 200);
     };
 
     const saveForm = async () => {
@@ -707,16 +712,39 @@
       });
     };
 
+    const tryLoadFromBackend = async () => {
+      try {
+        // Use relative URL to avoid CORS/Origin issues
+        const url = '/api/evolution/instances';
+        const r = await fetch(url);
+        if (!r.ok) {
+          return null;
+        }
+        const data = await r.json();
+        return Array.isArray(data) ? data : null;
+      } catch (e) {
+        return null;
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', async () => {
       wireEvents();
       wireListActions();
+
+      // Force load from backend first
       const backendData = await tryLoadFromBackend();
-      if (backendData) { saveInstances(backendData); }
-      // Caso não haja dados do backend, puxa da config local
-      autoSeedFromConfig();
-      renderInstances();
+
+      if (backendData && Array.isArray(backendData) && backendData.length > 0) {
+        saveInstances(backendData);
+        showToast('Dados sincronizados do servidor');
+        renderInstances(backendData);
+      } else {
+        autoSeedFromConfig();
+        renderInstances();
+      }
     });
   </script>
 </body>
 
 </html>
+```
