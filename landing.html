@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Venda mais no WhatsApp com catálogo e automações</title>
+  <meta name="description" content="Catálogo online com carrinho, WhatsApp, follow-up e automações de IA já integradas. Agende uma demonstração e veja como aumentar suas vendas.">
+  <link rel="icon" type="image/png" sizes="32x32" href="./public/logo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./public/logo.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./public/logo.png">
+  <link rel="shortcut icon" href="./public/logo.png">
+  <link rel="canonical" href="/landing.html">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="stylesheet" href="./public/styles.css">
+  <link rel="stylesheet" href="./public/mobile.css">
+  <style>
+    :root { --color-primary: #10b981; --color-primary-dark: #059669; --color-accent: #0ea5e9; --color-text: #0f172a; --color-muted: #64748b; --color-border: #e2e8f0; --color-bg-soft: #f8fafc; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+    .hero { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .hero .content { padding: 64px 0; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+    .hero h1 { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+    @media (min-width: 640px) { .hero h1 { font-size: 2.5rem; } }
+    .hero p { font-size: 1rem; opacity: 0.95; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 12px; font-weight: 600; transition: all .2s ease; }
+    .btn-primary { background: var(--color-accent); color: #fff; }
+    .btn-primary:hover { background: #0284c7; transform: translateY(-2px); }
+    .btn-outline { background: #ffffff; color: var(--color-primary-dark); border: 2px solid var(--color-primary-dark); }
+    .btn-outline:hover { background: #f0fdf4; }
+    .section { padding: 48px 0; }
+    .section h2 { font-size: 1.5rem; font-weight: 800; color: var(--color-text); }
+    .grid { display: grid; gap: 16px; }
+    .grid-3 { grid-template-columns: 1fr; }
+    @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+    .card { background: #fff; border: 2px solid var(--color-border); border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06); }
+    .lead-form { display: grid; gap: 12px; max-width: 560px; }
+    .lead-form input, .lead-form textarea { border: 2px solid var(--color-border); border-radius: 12px; padding: 12px; font-size: 0.95rem; }
+    .lead-form button { padding: 12px 16px; border-radius: 12px; font-weight: 700; background: var(--color-primary); color: #fff; }
+    .lead-form button:hover { background: var(--color-primary-dark); }
+    .badge { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; color: #065f46; border: 2px solid #d1fae5; padding: 8px 12px; border-radius: 9999px; font-weight: 600; }
+    .features-list { display: grid; gap: 12px; }
+    .features-list .item { display: flex; align-items: flex-start; gap: 10px; }
+    .reveal { opacity: 0; transform: translateY(16px); transition: all .4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .glass-card { background: rgba(255,255,255,0.85); border: 2px solid var(--color-border); border-radius: 16px; box-shadow: 0 8px 24px rgba(15,23,42,0.08); backdrop-filter: blur(8px); }
+    .gradient-text { background: linear-gradient(135deg, var(--color-accent), var(--color-primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .plan-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 768px) { .plan-grid { grid-template-columns: repeat(3, 1fr); } }
+    .plan-card { background: #fff; border: 2px solid var(--color-border); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(15,23,42,0.06); display: flex; flex-direction: column; gap: 12px; }
+    .plan-card.recommended { border-color: var(--color-primary); box-shadow: 0 16px 32px rgba(16,185,129,0.25); transform: translateY(-4px); }
+    .plan-title { font-weight: 800; color: var(--color-text); }
+    .plan-price { font-weight: 800; color: var(--color-primary); font-size: 1.25rem; }
+    .plan-features { display: grid; gap: 8px; color: var(--color-muted); }
+    .badge-reco { display:inline-flex; align-items:center; gap:6px; background:#ecfeff; color:#0ea5e9; border:2px solid #a5f3fc; padding:6px 10px; border-radius:9999px; font-weight:700; }
+  </style>
+  <script>
+    const WA_FALLBACK = 'https://wa.me/';
+    async function fetchWhatsAppLink() {
+      try {
+        const res = await fetch('/config/whatsapp');
+        if (!res.ok) throw new Error('config');
+        const data = await res.json();
+        return `https://wa.me/${(data.phone || '').replace(/\D/g,'')}`;
+      } catch (_) { return WA_FALLBACK; }
+    }
+    async function openWhatsAppCTA(prefill) {
+      const link = await fetchWhatsAppLink();
+      const url = prefill ? `${link}?text=${encodeURIComponent(prefill)}` : link;
+      window.open(url, '_blank');
+    }
+    async function submitLead(ev) {
+      ev.preventDefault();
+      const form = ev.currentTarget;
+      const payload = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim(),
+        company: form.company.value.trim(),
+        message: form.message.value.trim(),
+        consent: form.consent.checked === true
+      };
+      try {
+        const res = await fetch('/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error('lead');
+        alert('Obrigado! Entraremos em contato em breve.');
+      } catch (_) {
+        const text = `Olá! Quero saber mais sobre a solução. Nome: ${payload.name}; Empresa: ${payload.company}; Telefone: ${payload.phone}`;
+        openWhatsAppCTA(text);
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <nav style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;">
+        <a href="/" style="display:flex;align-items:center;gap:10px;font-weight:800;color:#fff;text-decoration:none;">
+          <img src="./public/logo.png" alt="Logo" width="32" height="32" style="border-radius:8px;">
+          <span>Catálogo + IA</span>
+        </a>
+        <div style="display:flex;gap:10px;">
+          <a href="catalogo.html" class="btn btn-outline">Catálogo</a>
+          <button class="btn btn-outline" onclick="openWhatsAppCTA('Olá! Gostaria de falar com o time comercial')">WhatsApp</button>
+        </div>
+      </nav>
+      <div class="content">
+        <span class="badge">Pronto para vender no WhatsApp</span>
+        <h1 class="gradient-text">Venda mais com catálogo, carrinho e automações de IA</h1>
+        <p>Catálogo online integrado ao WhatsApp com follow‑up e encerramento automático. A automação de IA já está ativa para qualificar leads e personalizar mensagens.</p>
+        <div class="cta-row">
+          <a href="catalogo.html" class="btn btn-primary">Ver catálogo ao vivo</a>
+          <button class="btn btn-outline" onclick="openWhatsAppCTA('Quero agendar uma demonstração')">Agendar demo</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <h2>Como funciona</h2>
+        <div class="grid grid-3">
+          <div class="card">
+            <strong>Catálogo e carrinho</strong>
+            <p>Produtos organizados com compra rápida e experiência mobile impecável.</p>
+          </div>
+          <div class="card">
+            <strong>WhatsApp integrado</strong>
+            <p>Mensagens automáticas para cliente, vendedor e entregador no fluxo certo.</p>
+          </div>
+          <div class="card">
+            <strong>Automação inteligente</strong>
+            <p>Follow‑up e encerramento automático para reduzir perdas e aumentar conversão.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section" style="background:var(--color-bg-soft);">
+      <div class="container">
+        <h2>Diferenciais</h2>
+        <div class="grid grid-3">
+          <div class="card reveal" style="display:flex;gap:12px;align-items:flex-start;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>
+            <div><div style="font-weight:800;color:var(--color-text);">UX mobile</div><div style="color:var(--color-muted);">Design pensado para conversão em dispositivos móveis.</div></div>
+          </div>
+          <div class="card reveal" style="display:flex;gap:12px;align-items:flex-start;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="6" cy="12" r="2" fill="currentColor"/><circle cx="18" cy="12" r="2" fill="currentColor"/></svg>
+            <div><div style="font-weight:800;color:var(--color-text);">Integração simples</div><div style="color:var(--color-muted);">Supabase, WhatsApp Evolution API e n8n prontos.</div></div>
+          </div>
+          <div class="card reveal" style="display:flex;gap:12px;align-items:flex-start;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="14" r="6" stroke="currentColor" stroke-width="2"/></svg>
+            <div><div style="font-weight:800;color:var(--color-text);">Automação que converte</div><div style="color:var(--color-muted);">Follow‑ups e encerramento automático reduzem abandono.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:#f8fafc;">
+      <div class="container">
+        <h2>Automação de IA já integrada</h2>
+        <div class="features-list">
+          <div class="item reveal"><div>🤖</div><div><strong>Qualificação e score</strong><br>Enriquecimento e pontuação de leads para priorizar atendimento.</div></div>
+          <div class="item reveal"><div>💬</div><div><strong>Mensagens personalizadas</strong><br>Conteúdo otimizado para WhatsApp com tom e contexto da marca.</div></div>
+          <div class="item reveal"><div>⏱️</div><div><strong>Sequências automáticas</strong><br>Follow‑ups e encerramento operando no seu catálogo sem fricção.</div></div>
+          <div class="item reveal"><div>🔌</div><div><strong>Integrações</strong><br>Supabase, Evolution API, n8n/webhook no mesmo ecossistema.</div></div>
+        </div>
+        <div class="cta-row" style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="openWhatsAppCTA('Quero ver a automação de IA em ação')">Agendar demo da automação</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Veja na prática</h2>
+        <div class="glass-card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#10b981;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:12px;">
+            <div style="background:#f1f5f9;border:2px solid #e2e8f0;border-radius:12px;height:220px;display:flex;align-items:center;justify-content:center;color:#64748b;font-weight:600;">Prévia do catálogo</div>
+          </div>
+          <div class="cta-row">
+            <a href="catalogo.html" class="btn btn-primary">Abrir catálogo</a>
+            <button class="btn btn-outline" onclick="openWhatsAppCTA('Quero uma demo guiada do catálogo')">Agendar tour guiado</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Planos e preços</h2>
+        <div class="plan-grid">
+          <div class="plan-card reveal">
+            <div class="plan-title">Essencial</div>
+            <div class="plan-price">R$ —</div>
+            <div class="plan-features">
+              <div>Catálogo e carrinho</div>
+              <div>WhatsApp básico</div>
+              <div>Publicação rápida</div>
+            </div>
+            <div class="cta-row"><button class="btn btn-outline" onclick="openWhatsAppCTA('Quero saber mais sobre o plano Essencial')">Falar com vendas</button></div>
+          </div>
+          <div class="plan-card recommended reveal">
+            <div class="badge-reco">Recomendado</div>
+            <div class="plan-title">Pro</div>
+            <div class="plan-price">R$ —</div>
+            <div class="plan-features">
+              <div>Tudo do Essencial</div>
+              <div>Automação de follow‑up</div>
+              <div>Painel do entregador</div>
+              <div>Integrações n8n/webhook</div>
+            </div>
+            <div class="cta-row"><button class="btn btn-primary" onclick="openWhatsAppCTA('Quero contratar o plano Pro')">Contratar</button></div>
+          </div>
+          <div class="plan-card reveal">
+            <div class="plan-title">Enterprise</div>
+            <div class="plan-price">Custom</div>
+            <div class="plan-features">
+              <div>Personalizações avançadas</div>
+              <div>Integrações dedicadas</div>
+              <div>SLA e suporte estendidos</div>
+            </div>
+            <div class="cta-row"><button class="btn btn-outline" onclick="openWhatsAppCTA('Quero conversar sobre o plano Enterprise')">Falar com vendas</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:#f8fafc;">
+      <div class="container">
+        <h2>Depoimentos</h2>
+        <div class="grid grid-3">
+          <div class="card reveal"><p style="color:#0f172a;font-weight:600;">“Subimos em um dia e já tivemos vendas pelo WhatsApp.”</p><span style="color:#64748b;">Gerente de loja</span></div>
+          <div class="card reveal"><p style="color:#0f172a;font-weight:600;">“O follow‑up automático recuperou pedidos esquecidos.”</p><span style="color:#64748b;">Coordenador comercial</span></div>
+          <div class="card reveal"><p style="color:#0f172a;font-weight:600;">“Automação integrada sem complicação com o nosso time.”</p><span style="color:#64748b;">Head de operações</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>FAQ</h2>
+        <div class="grid" style="grid-template-columns:1fr;">
+          <details class="card reveal"><summary style="font-weight:700;color:#0f172a;">Quanto tempo para implementar?</summary><div style="margin-top:8px;color:#64748b;">Em poucas horas com a configuração padrão. Integrações extras variam conforme necessidade.</div></details>
+          <details class="card reveal"><summary style="font-weight:700;color:#0f172a;">A automação de IA já vem ativa?</summary><div style="margin-top:8px;color:#64748b;">Sim, fluxos de qualificação, mensagens e follow‑up/encerramento já integrados ao catálogo.</div></details>
+          <details class="card reveal"><summary style="font-weight:700;color:#0f172a;">Como funciona o suporte?</summary><div style="margin-top:8px;color:#64748b;">Atendimento por WhatsApp e e‑mail, com SLA conforme o plano contratado.</div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:#f8fafc;">
+      <div class="container">
+        <h2>Fale com a gente</h2>
+        <form class="lead-form" onsubmit="submitLead(event)">
+          <input type="text" name="name" placeholder="Nome completo" required>
+          <input type="email" name="email" placeholder="E‑mail" required>
+          <input type="tel" name="phone" placeholder="Telefone" required>
+          <input type="text" name="company" placeholder="Empresa">
+          <textarea name="message" placeholder="Como podemos ajudar?" rows="4"></textarea>
+          <label style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" name="consent" required>
+            <span>Concordo com o uso dos meus dados para contato (LGPD).</span>
+          </label>
+          <button type="submit">Enviar</button>
+        </form>
+        <div class="cta-row" style="margin-top:16px;">
+          <button class="btn btn-outline" onclick="openWhatsAppCTA('Olá! Gostaria de falar com o time comercial')">Falar no WhatsApp</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="section" style="border-top:2px solid #e2e8f0;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <div style="font-weight:600;color:#0f172a;">Catálogo + Automação</div>
+      <div style="color:#64748b;font-size:0.9rem;">© 2025. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+  <script>
+    const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); } }); }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

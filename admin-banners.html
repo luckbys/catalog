@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Banners | Gestão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        dark: { 800: '#1e293b', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark body {
+            background-color: #0f172a;
+        }
+
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 dark:text-slate-100 transition-colors duration-200">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-slate-200 dark:border-slate-800 h-16">
+        <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/30">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight">Admin Banners</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Gestão de Destaques</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div
+                    class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full text-xs font-semibold border border-green-500/20">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    ONLINE
+                </div>
+                <a href="/catalogo.html" target="_blank"
+                    class="p-2 text-slate-500 hover:text-primary-600 transition-colors" title="Ver Catálogo">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <a href="/admin-pedidos.html" class="p-2 text-slate-500 hover:text-primary-600 transition-colors"
+                    title="Pedidos">
+                    <i class="fa-solid fa-receipt"></i>
+                </a>
+                <button onclick="toggleTheme()" class="p-2 text-slate-500 hover:text-yellow-500 transition-colors">
+                    <i class="fa-solid fa-sun dark:hidden"></i>
+                    <i class="fa-solid fa-moon hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+
+        <!-- Header Actions -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Banners Ativos</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Gerencie os destaques visuais do seu
+                    catálogo.</p>
+            </div>
+            <button onclick="openModal()"
+                class="group relative px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium shadow-lg shadow-primary-600/30 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Novo Banner
+                </span>
+            </button>
+        </div>
+
+        <!-- Banners Grid -->
+        <div id="bannersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Loading Skeleton -->
+            <div
+                class="animate-pulse bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 h-48">
+            </div>
+            <div
+                class="animate-pulse bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 h-48">
+            </div>
+            <div
+                class="animate-pulse bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 h-48">
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal (Create/Edit) -->
+    <div id="bannerModal" class="fixed inset-0 z-[100] hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+
+        <!-- Modal Content -->
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div
+                class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden transform transition-all scale-100">
+
+                <!-- Modal Header -->
+                <div
+                    class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                    <h3 id="modalTitle" class="text-lg font-bold text-slate-800 dark:text-white">Novo Banner</h3>
+                    <button onclick="closeModal()"
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Scrollable) -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                        <!-- Form -->
+                        <form id="bannerForm" class="space-y-5">
+                            <input type="hidden" id="bannerId">
+
+                            <!-- Titulo & Subtitulo -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Título</label>
+                                    <input type="text" id="titulo" required
+                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                        placeholder="Ex: Oferta de Verão" oninput="updatePreview()">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Subtítulo</label>
+                                    <input type="text" id="subtitulo"
+                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                        placeholder="Ex: ATÉ 50% OFF" oninput="updatePreview()">
+                                </div>
+                            </div>
+
+                            <!-- Descrição -->
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-500 uppercase mb-1">Descrição</label>
+                                <textarea id="descricao" rows="2"
+                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none"
+                                    placeholder="Ex: Aproveite os melhores preços..."
+                                    oninput="updatePreview()"></textarea>
+                            </div>
+
+                            <!-- Badge & Icone -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Badge
+                                        Texto</label>
+                                    <input type="text" id="badge_texto"
+                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                        placeholder="Ex: 🏷️ OFERTA" oninput="updatePreview()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ícone
+                                        (FontAwesome)</label>
+                                    <div class="relative">
+                                        <input type="text" id="icone"
+                                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                            placeholder="Ex: pill" oninput="updatePreview()">
+                                        <div class="absolute left-3 top-2.5 text-slate-400 text-sm">
+                                            <i id="iconPreviewInput" class="fa-solid fa-icons"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cores -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Cor
+                                        Primária</label>
+                                    <div class="flex gap-2">
+                                        <input type="color" id="cor_primaria" value="#10B981"
+                                            class="h-9 w-12 rounded cursor-pointer border-0 p-0"
+                                            oninput="updatePreview()">
+                                        <input type="text" id="cor_primaria_text" value="#10B981"
+                                            class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono uppercase"
+                                            oninput="document.getElementById('cor_primaria').value = this.value; updatePreview()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Cor
+                                        Secundária</label>
+                                    <div class="flex gap-2">
+                                        <input type="color" id="cor_secundaria" value="#14B8A6"
+                                            class="h-9 w-12 rounded cursor-pointer border-0 p-0"
+                                            oninput="updatePreview()">
+                                        <input type="text" id="cor_secundaria_text" value="#14B8A6"
+                                            class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono uppercase"
+                                            oninput="document.getElementById('cor_secundaria').value = this.value; updatePreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Imagem URL -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Imagem URL
+                                    (Opcional)</label>
+                                <input type="text" id="imagem_url"
+                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                    placeholder="https://..." oninput="updatePreview()">
+                                <p class="text-[10px] text-slate-400 mt-1">Deixe vazio para usar o layout padrão de
+                                    ícone + gradiente.</p>
+                            </div>
+
+                            <!-- Configurações -->
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Posição</label>
+                                    <input type="number" id="posicao" value="1" min="1"
+                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipo
+                                        Promo</label>
+                                    <select id="tipo_promocao"
+                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                                        <option value="desconto_percentual">Desconto %</option>
+                                        <option value="frete_gratis">Frete Grátis</option>
+                                        <option value="categoria">Categoria</option>
+                                        <option value="informativo">Informativo</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="flex items-center gap-2 cursor-pointer pb-2">
+                                        <input type="checkbox" id="ativo" checked
+                                            class="w-5 h-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                                        <span class="text-sm font-medium">Ativo</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Live Preview -->
+                        <div class="flex flex-col">
+                            <label
+                                class="block text-xs font-semibold text-slate-500 uppercase mb-3">Pré-visualização</label>
+                            <div
+                                class="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center p-6">
+
+                                <!-- Banner Card Preview -->
+                                <div id="previewCard"
+                                    class="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer group h-40">
+                                    <!-- Background -->
+                                    <div id="previewBg"
+                                        class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+
+                                    <!-- Image (if present) -->
+                                    <img id="previewImage" src=""
+                                        class="absolute inset-0 w-full h-full object-cover hidden" alt="Banner">
+                                    <!-- Header Actions -->
+                                    <div
+                                        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                                        <div>
+                                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Banners Ativos
+                                            </h2>
+                                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Gerencie os
+                                                destaques visuais do seu
+                                                catálogo.</p>
+                                        </div>
+                                        <button onclick="openModal()"
+                                            class="group relative px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium shadow-lg shadow-primary-600/30 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                                            <span class="flex items-center gap-2">
+                                                <i class="fa-solid fa-plus"></i> Novo Banner
+                                            </span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Banners Grid -->
+                                    <div id="bannersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <!-- Loading Skeleton -->
+                                        <div
+                                            class="animate-pulse bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 h-48">
+                                        </div>
+                                        <div
+                                            class="animate-pulse bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 h-48">
+                                        </div>
+                                        <div
+                                            class="animate-pulse bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 h-48">
+                                        </div>
+                                    </div>
+
+                                    </main>
+
+                                    <!-- Modal (Create/Edit) -->
+                                    <div id="bannerModal" class="fixed inset-0 z-[100] hidden">
+                                        <!-- Backdrop -->
+                                        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+                                            onclick="closeModal()"></div>
+
+                                        <!-- Modal Content -->
+                                        <div class="absolute inset-0 flex items-center justify-center p-4">
+                                            <div
+                                                class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden transform transition-all scale-100">
+
+                                                <!-- Modal Header -->
+                                                <div
+                                                    class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                                                    <h3 id="modalTitle"
+                                                        class="text-lg font-bold text-slate-800 dark:text-white">Novo
+                                                        Banner</h3>
+                                                    <button onclick="closeModal()"
+                                                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                                                        <i class="fa-solid fa-xmark text-xl"></i>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Modal Body (Scrollable) -->
+                                                <div class="flex-1 overflow-y-auto p-6">
+                                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                                                        <!-- Form -->
+                                                        <form id="bannerForm" class="space-y-5">
+                                                            <input type="hidden" id="bannerId">
+
+                                                            <!-- Titulo & Subtitulo -->
+                                                            <div class="grid grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Título</label>
+                                                                    <input type="text" id="titulo" required
+                                                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                                                        placeholder="Ex: Oferta de Verão"
+                                                                        oninput="updatePreview()">
+                                                                </div>
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Subtítulo</label>
+                                                                    <input type="text" id="subtitulo"
+                                                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                                                        placeholder="Ex: ATÉ 50% OFF"
+                                                                        oninput="updatePreview()">
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Descrição -->
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-semibold text-slate-500 uppercase mb-1">Descrição</label>
+                                                                <textarea id="descricao" rows="2"
+                                                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none"
+                                                                    placeholder="Ex: Aproveite os melhores preços..."
+                                                                    oninput="updatePreview()"></textarea>
+                                                            </div>
+
+                                                            <!-- Badge & Icone -->
+                                                            <div class="grid grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Badge
+                                                                        Texto</label>
+                                                                    <input type="text" id="badge_texto"
+                                                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                                                        placeholder="Ex: 🏷️ OFERTA"
+                                                                        oninput="updatePreview()">
+                                                                </div>
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ícone
+                                                                        (FontAwesome)</label>
+                                                                    <div class="relative">
+                                                                        <input type="text" id="icone"
+                                                                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                                                            placeholder="Ex: pill"
+                                                                            oninput="updatePreview()">
+                                                                        <div
+                                                                            class="absolute left-3 top-2.5 text-slate-400 text-sm">
+                                                                            <i id="iconPreviewInput"
+                                                                                class="fa-solid fa-icons"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Cores -->
+                                                            <div class="grid grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Cor
+                                                                        Primária</label>
+                                                                    <div class="flex gap-2">
+                                                                        <input type="color" id="cor_primaria"
+                                                                            value="#10B981"
+                                                                            class="h-9 w-12 rounded cursor-pointer border-0 p-0"
+                                                                            oninput="updatePreview()">
+                                                                        <input type="text" id="cor_primaria_text"
+                                                                            value="#10B981"
+                                                                            class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono uppercase"
+                                                                            oninput="document.getElementById('cor_primaria').value = this.value; updatePreview()">
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Cor
+                                                                        Secundária</label>
+                                                                    <div class="flex gap-2">
+                                                                        <input type="color" id="cor_secundaria"
+                                                                            value="#14B8A6"
+                                                                            class="h-9 w-12 rounded cursor-pointer border-0 p-0"
+                                                                            oninput="updatePreview()">
+                                                                        <input type="text" id="cor_secundaria_text"
+                                                                            value="#14B8A6"
+                                                                            class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono uppercase"
+                                                                            oninput="document.getElementById('cor_secundaria').value = this.value; updatePreview()">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Imagem URL -->
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-semibold text-slate-500 uppercase mb-1">Imagem
+                                                                    URL
+                                                                    (Opcional)</label>
+                                                                <input type="text" id="imagem_url"
+                                                                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                                                    placeholder="https://..." oninput="updatePreview()">
+                                                                <p class="text-[10px] text-slate-400 mt-1">Deixe vazio
+                                                                    para usar o layout padrão de
+                                                                    ícone + gradiente.</p>
+                                                            </div>
+
+                                                            <!-- Configurações -->
+                                                            <div class="grid grid-cols-3 gap-4">
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Posição</label>
+                                                                    <input type="number" id="posicao" value="1" min="1"
+                                                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                                                                </div>
+                                                                <div>
+                                                                    <label
+                                                                        class="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipo
+                                                                        Promo</label>
+                                                                    <select id="tipo_promocao"
+                                                                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                                                                        <option value="desconto_percentual">Desconto %
+                                                                        </option>
+                                                                        <option value="frete_gratis">Frete Grátis
+                                                                        </option>
+                                                                        <option value="categoria">Categoria</option>
+                                                                        <option value="informativo">Informativo</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="flex items-end">
+                                                                    <label
+                                                                        class="flex items-center gap-2 cursor-pointer pb-2">
+                                                                        <input type="checkbox" id="ativo" checked
+                                                                            class="w-5 h-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                                                                        <span class="text-sm font-medium">Ativo</span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+
+                                                        <!-- Live Preview -->
+                                                        <div class="flex flex-col">
+                                                            <label
+                                                                class="block text-xs font-semibold text-slate-500 uppercase mb-3">Pré-visualização</label>
+                                                            <div
+                                                                class="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center p-6">
+
+                                                                <!-- Banner Card Preview -->
+                                                                <div id="previewCard"
+                                                                    class="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer group h-40">
+                                                                    <!-- Background -->
+                                                                    <div id="previewBg"
+                                                                        class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500">
+                                                                    </div>
+
+                                                                    <!-- Image (if present) -->
+                                                                    <img id="previewImage" src=""
+                                                                        class="absolute inset-0 w-full h-full object-cover hidden"
+                                                                        alt="Banner">
+                                                                    <div id="previewOverlay"
+                                                                        class="absolute inset-0 bg-black/20 hidden">
+                                                                    </div>
+
+                                                                    <!-- Content -->
+                                                                    <div
+                                                                        class="relative h-full p-5 flex flex-col justify-between text-white z-10">
+                                                                        <div class="flex justify-between items-start">
+                                                                            <span id="previewBadge"
+                                                                                class="px-2.5 py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-bold tracking-wider uppercase border border-white/10">
+                                                                                🏷️ SUPER OFERTA
+                                                                            </span>
+                                                                            <div id="previewIconBg"
+                                                                                class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                                                                <i id="previewIcon"
+                                                                                    class="fa-solid fa-pill text-sm"></i>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div>
+                                                                            <p id="previewSubtitle"
+                                                                                class="text-[10px] font-bold opacity-90 tracking-wider mb-1 uppercase">
+                                                                                ATÉ 50% OFF</p>
+                                                                            <h3 id="previewTitle"
+                                                                                class="text-xl font-bold leading-tight mb-1 drop-shadow-sm">
+                                                                                Oferta de
+                                                                                Verão</h3>
+                                                                            <p id="previewDesc"
+                                                                                class="text-xs opacity-90 line-clamp-1 font-medium">
+                                                                                Aproveite os melhores preços...</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                            <p class="text-center text-xs text-slate-400 mt-3">Esta é
+                                                                uma representação aproximada de
+                                                                como o banner aparecerá no catálogo.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Footer Actions -->
+                                                <div
+                                                    class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                                                    <button onclick="closeModal()"
+                                                        class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancelar</button>
+                                                    <button onclick="saveBanner()" id="saveBtn"
+                                                        class="px-6 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-500 rounded-lg shadow-lg shadow-primary-500/20 transition-all flex items-center gap-2">
+                                                        <i class="fa-solid fa-save"></i> Salvar Banner
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <script>
+                                        // --- API & State ---
+                                        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
+                                        let banners = [];
+                                        let isEditing = false;
+
+                                        // --- Init ---
+                                        document.addEventListener('DOMContentLoaded', () => {
+                                            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                                                document.documentElement.classList.add('dark');
+                                            }
+                                            fetchBanners();
+                                        });
+
+                                        function toggleTheme() {
+                                            document.documentElement.classList.toggle('dark');
+                                            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+                                        }
+
+                                        // --- CRUD Operations ---
+                                        async function fetchBanners() {
+                                            const grid = document.getElementById('bannersGrid');
+                                            try {
+                                                const res = await fetch(`${API_BASE}/api/admin/banners`);
+                                                if (!res.ok) throw new Error('Falha ao buscar banners');
+                                                const data = await res.json();
+                                                banners = data.banners || [];
+                                                renderBanners();
+                                            } catch (error) {
+                                                console.error(error);
+                                                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-500 mb-4">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white">Erro ao carregar</h3>
+                        <p class="text-slate-500 text-sm mb-4">Não foi possível conectar ao servidor.</p>
+                        <button onclick="fetchBanners()" class="text-primary-600 hover:underline font-medium">Tentar novamente</button>
+                    </div>
+                `;
+                                            }
+                                        }
+
+                                        function getImageUrl(url) {
+                                            if (!url) return '';
+                                            if (url.startsWith('http')) {
+                                                return `${API_BASE}/api/proxy-image?url=${encodeURIComponent(url)}`;
+                                            }
+                                            return url;
+                                        }
+
+                                        function renderBanners() {
+                                            const grid = document.getElementById('bannersGrid');
+                                            if (banners.length === 0) {
+                                                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
+                            <i class="fa-solid fa-image text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white">Nenhum banner ativo</h3>
+                        <p class="text-slate-500 text-sm mb-4">Crie seu primeiro banner para destacar produtos.</p>
+                        <button onclick="openModal()" class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-500">Criar Banner</button>
+                    </div>
+                `;
+                                                return;
+                                            }
+
+                                            grid.innerHTML = banners.map(banner => `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-md transition-all group relative">
+                    <!-- Status Indicator -->
+                    <div class="absolute top-3 right-3 z-10">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${banner.ativo ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 'bg-slate-500/10 text-slate-500 border border-slate-500/20'} backdrop-blur-sm">
+                            ${banner.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </div>
+
+                    <!-- Preview Area -->
+                    <div class="h-32 relative overflow-hidden">
+                        ${banner.imagem_url ?
+                                                    `<img src="${getImageUrl(banner.imagem_url)}" class="w-full h-full object-cover" alt="${banner.titulo}" onerror="this.src='https://placehold.co/600x400?text=Erro+Imagem'">
+                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>` :
+                                                    `<div class="w-full h-full bg-gradient-to-r" style="background-image: linear-gradient(to right, ${banner.cor_primaria}, ${banner.cor_secundaria})"></div>`
+                                                }
+                        
+                        <div class="absolute bottom-0 left-0 p-4 text-white w-full">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider opacity-90">${banner.badge_texto || ''}</span>
+                            </div>
+                            <h3 class="font-bold text-lg leading-tight truncate">${banner.titulo}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Details & Actions -->
+                    <div class="p-4">
+                        <div class="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 mb-4">
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-up-1-9"></i> Pos: ${banner.posicao}</span>
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-tag"></i> ${banner.tipo_promocao}</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="editBanner(${banner.id})" class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors">
+                                <i class="fa-solid fa-pen mr-1"></i> Editar
+                            </button>
+                            <button onclick="deleteBanner(${banner.id})" class="px-3 py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg text-sm transition-colors" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+                                        }
+
+                                        async function saveBanner() {
+                                            const btn = document.getElementById('saveBtn');
+                                            const originalText = btn.innerHTML;
+                                            btn.disabled = true;
+                                            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Salvando...';
+
+                                            const id = document.getElementById('bannerId').value;
+                                            const payload = {
+                                                titulo: document.getElementById('titulo').value,
+                                                subtitulo: document.getElementById('subtitulo').value,
+                                                descricao: document.getElementById('descricao').value,
+                                                badge_texto: document.getElementById('badge_texto').value,
+                                                icone: document.getElementById('icone').value,
+                                                cor_primaria: document.getElementById('cor_primaria').value,
+                                                cor_secundaria: document.getElementById('cor_secundaria').value,
+                                                imagem_url: document.getElementById('imagem_url').value || null,
+                                                posicao: parseInt(document.getElementById('posicao').value) || 1,
+                                                tipo_promocao: document.getElementById('tipo_promocao').value,
+                                                ativo: document.getElementById('ativo').checked
+                                            };
+
+                                            try {
+                                                const url = isEditing ? `${API_BASE}/api/admin/banners/${id}` : `${API_BASE}/api/admin/banners`;
+                                                const method = isEditing ? 'PUT' : 'POST';
+
+                                                const res = await fetch(url, {
+                                                    method: method,
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify(payload)
+                                                });
+
+                                                if (!res.ok) throw new Error('Erro ao salvar');
+
+                                                closeModal();
+                                                fetchBanners();
+                                                showToast('Banner salvo com sucesso!', 'success');
+                                            } catch (error) {
+                                                console.error(error);
+                                                showToast('Erro ao salvar banner.', 'error');
+                                            } finally {
+                                                btn.disabled = false;
+                                                btn.innerHTML = originalText;
+                                            }
+                                        }
+
+                                        async function deleteBanner(id) {
+                                            if (!confirm('Tem certeza que deseja excluir este banner?')) return;
+
+                                            try {
+                                                const res = await fetch(`${API_BASE}/api/admin/banners/${id}`, { method: 'DELETE' });
+                                                if (!res.ok) throw new Error('Erro ao excluir');
+                                                fetchBanners();
+                                                showToast('Banner excluído.', 'success');
+                                            } catch (error) {
+                                                console.error(error);
+                                                showToast('Erro ao excluir banner.', 'error');
+                                            }
+                                        }
+
+                                        // --- Modal & Form Logic ---
+                                        function openModal(banner = null) {
+                                            const modal = document.getElementById('bannerModal');
+                                            const form = document.getElementById('bannerForm');
+                                            const title = document.getElementById('modalTitle');
+
+                                            modal.classList.remove('hidden');
+
+                                            if (banner) {
+                                                isEditing = true;
+                                                title.textContent = 'Editar Banner';
+                                                document.getElementById('bannerId').value = banner.id;
+                                                document.getElementById('titulo').value = banner.titulo;
+                                                document.getElementById('subtitulo').value = banner.subtitulo;
+                                                document.getElementById('descricao').value = banner.descricao;
+                                                document.getElementById('badge_texto').value = banner.badge_texto;
+                                                document.getElementById('icone').value = banner.icone;
+                                                document.getElementById('cor_primaria').value = banner.cor_primaria;
+                                                document.getElementById('cor_primaria_text').value = banner.cor_primaria;
+                                                document.getElementById('cor_secundaria').value = banner.cor_secundaria;
+                                                document.getElementById('cor_secundaria_text').value = banner.cor_secundaria;
+                                                document.getElementById('imagem_url').value = banner.imagem_url || '';
+                                                document.getElementById('posicao').value = banner.posicao;
+                                                document.getElementById('tipo_promocao').value = banner.tipo_promocao;
+                                                document.getElementById('ativo').checked = banner.ativo;
+                                            } else {
+                                                isEditing = false;
+                                                title.textContent = 'Novo Banner';
+                                                form.reset();
+                                                document.getElementById('bannerId').value = '';
+                                                // Defaults
+                                                document.getElementById('cor_primaria').value = '#10B981';
+                                                document.getElementById('cor_secundaria').value = '#14B8A6';
+                                                document.getElementById('posicao').value = banners.length + 1;
+                                            }
+                                            updatePreview();
+                                        }
+
+                                        function editBanner(id) {
+                                            const banner = banners.find(b => b.id === id);
+                                            if (banner) openModal(banner);
+                                        }
+
+                                        function closeModal() {
+                                            document.getElementById('bannerModal').classList.add('hidden');
+                                        }
+
+                                        function updatePreview() {
+                                            const titulo = document.getElementById('titulo').value || 'Título do Banner';
+                                            const subtitulo = document.getElementById('subtitulo').value || 'SUBTÍTULO';
+                                            const descricao = document.getElementById('descricao').value || 'Descrição do banner...';
+                                            const badge = document.getElementById('badge_texto').value || 'BADGE';
+                                            const icone = document.getElementById('icone').value || 'star';
+                                            const cor1 = document.getElementById('cor_primaria').value;
+                                            const cor2 = document.getElementById('cor_secundaria').value;
+                                            const imgUrl = document.getElementById('imagem_url').value;
+
+                                            // Update DOM
+                                            document.getElementById('previewTitle').textContent = titulo;
+                                            document.getElementById('previewSubtitle').textContent = subtitulo;
+                                            document.getElementById('previewDesc').textContent = descricao;
+                                            document.getElementById('previewBadge').textContent = badge;
+
+                                            const iconEl = document.getElementById('previewIcon');
+                                            iconEl.className = `fa-solid fa-${icone} text-sm`;
+                                            document.getElementById('iconPreviewInput').className = `fa-solid fa-${icone}`;
+
+                                            const bg = document.getElementById('previewBg');
+                                            const img = document.getElementById('previewImage');
+                                            const overlay = document.getElementById('previewOverlay');
+
+                                            if (imgUrl) {
+                                                img.src = imgUrl;
+                                                img.classList.remove('hidden');
+                                                overlay.classList.remove('hidden');
+                                                bg.classList.add('hidden');
+                                            } else {
+                                                img.classList.add('hidden');
+                                                overlay.classList.add('hidden');
+                                                bg.classList.remove('hidden');
+                                                bg.style.background = `linear-gradient(to right, ${cor1}, ${cor2})`;
+                                            }
+                                        }
+
+                                        function showToast(msg, type = 'success') {
+                                            // Simple toast implementation could go here
+                                            // For now just alert if error, or console log
+                                            if (type === 'error') alert(msg);
+                                        }
+                                    </script>
+</body>
+
+</html>

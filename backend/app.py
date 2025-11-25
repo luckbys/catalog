@@ -22,7 +22,7 @@ import asyncio
 from urllib.parse import urlparse
 from pydantic import BaseModel, Field
 from sqlalchemy import (
-    create_engine, Column, Integer, String, DateTime, Numeric, ForeignKey
+    create_engine, Column, Integer, String, DateTime, Numeric, ForeignKey, Boolean
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
@@ -69,7 +69,19 @@ SESSION_VALIDITY_HOURS = int(os.getenv("SESSION_VALIDITY_HOURS", "4"))
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGIN",
     "http://localhost:5500,http://localhost:3000,http://localhost:8000,http://localhost:8010,http://localhost:8080"
-).split(",")  # Permite origens comuns em dev/local
+).split(",")
+
+# Garantir que origens de desenvolvimento estejam sempre presentes
+DEV_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:5500",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000"
+]
+for origin in DEV_ORIGINS:
+    if origin not in ALLOWED_ORIGINS:
+        ALLOWED_ORIGINS.append(origin)
 N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
 ADMIN_INSTANCIAS_PASSWORD = os.getenv("ADMIN_INSTANCIAS_PASSWORD", "Devs2522*")
 ADMIN_INSTANCIAS_COOKIE_NAME = "admin_instancias_auth"
@@ -117,6 +129,24 @@ class ProdutoSessao(Base):
     laboratorio = Column(String, nullable=True)
 
     sessao = relationship("Sessao", back_populates="produtos")
+    pedido = relationship("Pedido", back_populates="items")
+
+class Banner(Base):
+    __tablename__ = "banners"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    titulo = Column(String)
+    subtitulo = Column(String)
+    descricao = Column(String)
+    badge_texto = Column(String)
+    cor_primaria = Column(String)
+    cor_secundaria = Column(String)
+    icone = Column(String)
+    tipo_promocao = Column(String)
+    percentual_desconto = Column(Numeric(5, 2), nullable=True)
+    valor_minimo = Column(Numeric(10, 2), nullable=True)
+    posicao = Column(Integer)
+    ativo = Column(Boolean, default=True)
+    imagem_url = Column(String, nullable=True)
 
 class SelecaoItem(Base):
     __tablename__ = "selecoes"
@@ -129,6 +159,8 @@ class SelecaoItem(Base):
     valor_total = Column(Numeric(10, 2), nullable=False)
     forma_pagamento = Column(String, nullable=True)  # Novo campo para forma de pagamento
     criado_em = Column(DateTime, default=datetime.utcnow)
+
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -279,6 +311,13 @@ def rate_limit_dep(request: Request):
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
         window["count"] += 1
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # -------------------- App --------------------
 app = FastAPI()
 
@@ -310,7 +349,14 @@ async def serve_root():
         return FileResponse("/app/catalogo.html", media_type="text/html")
     else:
         # Local development environment
-        return FileResponse(os.path.join(BASE_DIR, "catalogo.html"), media_type="text/html")
+        local_path = os.path.join(BASE_DIR, "catalogo.html")
+        if os.path.exists(local_path):
+            return FileResponse(local_path, media_type="text/html")
+        return HTMLResponse("<h1>Catálogo não encontrado</h1>", status_code=404)
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
 
 @app.get("/test_order.html")
 async def serve_test_order():
@@ -351,6 +397,17 @@ async def serve_status_page():
 async def serve_admin_pedidos():
     """Serve a página de gerenciamento de pedidos (admin)"""
     file_name = "admin-pedidos.html"
+    docker_path = f"/app/{file_name}"
+    local_path = os.path.join(BASE_DIR, file_name)
+    if os.path.exists(docker_path):
+        return FileResponse(docker_path, media_type="text/html")
+    else:
+        return FileResponse(local_path, media_type="text/html")
+
+@app.get("/admin-banners.html")
+async def serve_admin_banners():
+    """Serve a página de gerenciamento de banners (admin)"""
+    file_name = "admin-banners.html"
     docker_path = f"/app/{file_name}"
     local_path = os.path.join(BASE_DIR, file_name)
     if os.path.exists(docker_path):
@@ -799,16 +856,29 @@ def update_order_status(order_id: int, request: dict):
         if not new_status:
             raise HTTPException(status_code=400, detail="Status não fornecido")
         
+        # Mapeamento de status Frontend (PT) -> Backend (EN)
+        status_map = {
+            'pendente': 'pending',
+            'confirmado': 'confirmed',
+            'preparando': 'processing',
+            'enviado': 'shipped',
+            'entregue': 'delivered',
+            'cancelado': 'cancelled'
+        }
+        
+        # Se vier em PT, converte. Se não, usa o que veio (assumindo EN)
+        db_status = status_map.get(new_status, new_status)
+
         # Validar status
         valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
-        if new_status not in valid_statuses:
+        if db_status not in valid_statuses:
             raise HTTPException(status_code=400, detail=f"Status inválido: {new_status}")
         
-        print(f"[API] Atualizando pedido {order_id} para status: {new_status}")
+        print(f"[API] Atualizando pedido {order_id} para status: {db_status} (origem: {new_status})")
         
         # Atualizar no Supabase
         result = order_processor.supabase.table("orders").update({
-            "status": new_status,
+            "status": db_status,
             "updated_at": datetime.utcnow().isoformat()
         }).eq("id", order_id).execute()
         
@@ -831,6 +901,54 @@ def update_order_status(order_id: int, request: dict):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar status: {str(e)}")
+
+@app.put("/api/orders/{order_id}/delivery-status")
+def update_delivery_status(order_id: int, request: dict):
+    """Atualiza o status de entrega de um pedido"""
+    try:
+        print(f"[API] PUT /api/orders/{order_id}/delivery-status")
+        print(f"[API] Request body: {request}")
+        
+        if not ORDER_PROCESSOR_AVAILABLE or order_processor is None:
+            print("[API] ERROR: Order processor não disponível")
+            raise HTTPException(status_code=503, detail="Sistema de pedidos não disponível")
+        
+        new_status = request.get("delivery_status")
+        if not new_status:
+            raise HTTPException(status_code=400, detail="Status de entrega não fornecido")
+        
+        # Validar status
+        valid_statuses = ['pending', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered', 'failed', 'returned', 'in_transit']
+        if new_status not in valid_statuses:
+            raise HTTPException(status_code=400, detail=f"Status de entrega inválido: {new_status}")
+        
+        print(f"[API] Atualizando entrega do pedido {order_id} para: {new_status}")
+        
+        # Atualizar no Supabase
+        result = order_processor.supabase.table("orders").update({
+            "delivery_status": new_status,
+            "updated_at": datetime.utcnow().isoformat()
+        }).eq("id", order_id).execute()
+        
+        if not result.data:
+            print(f"[API] ERROR: Pedido {order_id} não encontrado")
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+        
+        print(f"[API] Entrega do pedido {order_id} atualizada com sucesso")
+        return {
+            "success": True,
+            "message": "Status de entrega atualizado com sucesso",
+            "order_id": order_id,
+            "new_delivery_status": new_status
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[API ERROR] Erro ao atualizar status de entrega: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao atualizar status de entrega: {str(e)}")
 
 # Função auxiliar para enviar link do entregador via WhatsApp
 async def send_delivery_link_to_driver(order_id: int, order_data: dict, base_url_override: Optional[str] = None):
@@ -1204,6 +1322,79 @@ def listar_banners():
                 }
             ]
         }
+
+# -------------------- Admin Banners API --------------------
+class BannerIn(BaseModel):
+    titulo: str
+    subtitulo: Optional[str] = None
+    descricao: Optional[str] = None
+    badge_texto: Optional[str] = None
+    cor_primaria: Optional[str] = None
+    cor_secundaria: Optional[str] = None
+    icone: Optional[str] = None
+    tipo_promocao: Optional[str] = None
+    percentual_desconto: Optional[float] = None
+    valor_minimo: Optional[float] = None
+    posicao: int
+    ativo: bool
+    imagem_url: Optional[str] = None
+
+@app.get("/api/admin/banners")
+def admin_list_banners():
+    """Lista todos os banners (incluindo inativos) para o admin"""
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            raise HTTPException(status_code=503, detail="Sistema indisponível")
+        
+        result = order_processor.supabase.table("banners").select("*").order("posicao").execute()
+        return {"banners": result.data or []}
+    except Exception as e:
+        print(f"[ERROR] Erro ao listar banners admin: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/banners")
+def admin_create_banner(banner: BannerIn):
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            raise HTTPException(status_code=503, detail="Sistema indisponível")
+        
+        data = banner.dict()
+        result = order_processor.supabase.table("banners").insert(data).execute()
+        if result.data:
+            return result.data[0]
+        raise HTTPException(status_code=500, detail="Falha ao criar banner")
+    except Exception as e:
+        print(f"[ERROR] Erro ao criar banner: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/admin/banners/{banner_id}")
+def admin_update_banner(banner_id: int, banner: BannerIn):
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            raise HTTPException(status_code=503, detail="Sistema indisponível")
+        
+        data = banner.dict()
+        result = order_processor.supabase.table("banners").update(data).eq("id", banner_id).execute()
+        if result.data:
+            return result.data[0]
+        raise HTTPException(status_code=404, detail="Banner não encontrado")
+    except Exception as e:
+        print(f"[ERROR] Erro ao atualizar banner: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/admin/banners/{banner_id}")
+def admin_delete_banner(banner_id: int):
+    try:
+        if not ORDER_PROCESSOR_AVAILABLE or not order_processor:
+            raise HTTPException(status_code=503, detail="Sistema indisponível")
+        
+        result = order_processor.supabase.table("banners").delete().eq("id", banner_id).execute()
+        if result.data:
+            return {"success": True}
+        raise HTTPException(status_code=404, detail="Banner não encontrado")
+    except Exception as e:
+        print(f"[ERROR] Erro ao excluir banner: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/fix-banner-image")
 def fix_banner_image():
@@ -2136,6 +2327,142 @@ async def _start_auto_close_worker():
         asyncio.create_task(_auto_close_loop())
     except Exception as e:
         print(f"[AUTO CLOSE] Falha ao iniciar worker: {e}")
+
+# -------------------- Admin & Evolution API Endpoints --------------------
+
+class AdminLoginPayload(BaseModel):
+    password: str
+
+@app.post("/api/admin-instancias/login")
+def admin_login(payload: AdminLoginPayload):
+    if payload.password == ADMIN_INSTANCIAS_PASSWORD:
+        return {"ok": True}
+    return {"ok": False, "error": "Senha incorreta"}
+
+class ContactsConfigPayload(BaseModel):
+    seller_phones: List[str]
+    driver_phones: List[str]
+
+@app.get("/api/config/contacts")
+def get_contacts_config():
+    return load_contacts_config()
+
+@app.put("/api/config/contacts")
+def update_contacts_config(payload: ContactsConfigPayload):
+    try:
+        import json
+        _ensure_contacts_file()
+        data = {
+            "seller_phones": payload.seller_phones,
+            "driver_phones": payload.driver_phones
+        }
+        with open(CONTACTS_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Persistência de Instâncias (Simples JSON)
+INSTANCES_CONFIG_PATH = os.getenv("INSTANCES_CONFIG_PATH", "/data/instances.json")
+
+def _ensure_instances_file():
+    try:
+        target_dir = os.path.dirname(INSTANCES_CONFIG_PATH)
+        if target_dir:
+            os.makedirs(target_dir, exist_ok=True)
+    except: pass
+    if not os.path.exists(INSTANCES_CONFIG_PATH):
+        try:
+            with open(INSTANCES_CONFIG_PATH, "w", encoding="utf-8") as f:
+                f.write("[]")
+        except: pass
+
+class InstanceConfig(BaseModel):
+    id: str
+    instanceName: str
+    apiUrl: str
+    apiKey: str
+    sellerPhone: Optional[str] = ""
+
+@app.get("/api/evolution/instances")
+def get_instances():
+    import json
+    _ensure_instances_file()
+    try:
+        with open(INSTANCES_CONFIG_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except: return []
+
+@app.post("/api/evolution/instances")
+def update_instances(payload: List[InstanceConfig]):
+    import json
+    _ensure_instances_file()
+    try:
+        data = [x.dict() for x in payload]
+        with open(INSTANCES_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/evolution/connection-state")
+def get_connection_state(instance: str):
+    """
+    Proxy para checar status da conexão na Evolution API.
+    Evita CORS e problemas de mixed content.
+    """
+    import json
+    # Carrega instâncias para achar a URL e Key correta
+    instances = get_instances()
+    inst_cfg = next((i for i in instances if i.get("instanceName") == instance), None)
+    
+    if not inst_cfg:
+        # Tenta fallback com variáveis de ambiente se não achar no JSON
+        env_inst = os.getenv("EVOLUTION_INSTANCE_NAME")
+        if env_inst == instance:
+            inst_cfg = {
+                "apiUrl": os.getenv("EVOLUTION_API_URL"),
+                "apiKey": os.getenv("EVOLUTION_API_KEY")
+            }
+    
+    if not inst_cfg:
+        raise HTTPException(status_code=404, detail="Instância não encontrada")
+
+    api_url = inst_cfg.get("apiUrl")
+    api_key = inst_cfg.get("apiKey")
+    
+    if not api_url or not api_key:
+        raise HTTPException(status_code=500, detail="Configuração incompleta da instância")
+
+    # Tenta endpoints conhecidos da Evolution
+    headers = {
+        "apikey": api_key,
+        "x-api-key": api_key,
+        "Authorization": api_key if api_key.startswith("Bearer ") else f"Bearer {api_key}"
+    }
+    
+    # Remove barra final se houver
+    if api_url.endswith("/"): api_url = api_url[:-1]
+
+    endpoints = [
+        f"{api_url}/instance/connectionState/{instance}",
+        f"{api_url}/instance/connectionState?instance={instance}",
+        f"{api_url}/instances/{instance}/connectionState"
+    ]
+
+    for url in endpoints:
+        try:
+            print(f"[PROXY] Checando: {url}")
+            resp = requests.get(url, headers=headers, timeout=5)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            print(f"[PROXY] Erro ao conectar em {url}: {e}")
+            continue
+
+    raise HTTPException(status_code=502, detail="Não foi possível contatar a Evolution API")
+
+
 
 if __name__ == "__main__":
     import uvicorn

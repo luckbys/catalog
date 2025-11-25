@@ -1,0 +1,713 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weshou7",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        3808,
+        880
+      ],
+      "id": "56218b0a-365a-479e-999b-5a372de0c18b",
+      "name": "Webhook - Receber Mensagem",
+      "webhookId": "f169ddf8-9bac-4361-a5e7-478ac0827bbf"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "message-id",
+              "name": "message",
+              "value": "={{ $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage?.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "from-id",
+              "name": "from",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "instance-id",
+              "name": "instance",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "msgid-id",
+              "name": "msgid",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            },
+            {
+              "id": "fromme-id",
+              "name": "from_me",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "string"
+            },
+            {
+              "id": "nome-id",
+              "name": "nome",
+              "value": "={{ $json.body.data.pushName || 'Cliente' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4064,
+        896
+      ],
+      "id": "24c8c6d0-5278-49b7-bf30-752f0f3f5618",
+      "name": "Extrair Dados da Mensagem"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-fromme",
+              "leftValue": "={{ $json.from_me }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        928
+      ],
+      "id": "04c763e0-1dca-4b70-9671-4edb09c682ab",
+      "name": "Verificar Se É do Cliente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "pass-message",
+              "name": "message",
+              "value": "={{ $('Extrair Dados da Mensagem').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-from",
+              "name": "from",
+              "value": "={{ $('Extrair Dados da Mensagem').item.json.from }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-nome",
+              "name": "nome",
+              "value": "={{ $('Extrair Dados da Mensagem').item.json.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-instance",
+              "name": "instance",
+              "value": "={{ $('Extrair Dados da Mensagem').item.json.instance }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4480,
+        864
+      ],
+      "id": "17788291-7ba5-4bf7-8aa2-11daafaf1c47",
+      "name": "Preparar Contexto"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "produtos",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "descricao",
+              "condition": "ilike",
+              "keyValue": "={{ '%' + $fromAI('search_term', 'termo de busca do medicamento', 'string') + '%' }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        4928,
+        1296
+      ],
+      "id": "cdda9a0f-c1b6-49bc-afc1-7bddec62ae3a",
+      "name": "Buscar Produtos no Banco",
+      "credentials": {
+        "supabaseApi": {
+          "id": "yIPm0m5T4MK8AkfA",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Extrair Dados da Mensagem').item.json.from }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        4800,
+        1168
+      ],
+      "id": "73c1e41e-0a60-4f2d-bb2f-dc3503c8429e",
+      "name": "Memória da Conversa"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4624,
+        1136
+      ],
+      "id": "13a29d41-37ed-4167-be85-6a0743147717",
+      "name": "Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gpN4f9Ybl64teuKr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "Você é o Atendente Virtual da Farmácia HAKIM.\n\n=== REGRAS CRÍTICAS DE FORMATO ===\n\nQUANDO BUSCAR PRODUTOS:\n1. Use a tool 'Buscar Produtos no Banco' com o termo de busca\n2. A tool retornará um array de produtos\n3. SEMPRE organize a resposta EXATAMENTE assim:\n\nMENSAGEM: [sua mensagem amigável]\nPRODUTOS_JSON:[array completo dos produtos]\n\nEXEMPLO CORRETO:\nMENSAGEM: Encontrei 3 opções de Dipirona para você! 💊\nPRODUTOS_JSON:[{\"id\":1,\"descricao\":\"DIPIRONA\",\"apresentacao\":\"500MG\",\"laboratorio\":\"MEDLEY\",\"valor\":8.50,\"quantidade\":100},{\"id\":2,\"descricao\":\"DIPIRONA\",\"apresentacao\":\"1G\",\"laboratorio\":\"EMS\",\"valor\":12.90,\"quantidade\":50}]\n\n⚠️ REGRAS ESTRITAS:\n- NUNCA use ```json ou ``` ou markdown\n- NÃO quebre linhas no JSON\n- Coloque o JSON EXATAMENTE como recebeu da tool\n- Use APENAS: MENSAGEM: texto\\nPRODUTOS_JSON:[array]\n\n=== QUANDO BUSCAR PRODUTOS ===\n- Quando o cliente perguntar sobre algum medicamento específico\n- Quando o cliente mencionar um sintoma e você sugerir um medicamento\n- Quando o cliente pedir para ver opções\n\nNUNCA busque produtos sem razão clara!\n\n=== FLUXO DE ATENDIMENTO ===\n\n1. SAUDAÇÃO & DESCOBERTA\n   - Seja cordial\n   - Pergunte como pode ajudar\n   - Se o cliente mencionar um produto, busque-o\n\n2. APRESENTAÇÃO DE PRODUTOS\n   - Use o formato MENSAGEM + PRODUTOS_JSON\n   - Destaque benefícios se houver promoção\n   - Pergunte se deseja adicionar ao pedido\n\n3. COLETA DE DADOS DO PEDIDO\n   a) Confirme o produto escolhido\n   b) Pergunte a QUANTIDADE\n   c) Pergunte: ENTREGA ou RETIRADA?\n   d) Se ENTREGA:\n      - Endereço completo (rua, número, bairro)\n      - Ponto de referência (opcional)\n   e) Forma de PAGAMENTO:\n      - Dinheiro (se sim, precisa troco?)\n      - Pix\n      - Cartão (débito/crédito)\n   f) Alguma OBSERVAÇÃO?\n\n4. CONFIRMAÇÃO\n   - Mostre TODOS os dados do pedido\n   - Valor total\n   - Pergunte: \"Está tudo correto? Posso confirmar?\"\n   - Aguarde confirmação EXPLÍCITA\n\n5. FINALIZAÇÃO\n   - Use a tool 'criar_pedido' com todos os dados\n   - Confirme sucesso\n   - Agradeça\n\n=== REGRAS DE CONDUTA ===\n- Seja natural e profissional\n- Confirme CADA dado antes de avançar\n- NUNCA finalize sem confirmação do cliente\n- Se cliente pedir mudança, seja flexível\n- Não invente informações sobre produtos\n- Se não souber, seja honesto\n\n=== CÁLCULO DE VALOR TOTAL ===\nSempre calcule: quantidade × valor_unitário\nExemplo: 2 unidades × R$ 8,50 = R$ 17,00"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4688,
+        848
+      ],
+      "id": "23eefd6a-8d2f-4176-a4b1-05f93af81e07",
+      "name": "Agente IA"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nconst editData = $('Extrair Dados da Mensagem').first().json;\n\nconsole.log('📥 OUTPUT RECEBIDO:', output);\n\nlet produtos = [];\nlet mensagem = '';\nlet temProdutos = false;\n\n// Verifica se tem o formato esperado\nif (output && typeof output === 'string') {\n  \n  // Caso 1: Formato com MENSAGEM: e PRODUTOS_JSON:\n  if (output.includes('PRODUTOS_JSON:')) {\n    try {\n      const partes = output.split('PRODUTOS_JSON:');\n      \n      // Extrai mensagem\n      mensagem = partes[0]\n        .replace('MENSAGEM:', '')\n        .trim();\n      \n      // Extrai e limpa JSON\n      let jsonStr = partes[1]\n        .trim()\n        .replace(/```json/g, '')\n        .replace(/```/g, '')\n        .replace(/\\n/g, '')\n        .replace(/\\r/g, '')\n        .trim();\n      \n      // Garante que termina com ]\n      const lastBracket = jsonStr.lastIndexOf(']');\n      if (lastBracket !== -1) {\n        jsonStr = jsonStr.substring(0, lastBracket + 1);\n      }\n      \n      console.log('🔍 JSON EXTRAÍDO:', jsonStr);\n      \n      // Parse do JSON\n      const parsed = JSON.parse(jsonStr);\n      \n      // Normaliza array\n      if (Array.isArray(parsed)) {\n        produtos = parsed;\n      } else if (parsed.data && Array.isArray(parsed.data)) {\n        produtos = parsed.data;\n      } else if (parsed.produtos && Array.isArray(parsed.produtos)) {\n        produtos = parsed.produtos;\n      } else {\n        produtos = [parsed];\n      }\n      \n      // Valida e limpa produtos\n      produtos = produtos\n        .filter(p => p && (p.descricao || p.nome))\n        .map(p => ({\n          id: p.id || 0,\n          descricao: p.descricao || p.nome || '',\n          apresentacao: p.apresentacao || '',\n          laboratorio: p.laboratorio || '',\n          valor: parseFloat(p.valor || p.preco || 0),\n          preco_promocional: p.preco_promocional ? parseFloat(p.preco_promocional) : null,\n          quantidade: Math.max(0, parseInt(p.quantidade || p.estoque || 0)),\n          imagem_url: p.imagem_url || '',\n          categoria: p.categoria || 'Medicamentos'\n        }));\n      \n      temProdutos = produtos.length > 0;\n      \n      console.log(`✅ ${produtos.length} produtos processados`);\n      \n    } catch (error) {\n      console.error('❌ Erro ao processar JSON:', error.message);\n      console.error('JSON problemático:', partes?.[1]);\n      mensagem = output;\n      produtos = [];\n      temProdutos = false;\n    }\n  } else {\n    // Caso 2: Apenas mensagem de texto\n    mensagem = output;\n    temProdutos = false;\n    console.log('📝 Resposta sem produtos');\n  }\n}\n\nconst resultado = {\n  tem_produtos: temProdutos,\n  mensagem_cliente: mensagem,\n  produtos: produtos,\n  quantidade_produtos: produtos.length,\n  cliente_telefone: editData.from || '',\n  cliente_nome: editData.nome || 'Cliente',\n  instance: editData.instance || '',\n  timestamp: new Date().toISOString()\n};\n\nconsole.log('📤 RESULTADO FINAL:', JSON.stringify(resultado, null, 2));\n\nreturn { json: resultado };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4960,
+        880
+      ],
+      "id": "4dc7ed6d-aafe-41fc-9d43-39b0f7ce8b76",
+      "name": "Processar Resposta IA"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-produtos",
+              "leftValue": "={{ $json.tem_produtos }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "check-quantidade",
+              "leftValue": "={{ $json.quantidade_produtos }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5184,
+        880
+      ],
+      "id": "a2f7c70d-4c7e-4e99-96c7-e160b7a2f211",
+      "name": "Tem Produtos?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hakimfarma.devsible.com.br/api/produtos/criar-sessao",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5632,
+        880
+      ],
+      "id": "84ae4584-ab84-492d-b45c-572ecccfed63",
+      "name": "Criar Sessão no Catálogo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\nconst processado = $('Processar Resposta IA').first().json;\n\nlet catalogoUrl = 'Link não disponível';\n\n// Busca o link em diferentes possíveis estruturas\nif (apiResponse.link_produtos) {\n  catalogoUrl = apiResponse.link_produtos;\n} else if (apiResponse.data?.link_produtos) {\n  catalogoUrl = apiResponse.data.link_produtos;\n} else if (apiResponse.catalogo_url) {\n  catalogoUrl = apiResponse.catalogo_url;\n} else if (apiResponse.data?.catalogo_url) {\n  catalogoUrl = apiResponse.data.catalogo_url;\n}\n\nconst mensagemFinal = `${processado.mensagem_cliente}\\n\\n📋 *${processado.quantidade_produtos} produto(s) encontrado(s)*\\n\\n👉 Clique no link abaixo para visualizar:\\n${catalogoUrl}`;\n\nreturn {\n  json: {\n    instance: processado.instance,\n    from: processado.cliente_telefone,\n    messageText: mensagemFinal,\n    catalogo_url: catalogoUrl\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5856,
+        880
+      ],
+      "id": "25c9b643-162f-4465-b4b8-13d679009f30",
+      "name": "Preparar Mensagem do Catálogo"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $json.instance }}",
+        "remoteJid": "={{ $json.from }}",
+        "messageText": "🔍 Gerando seu catálogo personalizado...",
+        "options_message": {
+          "delay": 1000
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        6080,
+        880
+      ],
+      "id": "83dc9dce-501a-4bbb-8e29-2203705db7b4",
+      "name": "Mensagem Gerando",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6304,
+        880
+      ],
+      "id": "a960d0e1-ebdd-4429-80da-354182e922b8",
+      "name": "Aguardar Processamento",
+      "webhookId": "wait-catalogo-123"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Preparar Mensagem do Catálogo').item.json.instance }}",
+        "remoteJid": "={{ $('Preparar Mensagem do Catálogo').item.json.from }}",
+        "messageText": "={{ $('Preparar Mensagem do Catálogo').item.json.messageText }}",
+        "options_message": {
+          "delay": 1000
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        6528,
+        880
+      ],
+      "id": "304aedde-28bf-46aa-96b8-78597d6ae303",
+      "name": "Enviar Link do Catálogo",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "hakin t",
+        "remoteJid": "={{ $('Extrair Dados da Mensagem').item.json.from }}",
+        "messageId": "={{ $('Extrair Dados da Mensagem').item.json.msgid }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        5408,
+        1072
+      ],
+      "id": "0dde0df9-5d92-481f-bc47-265aa47689a4",
+      "name": "Marcar como Lida (Texto)",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "criar_pedido",
+        "description": "Cria um pedido após confirmação do cliente. Use SOMENTE quando o cliente confirmar todos os dados (produtos, quantidade, entrega/retirada, endereço se entrega, forma de pagamento)",
+        "workflowId": "={{ $workflow.id }}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"cliente_nome\": \"string\",\n  \"cliente_telefone\": \"string\",\n  \"produtos\": [{\"nome\": \"string\", \"quantidade\": \"number\", \"valor_unitario\": \"number\"}],\n  \"tipo_entrega\": \"entrega ou retirada\",\n  \"endereco\": \"string opcional\",\n  \"forma_pagamento\": \"string\",\n  \"valor_total\": \"number\",\n  \"observacoes\": \"string opcional\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4928,
+        1424
+      ],
+      "id": "6fc01b40-5676-4567-ab5b-2a2689c68ee6",
+      "name": "Tool Criar Pedido5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nfunction toFloat(v) {\n  const n = parseFloat(v);\n  return isNaN(n) ? null : n;\n}\n\nconst produtos = (input.produtos || []).map(p => {\n  const valorBase = toFloat(p.valor) || 0;\n  const valorPromo = toFloat(p.preco_promocional);\n  \n  let preco = valorBase;\n  let preco_original = null;\n  let percentual_desconto = null;\n  \n  // Se tem preço promocional válido\n  if (valorPromo && valorPromo > 0 && valorPromo < valorBase) {\n    preco_original = valorBase;\n    preco = valorPromo;\n    percentual_desconto = Math.round(((valorBase - valorPromo) / valorBase) * 100);\n  }\n  \n  return {\n    id: p.id || 0,\n    descricao: p.descricao || '',\n    apresentacao: p.apresentacao || '',\n    laboratorio: p.laboratorio || '',\n    preco: Math.round(preco * 100) / 100,\n    preco_original: preco_original ? Math.round(preco_original * 100) / 100 : null,\n    percentual_desconto: percentual_desconto,\n    estoque: Math.max(0, parseInt(p.quantidade) || 0),\n    imagem_url: p.imagem_url || '',\n    categoria: p.categoria || 'Medicamentos'\n  };\n});\n\nreturn {\n  json: {\n    cliente_nome: input.cliente_nome || 'Cliente',\n    cliente_telefone: input.cliente_telefone,\n    produtos,\n    quantidade_produtos: produtos.length,\n    timestamp: input.timestamp\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5408,
+        880
+      ],
+      "id": "4708f927-6911-4fdf-9949-a6ed2973bf40",
+      "name": "Preparar Dados para API5"
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "hakin t",
+        "remoteJid": "={{ $('Extrair Dados da Mensagem').item.json.from }}",
+        "messageId": "={{ $('Extrair Dados da Mensagem').item.json.msgid }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        6752,
+        880
+      ],
+      "id": "a2be66f0-548d-4647-9f19-208ecfd1dfb1",
+      "name": "Marcar como Lida5",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Processar Resposta IA').item.json.instance }}",
+        "remoteJid": "={{ $('Processar Resposta IA').item.json.cliente_telefone }}",
+        "messageText": "={{ $('Processar Resposta IA').item.json.mensagem_cliente }}",
+        "options_message": {
+          "delay": 1500
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        5184,
+        1072
+      ],
+      "id": "a08491bb-4792-489d-8cbc-0c70225f3d92",
+      "name": "Enviar Mensagem Texto5",
+      "credentials": {
+        "evolutionApi": {
+          "id": "f4u8xEbHpc6JLVBT",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4400,
+        1248
+      ],
+      "id": "5c7c5c50-b0c3-45a5-b5dc-4dc7fa7e35b4",
+      "name": "Edit Fields9"
+    }
+  ],
+  "connections": {
+    "Webhook - Receber Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Extrair Dados da Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Dados da Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Verificar Se É do Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Se É do Cliente": {
+      "main": [
+        [
+          {
+            "node": "Preparar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Contexto": {
+      "main": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Produtos no Banco": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória da Conversa": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente IA": {
+      "main": [
+        [
+          {
+            "node": "Processar Resposta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Resposta IA": {
+      "main": [
+        [
+          {
+            "node": "Tem Produtos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Produtos?": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados para API5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensagem Texto5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Sessão no Catálogo": {
+      "main": [
+        [
+          {
+            "node": "Preparar Mensagem do Catálogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Mensagem do Catálogo": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Gerando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Gerando": {
+      "main": [
+        [
+          {
+            "node": "Aguardar Processamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar Processamento": {
+      "main": [
+        [
+          {
+            "node": "Enviar Link do Catálogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Link do Catálogo": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Lida5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool Criar Pedido5": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Dados para API5": {
+      "main": [
+        [
+          {
+            "node": "Criar Sessão no Catálogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem Texto5": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Lida (Texto)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "77f30554d2102f542e00b67be9506d390e9827f42a3e24a5d0de8d5fb8d2944f"
+  }
+}

@@ -1,320 +1,336 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Pedidos - Hakim Farma Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="favicon.ico" />
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
-        
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
             border-radius: 9999px;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
             transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
-        
+
         .status-pendente {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #92400e;
-            border: 2px solid #fbbf24;
+            background-color: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fcd34d;
         }
-        
+
         .status-confirmado {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            color: #1e40af;
-            border: 2px solid #3b82f6;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
         }
-        
+
         .status-preparando {
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            background-color: #eef2ff;
             color: #4338ca;
-            border: 2px solid #6366f1;
+            border: 1px solid #a5b4fc;
         }
-        
+
         .status-enviado {
-            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
-            color: #5b21b6;
-            border: 2px solid #8b5cf6;
+            background-color: #f5f3ff;
+            color: #6d28d9;
+            border: 1px solid #c4b5fd;
         }
-        
+
         .status-entregue {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
-            border: 2px solid #10b981;
+            background-color: #ecfdf5;
+            color: #047857;
+            border: 1px solid #6ee7b7;
         }
-        
+
         .status-cancelado {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
-            border: 2px solid #ef4444;
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
         }
-        
+
         .order-card {
-            transition: all 0.3s ease;
-            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
         }
-        
+
         .order-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-            border-color: #10b981;
-        }
-        
-        .action-btn {
-            transition: all 0.2s;
-        }
-        
-        .action-btn:hover {
-            transform: scale(1.05);
-        }
-        
-        .filter-chip {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .filter-chip:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        
+
+        .filter-chip {
+            transition: all 0.2s;
+        }
+
         .filter-chip.active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background-color: #10b981;
             color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
         }
-        
+
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
-        .order-card {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .notification.show {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .delivery-status-select {
-            padding: 0.5rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .delivery-status-select:hover {
-            border-color: #10b981;
-        }
-        
-        .delivery-status-select:focus {
-            outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
 
-        /* Mobile minimal overrides */
-        @media (max-width: 640px) {
-            header .container { padding: 0.5rem 1rem; }
-            header h1 { font-size: 1.125rem; }
-            header p { display: none; }
-
-            .status-badge {
-                gap: 0.25rem;
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
-                border-width: 1px;
-            }
-            .status-pendente,
-            .status-confirmado,
-            .status-preparando,
-            .status-enviado,
-            .status-entregue,
-            .status-cancelado {
-                background: #F9FAFB;
-                box-shadow: none;
-            }
-
-            .order-card {
-                padding: 0.75rem !important;
-                border-width: 1px;
-                box-shadow: none;
-            }
-            .order-card:hover {
-                transform: none;
-                box-shadow: none;
-                border-color: #e5e7eb;
-            }
-
-            #filtersSection .flex {
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                -webkit-overflow-scrolling: touch;
-                gap: 0.5rem;
-            }
-            .filter-chip {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
-                border: 1px solid #e5e7eb;
-                background: #fff;
-                box-shadow: none;
-            }
-            .filter-chip.active {
-                background: #10b981;
-                color: #fff;
-                box-shadow: none;
-            }
-
-            /* Ocultar estatísticas no mobile para foco na lista */
-            #statsGrid { display: none; }
-            #statsGrid.mobile-open { display: grid !important; }
-            main { padding-top: 0.5rem; }
-
-            /* Ações compactas (menu de 3 pontinhos) no mobile */
-            .actions-inline { display: none !important; }
-            .actions-menu { display: inline-block !important; }
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
         }
-
-        /* Desktop mantém botões visíveis, menu oculto */
-        @media (min-width: 641px) {
-            .actions-inline { display: flex; }
-            .actions-menu { display: none; }
-        }
-
-        /* Estilos do menu de ações mobile */
-        .action-menu-trigger {
-            width: 2.25rem;
-            height: 2.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            background: #fff;
-            color: #374151;
-        }
-        .action-menu-trigger:hover { border-color: #10b981; color: #065f46; }
-        .action-menu-list {
-            position: absolute;
-            background: #fff;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-            min-width: 196px;
-            max-width: min(90vw, 320px);
-            padding: 0.25rem;
-            z-index: 20;
-            will-change: transform, top, bottom, left, right;
-        }
-        /* Alinhamento horizontal dinâmico */
-        .action-menu-list.align-right { right: 0; left: auto; transform: none; }
-        .action-menu-list.align-left { left: 0; right: auto; transform: none; }
-        .action-menu-list.align-center { left: 50%; right: auto; transform: translateX(-50%); }
-        .action-menu-list.drop-down { top: 2.75rem; }
-        .action-menu-list.drop-up { bottom: 2.75rem; }
-        .action-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #1f2937;
-        }
-        .action-menu-item:hover { background: #f3f4f6; }
-
-        /* Forçar exibir botões inline no mobile quando necessário */
-        .actions-inline--mobile { display: flex !important; }
-
-        /* Ajustes finos de suavidade */
-        .fade-update { animation: fadePulse 380ms ease-out; }
-        @keyframes fadePulse {
-            0% { box-shadow: 0 0 0 6px rgba(16,185,129,0.12); }
-            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.0); }
-        }
-
-        .card-enter { opacity: 0; transform: translateY(4px); }
-        .card-enter-active { opacity: 1; transform: translateY(0); transition: opacity 200ms ease-out, transform 200ms ease-out; }
-        .card-exit-active { opacity: 0; transition: opacity 180ms ease-out; }
-        .order-card { will-change: opacity, transform; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
+
+<body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen text-gray-800">
 
     <!-- Notification -->
-    <div id="notification" class="notification">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 6L9 17l-5-5"></path>
-        </svg>
-        <span id="notificationText">Status atualizado com sucesso!</span>
+    <div id="toast"
+        class="fixed top-4 right-4 hidden bg-white border-2 border-emerald-200 text-emerald-700 rounded-xl shadow-lg px-4 py-3 z-50 animate-slide-in">
+        <div class="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+            <span id="toastText" class="text-sm font-semibold">Status atualizado!</span>
+        </div>
     </div>
 
     <!-- Header -->
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-gray-100">
+        <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl overflow-hidden shadow-lg bg-white">
-                        <img src="public/logo.png" alt="Logo da Farmácia" class="w-full h-full object-contain p-1" />
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm bg-white border border-gray-100 p-1">
+                        <img src="public/logo.png" alt="Logo" class="w-full h-full object-contain" />
                     </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Admin Pedidos</h1>
-                        <p class="text-sm text-gray-600">Gerenciamento de Pedidos</p>
-                    </div>
+                    <main class="container mx-auto px-4 py-6 max-w-7xl">
+
+                        <!-- Stats Grid -->
+                        <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div
+                                class="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 hover:border-orange-200 transition-colors group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-2xl font-bold text-gray-800" id="statPendente">0</span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-500">Pendentes</p>
+                            </div>
+
+                            <div
+                                class="bg-white rounded-2xl p-4 shadow-sm border border-blue-100 hover:border-blue-200 transition-colors group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-2xl font-bold text-gray-800" id="statConfirmado">0</span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-500">Confirmados</p>
+                            </div>
+
+                            <div
+                                class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 hover:border-purple-200 transition-colors group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <rect x="1" y="3" width="15" height="13"></rect>
+                                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                        </svg>
+                                    </div>
+                                    <span class="text-2xl font-bold text-gray-800" id="statEnviado">0</span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-500">Em Entrega</p>
+                            </div>
+
+                            <div
+                                class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 hover:border-emerald-200 transition-colors group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-2xl font-bold text-gray-800" id="statEntregue">0</span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-500">Entregues</p>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div id="filtersSection" class="mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
+                            <div class="flex gap-2 min-w-max">
+                                <button
+                                    class="filter-chip active px-4 py-2 rounded-xl text-sm font-semibold border border-transparent bg-white shadow-sm text-gray-600 hover:bg-gray-50"
+                                    data-status="todos">
+                                    Todos
+                                </button>
+                                <button
+                                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                    data-status="pendente">
+                                    Pendentes
+                                </button>
+                                <button
+                                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                    data-status="confirmado">
+                                    Confirmados
+                                </button>
+                                <button
+                                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                    data-status="preparando">
+                                    Preparando
+                                </button>
+                                <button
+                                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                    data-status="enviado">
+                                    Em Entrega
+                                </button>
+                                <button
+                                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                    data-status="entregue">
+                                    Entregues
+                                </button>
+                                <button
+                                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                                    data-status="cancelado">
+                                    Cancelados
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Specific Order Banner -->
+                        <div id="specificOrderBanner"
+                            class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-blue-900">Filtrando Pedido</p>
+                                    <p class="text-sm text-blue-700">Exibindo apenas #<span
+                                            id="specificOrderNumber"></span></p>
+                                </div>
+                            </div>
+                            <a href="admin-pedidos.html"
+                                class="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                Limpar Filtro
+                            </a>
+                        </div>
+
+                        <!-- Orders List -->
+                        <div id="ordersList" class="grid grid-cols-1 gap-4">
+                            <!-- Orders will be injected here -->
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+                            <div
+                                class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M21 8v13H3V8"></path>
+                                    <path d="M1 3h22v5H1z"></path>
+                                    <path d="M10 12h4"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Nenhum pedido encontrado</h3>
+                            <p class="text-xs text-gray-500 font-medium">Gestão em Tempo Real</p>
+                        </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="hidden md:flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-lg border-2 border-emerald-200">
-                        <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                        <span class="text-sm font-semibold text-emerald-700">Online</span>
+
+                <div class="flex items-center gap-2">
+                    <div
+                        class="hidden md:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 mr-2">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide">Online</span>
                     </div>
-                    <a href="catalogo.html" class="text-sm text-gray-600 hover:text-emerald-600 transition-colors">
-                        ← Voltar ao Catálogo
+
+                    <a href="catalogo.html"
+                        class="hidden md:inline-flex items-center justify-center h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 transition-colors"
+                        title="Ver Catálogo">
+                        Catálogo
                     </a>
-                    <a href="admin-config.html" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-200 text-gray-600 bg-white hover:border-emerald-500 hover:text-emerald-600 transition-colors" aria-label="Configurar número de entrega e vendedor" title="Configurar número de entrega e vendedor">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.12 19.5 19.5 0 01-6-6 19.86 19.86 0 01-3.12-8.63A2 2 0 014.11 2h3a2 2 0 012 1.72 12.2 12.2 0 00.65 2.73 2 2 0 01-.45 2.1L8.09 9.91a16 16 0 006 6l1.36-1.36a2 2 0 012.1-.45 12.2 12.2 0 002.73.65A2 2 0 0122 16.92z"></path>
+
+                    <div class="h-6 w-px bg-gray-200 mx-1 hidden md:block"></div>
+
+                    <a href="admin-config.html"
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-600 bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
+                        title="Configurações">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                            </path>
+                            <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </a>
-                    <a href="admin-instancias.html" class="inline-flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-200 text-gray-600 bg-white hover:border-purple-500 hover:text-purple-600 transition-colors" aria-label="Gerenciar instâncias Evolution API" title="Gerenciar instâncias Evolution API">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M7 2h10v4H7z"></path>
-                            <path d="M3 8h18v8H3z"></path>
-                            <path d="M7 18h10v4H7z"></path>
+                    <a href="admin-instancias.html"
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-600 bg-white hover:border-purple-500 hover:text-purple-600 transition-all shadow-sm"
+                        title="Instâncias">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
                         </svg>
                     </a>
                 </div>
@@ -323,1014 +339,495 @@
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Mobile: Toggle Stats -->
-        <div class="md:hidden mb-4">
-            <button id="toggleStatsBtn" class="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-200 rounded-xl py-2 px-3 text-sm font-semibold text-gray-700 shadow-sm">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 19h4v-6H4v6zm6 0h4V5h-4v14zm6 0h4v-10h-4v10z"></path>
-                </svg>
-                <span>Mostrar estatísticas</span>
-            </button>
-        </div>
-        
-        <!-- Stats Cards -->
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+
+        <!-- Stats Grid -->
         <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-yellow-200">
+            <div
+                class="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 hover:border-orange-200 transition-colors group">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="9"></circle>
-                            <path d="M12 7v5l3 2"></path>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                    </span>
-                    <span class="text-2xl font-bold text-yellow-600" id="statPendente">0</span>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="statPendente">0</span>
                 </div>
-                <p class="text-sm text-gray-600 font-medium">Pendentes</p>
+                <p class="text-sm font-medium text-gray-500">Pendentes</p>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-blue-200">
+            <div
+                class="bg-white rounded-2xl p-4 shadow-sm border border-blue-100 hover:border-blue-200 transition-colors group">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 6L9 17l-5-5"></path>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
-                    </span>
-                    <span class="text-2xl font-bold text-blue-600" id="statConfirmado">0</span>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="statConfirmado">0</span>
                 </div>
-                <p class="text-sm text-gray-600 font-medium">Confirmados</p>
+                <p class="text-sm font-medium text-gray-500">Confirmados</p>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-purple-200">
+            <div
+                class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 hover:border-purple-200 transition-colors group">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 17h13v-6H9l-6 6z"></path>
-                            <path d="M16 11h3l3 3v3h-6v-6z"></path>
-                            <circle cx="7" cy="18" r="2"></circle>
-                            <circle cx="19" cy="18" r="2"></circle>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13"></rect>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
                         </svg>
-                    </span>
-                    <span class="text-2xl font-bold text-purple-600" id="statEnviado">0</span>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="statEnviado">0</span>
                 </div>
-                <p class="text-sm text-gray-600 font-medium">Em Entrega</p>
+                <p class="text-sm font-medium text-gray-500">Em Entrega</p>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-emerald-200">
+            <div
+                class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 hover:border-emerald-200 transition-colors group">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-2xl">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="9"></circle>
-                            <path d="M9 12l2 2 4-4"></path>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
-                    </span>
-                    <span class="text-2xl font-bold text-emerald-600" id="statEntregue">0</span>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800" id="statEntregue">0</span>
                 </div>
-                <p class="text-sm text-gray-600 font-medium">Entregues</p>
+                <p class="text-sm font-medium text-gray-500">Entregues</p>
             </div>
         </div>
 
         <!-- Filters -->
-        <div id="filtersSection" class="bg-white rounded-2xl p-4 shadow-md mb-6">
-            <div class="flex flex-wrap gap-2">
-                <button class="filter-chip active status-badge status-pendente" data-status="todos">
-                    📋 Todos
+        <div id="filtersSection" class="mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
+            <div class="flex gap-2 min-w-max">
+                <button
+                    class="filter-chip active px-4 py-2 rounded-xl text-sm font-semibold border border-transparent bg-white shadow-sm text-gray-600 hover:bg-gray-50"
+                    data-status="todos">
+                    Todos
                 </button>
-                <button class="filter-chip status-badge status-pendente" data-status="pendente">
-                    ⏳ Pendentes
+                <button
+                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    data-status="pendente">
+                    Pendentes
                 </button>
-                <button class="filter-chip status-badge status-confirmado" data-status="confirmado">
-                    ✅ Confirmados
+                <button
+                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    data-status="confirmado">
+                    Confirmados
                 </button>
-                <button class="filter-chip status-badge status-preparando" data-status="preparando">
-                    📦 Preparando
+                <button
+                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    data-status="preparando">
+                    Preparando
                 </button>
-                <button class="filter-chip status-badge status-enviado" data-status="enviado">
-                    🚚 Em Entrega
+                <button
+                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    data-status="enviado">
+                    Em Entrega
                 </button>
-                <button class="filter-chip status-badge status-entregue" data-status="entregue">
-                    🎉 Entregues
+                <button
+                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    data-status="entregue">
+                    Entregues
                 </button>
-                <button class="filter-chip status-badge status-cancelado" data-status="cancelado">
-                    ❌ Cancelados
+                <button
+                    class="filter-chip px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 bg-white shadow-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    data-status="cancelado">
+                    Cancelados
                 </button>
             </div>
         </div>
 
         <!-- Specific Order Banner -->
-        <div id="specificOrderBanner" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-4 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="font-bold text-blue-800">Visualizando Pedido Específico</p>
-                        <p class="text-sm text-blue-600" id="specificOrderText"><span id="specificOrderNumber"></span></p>
-                    </div>
+        <div id="specificOrderBanner"
+            class="hidden bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
                 </div>
-                <a href="admin-pedidos.html" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-                    Ver Todos os Pedidos
-                </a>
+                <div>
+                    <p class="font-bold text-blue-900">Filtrando Pedido</p>
+                    <p class="text-sm text-blue-700">Exibindo apenas #<span id="specificOrderNumber"></span></p>
+                </div>
             </div>
+            <a href="admin-pedidos.html"
+                class="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                Limpar Filtro
+            </a>
         </div>
 
         <!-- Orders List -->
-        <div id="ordersList" class="space-y-4">
-            <!-- Orders will be loaded here -->
+        <div id="ordersList" class="grid grid-cols-1 gap-4">
+            <!-- Orders will be injected here -->
         </div>
 
         <!-- Empty State -->
-        <div id="emptyState" class="hidden text-center py-16">
-            <div class="text-6xl mb-4">📦</div>
-            <h3 class="text-2xl font-bold text-gray-700 mb-2">Nenhum pedido encontrado</h3>
-            <p class="text-gray-500">Os pedidos aparecerão aqui quando forem realizados</p>
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 8v13H3V8"></path>
+                    <path d="M1 3h22v5H1z"></path>
+                    <path d="M10 12h4"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Nenhum pedido encontrado</h3>
+            <p class="text-gray-500 max-w-xs mx-auto">Não há pedidos com o status selecionado no momento.</p>
         </div>
 
     </main>
 
     <script>
-        // Orders array - será preenchido pela API
+        // --- Logic ---
         let orders = [];
         let initialRenderDone = false;
         let lastOrdersSignature = '';
         let isFetching = false;
-        
-        // Carregar pedidos da API
+        let currentFilter = 'todos';
+
+        // Mock Data Fallback
+        const mockOrders = [
+            {
+                id: 71,
+                order_number: 'PED-071',
+                customer: { name: 'João Silva', phone: '11987654321', address: 'Rua das Flores, 123' },
+                items: [{ name: 'Dipirona 500mg', quantity: 2, price: 8.50 }, { name: 'Vitamina C', quantity: 1, price: 15.00 }],
+                total: 32.00,
+                status: 'pendente',
+                createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
+                paymentMethod: 'pix'
+            },
+            {
+                id: 70,
+                order_number: 'PED-070',
+                customer: { name: 'Maria Santos', phone: '11912345678', address: 'Av. Principal, 456' },
+                items: [{ name: 'Paracetamol', quantity: 1, price: 12.00 }],
+                total: 12.00,
+                status: 'confirmado',
+                createdAt: new Date(Date.now() - 15 * 60000).toISOString(),
+                paymentMethod: 'cash',
+                cashReceived: 20,
+                cashChange: 8
+            }
+        ];
+
+        // --- Utils ---
+        const showToast = (msg, ok = true) => {
+            const el = document.getElementById('toast');
+            const txt = document.getElementById('toastText');
+            const icon = el.querySelector('svg');
+            txt.textContent = msg;
+            el.classList.remove('hidden');
+            el.className = `fixed top-4 right-4 bg-white border-2 rounded-xl shadow-lg px-4 py-3 z-50 animate-slide-in ${ok ? 'border-emerald-200 text-emerald-700' : 'border-red-200 text-red-700'}`;
+            if (ok) icon.innerHTML = '<path d="M20 6L9 17l-5-5"></path>';
+            else icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        };
+
+        const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+        const getTimeAgo = (dateStr) => {
+            const diff = Date.now() - new Date(dateStr).getTime();
+            const min = Math.floor(diff / 60000);
+            if (min < 1) return 'Agora mesmo';
+            if (min < 60) return `${min} min atrás`;
+            const h = Math.floor(min / 60);
+            if (h < 24) return `${h}h atrás`;
+            return new Date(dateStr).toLocaleDateString('pt-BR');
+        };
+
+        const getPaymentLabel = (method) => {
+            const map = { 'pix': 'PIX', 'card': 'Cartão', 'cash': 'Dinheiro' };
+            return map[method] || method || 'Não inf.';
+        };
+
+        const getDeliveryStatusLabel = (status) => {
+            const map = {
+                'pending': 'Pendente', 'preparing': 'Preparando', 'ready_for_pickup': 'Pronto',
+                'in_transit': 'Em Trânsito', 'out_for_delivery': 'Saiu p/ Entrega',
+                'delivered': 'Entregue', 'failed': 'Falhou', 'returned': 'Devolvido'
+            };
+            return map[status] || status;
+        };
+
+        // --- API ---
+        const getApiBase = () => {
+            const port = window.location.port;
+            // Se estiver rodando no frontend (3000, 5500, 8080), aponta para o backend (8000)
+            return (port === '3000' || port === '5500' || port === '8080') ? 'http://localhost:8000' : '';
+        };
+
         async function fetchOrders() {
-            console.log('[DEBUG] Iniciando fetchOrders...');
-            if (isFetching) { console.log('[DEBUG] fetch já em andamento, abortando chamada concorrente'); return; }
+            if (isFetching) return;
             isFetching = true;
             try {
-                console.log('[DEBUG] Fazendo fetch para /api/orders');
-                const response = await fetch('/api/orders');
-                console.log('[DEBUG] Response status:', response.status);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('[DEBUG] Dados recebidos:', data);
+                const API_BASE = getApiBase();
+                const res = await fetch(`${API_BASE}/api/orders`);
+                if (res.ok) {
+                    const data = await res.json();
                     orders = data.orders || [];
-                    console.log('[DEBUG] Total de pedidos:', orders.length);
-                    console.log('[DEBUG] Pedidos:', orders);
                 } else {
-                    console.error('[ERROR] Erro ao carregar pedidos:', response.status);
-                    const errorText = await response.text();
-                    console.error('[ERROR] Resposta:', errorText);
-                    // Usar dados mock como fallback
+                    console.warn('API Error, using mock');
                     orders = mockOrders;
-                    console.log('[DEBUG] Usando mock orders:', mockOrders.length);
                 }
-            } catch (error) {
-                console.error('[ERROR] Erro ao buscar pedidos:', error);
-                // Usar dados mock como fallback
+            } catch (e) {
+                console.error('Fetch Error', e);
                 orders = mockOrders;
-                console.log('[DEBUG] Usando mock orders (catch):', mockOrders.length);
             } finally {
-                // Atualizar interface
-                const newSignature = computeOrdersSignature(orders);
-                const hasChanges = newSignature !== lastOrdersSignature;
-                if (!initialRenderDone) {
-                    console.log('[DEBUG] Primeira renderização: loadOrders');
-                    loadOrders();
-                    initialRenderDone = true;
-                } else if (hasChanges) {
-                    console.log('[DEBUG] Atualização silenciosa: updateOrdersQuietly');
-                    updateOrdersQuietly();
+                const sig = JSON.stringify(orders.map(o => `${o.id}-${o.status}-${o.delivery_status}`));
+                if (sig !== lastOrdersSignature) {
+                    renderOrders();
+                    updateStats();
+                    lastOrdersSignature = sig;
                 } else {
-                    console.log('[DEBUG] Sem mudanças de dados: atualizando somente tempo');
-                    updateTimeAgoOnly();
+                    updateTimeAgo();
                 }
-                console.log('[DEBUG] Chamando updateStats...');
-                updateStats();
-                lastOrdersSignature = newSignature;
                 isFetching = false;
             }
         }
 
-        function computeOrdersSignature(list) {
-            try {
-                return list
-                    .map(o => `${o.id}|${o.status}|${o.delivery_status||''}|${o.total}|${(o.items||[]).length}`)
-                    .sort()
-                    .join('::');
-            } catch (e) {
-                return JSON.stringify(list).slice(0, 2048);
-            }
-        }
-        
-        // Mock data - Fallback se API não estiver disponível
-        const mockOrders = [
-            {
-                id: 71,
-                customer: {
-                    name: 'João Silva',
-                    phone: '(11) 98765-4321',
-                    address: 'Rua das Flores, 123 - Centro'
-                },
-                items: [
-                    { name: 'Dipirona 500mg', quantity: 2, price: 8.50 },
-                    { name: 'Vitamina C', quantity: 1, price: 15.00 }
-                ],
-                total: 32.00,
-                status: 'pendente',
-                createdAt: new Date(Date.now() - 5 * 60000),
-                estimatedDelivery: '45-60 min'
-            },
-            {
-                id: 70,
-                customer: {
-                    name: 'Maria Santos',
-                    phone: '(11) 91234-5678',
-                    address: 'Av. Principal, 456 - Jardim'
-                },
-                items: [
-                    { name: 'Paracetamol 750mg', quantity: 1, price: 12.00 }
-                ],
-                total: 12.00,
-                status: 'confirmado',
-                createdAt: new Date(Date.now() - 15 * 60000),
-                estimatedDelivery: '30-45 min'
-            },
-            {
-                id: 69,
-                customer: {
-                    name: 'Pedro Costa',
-                    phone: '(11) 99876-5432',
-                    address: 'Rua do Comércio, 789 - Vila Nova'
-                },
-                items: [
-                    { name: 'Shampoo Anticaspa', quantity: 1, price: 25.00 },
-                    { name: 'Condicionador', quantity: 1, price: 22.00 }
-                ],
-                total: 47.00,
-                status: 'enviado',
-                createdAt: new Date(Date.now() - 30 * 60000),
-                estimatedDelivery: '15-20 min'
-            }
-        ];
-
-        let currentFilter = 'todos';
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Carregar pedidos da API primeiro
-            await fetchOrders();
-            
-            // Depois configurar a interface
-            setupFilters();
-            setupStatsToggle();
-            highlightOrderFromURL();
-        });
-        
-        // Highlight order from URL parameter
-        function highlightOrderFromURL() {
+        // --- Render ---
+        function renderOrders() {
+            const listEl = document.getElementById('ordersList');
+            const emptyEl = document.getElementById('emptyState');
             const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('pedido');
-            
-            if (orderId) {
-                setTimeout(() => {
-                    const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-                    if (orderCard) {
-                        // Scroll to order
-                        orderCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        // Highlight with animation
-                        orderCard.style.border = '3px solid #10b981';
-                        orderCard.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.2)';
-                        
-                        // Remove highlight after 3 seconds
-                        setTimeout(() => {
-                            orderCard.style.border = '2px solid #e2e8f0';
-                            orderCard.style.boxShadow = '';
-                        }, 3000);
-                    }
-                }, 500);
-            }
-        }
+            const specificId = urlParams.get('pedido');
 
-        // Load orders
-        function loadOrders() {
-            console.log('[DEBUG] loadOrders iniciado');
-            console.log('[DEBUG] Total de orders:', orders.length);
-            
-            const ordersList = document.getElementById('ordersList');
-            const emptyState = document.getElementById('emptyState');
-            const specificOrderBanner = document.getElementById('specificOrderBanner');
-            const specificOrderNumber = document.getElementById('specificOrderNumber');
-            
-            // Verificar se há pedido específico na URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const specificOrderId = urlParams.get('pedido');
-            console.log('[DEBUG] specificOrderId:', specificOrderId);
-            
-            let filteredOrders;
-            
-            if (specificOrderId) {
-                console.log('[DEBUG] Filtrando pedido específico:', specificOrderId);
-                // Mostrar apenas o pedido específico do link
-                filteredOrders = orders.filter(o => o.id.toString() === specificOrderId);
-                console.log('[DEBUG] Pedidos filtrados:', filteredOrders.length);
-                console.log('[DEBUG] Pedidos filtrados:', filteredOrders);
-                
-                // Mostrar banner de pedido específico
-                specificOrderBanner.classList.remove('hidden');
-                specificOrderNumber.textContent = specificOrderId;
-                
-                // Esconder filtros e estatísticas
+            let filtered = orders;
+
+            if (specificId) {
+                filtered = orders.filter(o => String(o.id) === specificId);
+                document.getElementById('specificOrderBanner').classList.remove('hidden');
+                document.getElementById('specificOrderNumber').textContent = specificId;
                 document.getElementById('filtersSection').classList.add('hidden');
-                document.querySelector('.grid.grid-cols-2').classList.add('hidden');
+                document.getElementById('statsGrid').classList.add('hidden');
             } else {
-                // Esconder banner
-                specificOrderBanner.classList.add('hidden');
-                
-                // Mostrar filtros e estatísticas
+                document.getElementById('specificOrderBanner').classList.add('hidden');
                 document.getElementById('filtersSection').classList.remove('hidden');
-                document.querySelector('.grid.grid-cols-2').classList.remove('hidden');
-                
-                // Mostrar todos ou filtrados por status
-                filteredOrders = currentFilter === 'todos' 
-                    ? orders 
-                    : orders.filter(o => o.status === currentFilter);
+                document.getElementById('statsGrid').classList.remove('hidden');
+                if (currentFilter !== 'todos') {
+                    filtered = orders.filter(o => o.status === currentFilter);
+                }
             }
-            
-            if (filteredOrders.length === 0) {
-                ordersList.innerHTML = '';
-                emptyState.classList.remove('hidden');
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
                 return;
             }
-            
-            emptyState.classList.add('hidden');
-            ordersList.innerHTML = filteredOrders.map(order => createOrderCard(order)).join('');
-            
-            // Setup action buttons
-            setupActionButtons();
+
+            emptyEl.classList.add('hidden');
+            listEl.innerHTML = filtered.map(o => createCardHTML(o)).join('');
         }
 
-        // Config de status (ícone/label/classe)
-        const STATUS_CONFIG = {
-            pendente: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`, label: 'Pendente', class: 'status-pendente' },
-            confirmado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>`, label: 'Confirmado', class: 'status-confirmado' },
-            preparando: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"></path><path d="M3 7l9 4 9-4"></path></svg>`, label: 'Preparando', class: 'status-preparando' },
-            enviado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h13v-6H9l-6 6z"></path><path d="M16 11h3l3 3v3h-6v-6z"></path></svg>`, label: 'Em Entrega', class: 'status-enviado' },
-            entregue: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg>`, label: 'Entregue', class: 'status-entregue' },
-            cancelado: { icon: `<svg class="align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>`, label: 'Cancelado', class: 'status-cancelado' }
+        function createCardHTML(order) {
+            const statusConfig = {
+                pendente: { label: 'Pendente', class: 'status-pendente', icon: '<circle cx="12" cy="12" r="10"></circle>' },
+                confirmado: { label: 'Confirmado', class: 'status-confirmado', icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' },
+                preparando: { label: 'Preparando', class: 'status-preparando', icon: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>' },
+                enviado: { label: 'Em Entrega', class: 'status-enviado', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>' },
+                entregue: { label: 'Entregue', class: 'status-entregue', icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' },
+                cancelado: { label: 'Cancelado', class: 'status-cancelado', icon: '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>' }
+            };
+            const st = statusConfig[order.status] || statusConfig.pendente;
+            const timeAgo = getTimeAgo(order.createdAt);
+
+            return `
+                <div class="order-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100" data-id="${order.id}">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h3 class="text-lg font-bold text-gray-800">#${order.order_number || order.id}</h3>
+                                <span class="status-badge ${st.class}">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${st.icon}</svg>
+                                    ${st.label}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center gap-1">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                <span class="time-ago">${timeAgo}</span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-gray-900">${formatCurrency(order.total)}</p>
+                            <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">${getPaymentLabel(order.paymentMethod)}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4 mb-4">
+                        <!-- Customer -->
+                        <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 shrink-0">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 text-sm">${order.customer.name}</p>
+                                    <p class="text-xs text-gray-600">${order.customer.phone}</p>
+                                    <p class="text-xs text-gray-500 mt-1 leading-tight">${order.customer.address}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items -->
+                        <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Itens do Pedido</h4>
+                            <ul class="space-y-1">
+                                ${order.items.map(i => `
+                                    <li class="flex justify-between text-sm">
+                                        <span class="text-gray-700"><span class="font-bold text-gray-900">${i.quantity}x</span> ${i.name}</span>
+                                        <span class="text-gray-500">${formatCurrency(i.price * i.quantity)}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            ${order.status !== 'pendente' && order.status !== 'cancelado' ? `
+                                <div class="relative">
+                                    <select onchange="updateDeliveryStatus(${order.id}, this.value)" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-3 pr-8 py-2 cursor-pointer hover:border-gray-300 transition-colors">
+                                        <option value="pending" ${!order.delivery_status || order.delivery_status === 'pending' ? 'selected' : ''}>Entrega Pendente</option>
+                                        <option value="preparing" ${order.delivery_status === 'preparing' ? 'selected' : ''}>📦 Preparando</option>
+                                        <option value="out_for_delivery" ${order.delivery_status === 'out_for_delivery' ? 'selected' : ''}>🚚 Saiu p/ Entrega</option>
+                                        <option value="delivered" ${order.delivery_status === 'delivered' ? 'selected' : ''}>🎉 Entregue</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="flex gap-2">
+                            ${order.status === 'pendente' ? `
+                                <button onclick="updateStatus(${order.id}, 'confirmado')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    Aceitar
+                                </button>
+                                <button onclick="updateStatus(${order.id}, 'cancelado')" class="bg-white border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                                    Recusar
+                                </button>
+                            ` : ''}
+                            
+                            ${order.status === 'confirmado' ? `
+                                <button onclick="updateStatus(${order.id}, 'enviado')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                    Enviar
+                                </button>
+                            ` : ''}
+
+                            ${order.status === 'enviado' ? `
+                                <button onclick="updateStatus(${order.id}, 'entregue')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    Confirmar Entrega
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateStats() {
+            const counts = { pendente: 0, confirmado: 0, enviado: 0, entregue: 0 };
+            orders.forEach(o => {
+                if (counts[o.status] !== undefined) counts[o.status]++;
+            });
+            document.getElementById('statPendente').textContent = counts.pendente;
+            document.getElementById('statConfirmado').textContent = counts.confirmado;
+            document.getElementById('statEnviado').textContent = counts.enviado;
+            document.getElementById('statEntregue').textContent = counts.entregue;
+        }
+
+        function updateTimeAgo() {
+            document.querySelectorAll('.order-card').forEach(card => {
+                const id = card.getAttribute('data-id');
+                const order = orders.find(o => o.id == id);
+                if (order) {
+                    const el = card.querySelector('.time-ago');
+                    if (el) el.textContent = getTimeAgo(order.createdAt);
+                }
+            });
+        }
+
+        // --- Actions ---
+        window.updateStatus = async (id, status) => {
+            try {
+                const API_BASE = getApiBase();
+                const res = await fetch(`${API_BASE}/api/orders/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (res.ok) {
+                    showToast(`Pedido #${id} atualizado para ${status}`);
+                    fetchOrders();
+                } else {
+                    showToast('Erro ao atualizar status', false);
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Erro de conexão', false);
+            }
         };
 
-        // Seção de status de entrega (markup)
-        function getDeliverySection(order) {
-            if (order.status === 'pendente' || order.status === 'cancelado') {
-                return `<div data-delivery-section class="hidden"></div>`;
-            }
-            return `
-                <div data-delivery-section class="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-200">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-2xl">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 17h13v-6H9l-6 6z"></path>
-                                    <path d="M16 11h3l3 3v3h-6v-6z"></path>
-                                    <circle cx="7" cy="18" r="2"></circle>
-                                    <circle cx="19" cy="18" r="2"></circle>
-                                </svg>
-                            </span>
-                            <div>
-                                <p class="text-xs font-semibold text-blue-600 uppercase">Status de Entrega</p>
-                                <p class="text-sm text-blue-800 font-medium">${getDeliveryStatusLabel(order.delivery_status || 'pending')}</p>
-                            </div>
-                        </div>
-                        <select class="delivery-status-select" data-order-id="${order.id}" data-current-status="${order.delivery_status || 'pending'}" value="${order.delivery_status || 'pending'}">
-                            <option value="pending" ${(order.delivery_status || 'pending') === 'pending' ? 'selected' : ''}>⏳ Pendente</option>
-                            <option value="preparing" ${order.delivery_status === 'preparing' ? 'selected' : ''}>📦 Preparando</option>
-                            <option value="ready_for_pickup" ${order.delivery_status === 'ready_for_pickup' ? 'selected' : ''}>✅ Pronto</option>
-                            <option value="in_transit" ${order.delivery_status === 'in_transit' ? 'selected' : ''}>🚗 Em Trânsito</option>
-                            <option value="out_for_delivery" ${order.delivery_status === 'out_for_delivery' ? 'selected' : ''}>🚚 Saiu p/ Entrega</option>
-                            <option value="delivered" ${order.delivery_status === 'delivered' ? 'selected' : ''}>🎉 Entregue</option>
-                            <option value="failed" ${order.delivery_status === 'failed' ? 'selected' : ''}>❌ Falhou</option>
-                            <option value="returned" ${order.delivery_status === 'returned' ? 'selected' : ''}>↩️ Devolvido</option>
-                        </select>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Create order card
-        function createOrderCard(order) {
-            const status = STATUS_CONFIG[order.status];
-            const timeAgo = getTimeAgo(order.createdAt);
-            
-            return `
-                <div class="order-card bg-white rounded-2xl p-6 shadow-md" data-order-id="${order.id}">
-                    <!-- Header -->
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-1">${order.order_number || order.id}</h3>
-                            <p class="text-sm text-gray-500">${timeAgo}</p>
-                        </div>
-                        <span class="status-badge ${status.class}">
-                            ${status.icon} ${status.label}
-                        </span>
-                    </div>
-                    
-                    <!-- Delivery Status -->
-                    ${getDeliverySection(order)}
-                    
-                    <!-- Customer Info -->
-                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 mb-4 border border-slate-200">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                                    <circle cx="12" cy="8" r="4"></circle>
-                                    <path d="M6 20c0-4 12-4 12 0"></path>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-800">${order.customer.name}</p>
-                                <p class="text-sm text-gray-600">
-                                    <svg class="inline-block mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="7" y="2" width="10" height="20" rx="2"></rect>
-                                        <circle cx="12" cy="18" r="1"></circle>
-                                    </svg>
-                                    ${order.customer.phone}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <svg class="inline-block mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 21l-6-8a6 6 0 1 1 12 0l-6 8z"></path>
-                                        <circle cx="12" cy="11" r="2"></circle>
-                                    </svg>
-                                    ${order.customer.address}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Payment Info -->
-                    <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 mb-4 border border-emerald-200">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-semibold text-emerald-800">Forma de Pagamento: ${getPaymentLabel(order.paymentMethod)}</p>
-                                ${order.paymentMethod === 'cash' ? `
-                                    <div class="mt-2 text-sm text-emerald-700">
-                                        <p>💵 Valor recebido: ${order.cashReceived != null ? 'R$ ' + Number(order.cashReceived).toFixed(2) : 'não informado'}</p>
-                                        <p>💰 Troco: ${order.cashChange != null ? 'R$ ' + Number(order.cashChange).toFixed(2) : (order.cashReceived != null ? 'R$ ' + Number(Math.max(order.cashReceived - order.total, 0)).toFixed(2) : '—')}</p>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Items -->
-                    <div class="mb-4">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Itens do Pedido:</h4>
-                        <div class="space-y-2">
-                            ${order.items.map(item => `
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-gray-700">${item.quantity}x ${item.name}</span>
-                                    <span class="font-semibold text-gray-800">R$ ${item.price.toFixed(2)}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
-                            <span class="font-bold text-gray-800">Total</span>
-                            <span class="text-xl font-bold text-emerald-600">R$ ${order.total.toFixed(2)}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Actions -->
-                    <div class="flex flex-wrap gap-2" data-actions-section>
-                        ${getActionButtons(order)}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Get action buttons based on status
-        function getActionButtons(order) {
-            // Apenas botão de confirmar para pedidos pendentes
-            if (order.status === 'pendente') {
-                return `
-                    <div class="actions-inline actions-inline--mobile w-full gap-2">
-                        <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="confirmar" data-order-id="${order.id}">
-                            Confirmar Pedido
-                        </button>
-                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
-                            Cancelar
-                        </button>
-                    </div>
-                `;
-            }
-            
-            // Botões diretos para todos os demais status
-            if (order.status === 'confirmado') {
-                return `
-                    <div class="actions-inline actions-inline--mobile w-full gap-2">
-                        <button class="action-btn flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="preparing" data-order-id="${order.id}">
-                            Marcar em preparo
-                        </button>
-                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
-                            Cancelar
-                        </button>
-                    </div>
-                `;
-            }
-            if (order.status === 'preparando') {
-                return `
-                    <div class="actions-inline actions-inline--mobile w-full gap-2">
-                        <button class="action-btn flex-1 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="ready_for_pickup" data-order-id="${order.id}">
-                            Marcar pronto
-                        </button>
-                        <button class="action-btn flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="out_for_delivery" data-order-id="${order.id}">
-                            Enviar para entrega
-                        </button>
-                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-action="cancelar" data-order-id="${order.id}">
-                            Cancelar
-                        </button>
-                    </div>
-                `;
-            }
-            if (order.status === 'enviado') {
-                return `
-                    <div class="actions-inline actions-inline--mobile w-full gap-2">
-                        <button class="action-btn flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="delivered" data-order-id="${order.id}">
-                            Marcar entregue
-                        </button>
-                        <button class="action-btn bg-gray-700 hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md" data-delivery-status="failed" data-order-id="${order.id}">
-                            Falha na entrega
-                        </button>
-                    </div>
-                `;
-            }
-            
-            // Pedido entregue
-            if (order.status === 'entregue') {
-                return `
-                    <div class="flex-1 text-center py-3 px-4 bg-emerald-50 text-emerald-700 font-semibold rounded-xl border-2 border-emerald-200">
-                        Pedido Concluído
-                    </div>
-                `;
-            }
-            
-            // Pedido cancelado
-            if (order.status === 'cancelado') {
-                return `
-                    <div class="flex-1 text-center py-3 px-4 bg-red-50 text-red-700 font-semibold rounded-xl border-2 border-red-200">
-                        Pedido Cancelado
-                    </div>
-                `;
-            }
-            
-            return '';
-        }
-
-        // Setup action buttons
-        function setupActionButtons() {
-            document.querySelectorAll('[data-action]').forEach(btn => {
-                if (btn.dataset.bound === 'true') return;
-                btn.dataset.bound = 'true';
-                btn.addEventListener('click', function() {
-                    const action = this.dataset.action;
-                    const orderId = parseInt(this.dataset.orderId);
-                    handleAction(action, orderId);
+        window.updateDeliveryStatus = async (id, status) => {
+            try {
+                const API_BASE = getApiBase();
+                const res = await fetch(`${API_BASE}/api/orders/${id}/delivery-status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ delivery_status: status })
                 });
-            });
-            
-            // Setup delivery status selects
-            document.querySelectorAll('.delivery-status-select').forEach(select => {
-                if (select.dataset.bound === 'true') return;
-                select.dataset.bound = 'true';
-                select.addEventListener('change', async function() {
-                    const orderId = parseInt(this.dataset.orderId);
-                    const currentStatus = this.dataset.currentStatus;
-                    const newStatus = this.value;
-                    
-                    if (newStatus === currentStatus) return;
-                    
-                    await updateDeliveryStatus(orderId, newStatus);
-                });
-            });
-
-            // Botões diretos para atualizar delivery_status
-            document.querySelectorAll('[data-delivery-status]').forEach(btn => {
-                if (btn.dataset.bound === 'true') return;
-                btn.dataset.bound = 'true';
-                btn.addEventListener('click', async function() {
-                    const orderId = parseInt(this.dataset.orderId);
-                    const dstatus = this.dataset.deliveryStatus;
-                    await updateDeliveryStatus(orderId, dstatus);
-                });
-            });
-        }
-
-        // Atualização silenciosa sem re-render geral
-        function updateOrdersQuietly() {
-            const ordersList = document.getElementById('ordersList');
-            const emptyState = document.getElementById('emptyState');
-            const prevScroll = window.scrollY;
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const specificOrderId = urlParams.get('pedido');
-
-            let filteredOrders;
-            if (specificOrderId) {
-                filteredOrders = orders.filter(o => o.id.toString() === specificOrderId);
-            } else {
-                filteredOrders = currentFilter === 'todos' ? orders : orders.filter(o => o.status === currentFilter);
-            }
-
-            // Estado vazio vs lista
-            if (filteredOrders.length === 0) {
-                ordersList.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            } else {
-                ordersList.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-            }
-
-            // Remover cartões que não existem mais
-            const existingCards = Array.from(ordersList.querySelectorAll('.order-card'));
-            const targetIds = new Set(filteredOrders.map(o => o.id.toString()));
-            existingCards.forEach(card => {
-                const id = card.getAttribute('data-order-id');
-                if (!targetIds.has(id)) {
-                    // animação de saída antes de remover
-                    card.classList.add('card-exit-active');
-                    setTimeout(() => card.remove(), 180);
-                }
-            });
-
-            // Atualizar existentes e adicionar novos
-            filteredOrders.forEach(order => {
-                const idStr = order.id.toString();
-                const card = ordersList.querySelector(`[data-order-id="${idStr}"]`);
-                if (card) {
-                    updateOrderCardDOM(card, order);
+                if (res.ok) {
+                    showToast('Status de entrega atualizado');
+                    fetchOrders(); // Refresh to ensure sync
                 } else {
-                    const wrapper = document.createElement('div');
-                    wrapper.innerHTML = createOrderCard(order);
-                    const el = wrapper.firstElementChild;
-                    // animação de entrada
-                    el.classList.add('card-enter');
-                    ordersList.appendChild(el);
-                    requestAnimationFrame(() => {
-                        el.classList.add('card-enter-active');
-                        setTimeout(() => {
-                            el.classList.remove('card-enter','card-enter-active');
-                        }, 220);
+                    showToast('Erro ao atualizar entrega', false);
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Erro de conexão', false);
+            }
+        };
+
+        // --- Events ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchOrders();
+            setInterval(fetchOrders, 10000); // Polling every 10s
+
+            document.querySelectorAll('.filter-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-chip').forEach(b => {
+                        b.classList.remove('active', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+                        b.classList.add('border-gray-200', 'text-gray-600');
                     });
-                }
-            });
-
-            setupActionButtons();
-            // preservar posição de scroll
-            window.scrollTo(0, prevScroll);
-        }
-
-        function updateOrderCardDOM(card, order) {
-            // Atualiza "time ago"
-            const timeEl = card.querySelector('p.text-sm.text-gray-500');
-            if (timeEl) {
-                const newTime = getTimeAgo(order.createdAt);
-                if (timeEl.textContent !== newTime) {
-                    timeEl.textContent = newTime;
-                }
-            }
-
-            // Atualiza badge de status
-            const badge = card.querySelector('.status-badge');
-            if (badge) {
-                badge.classList.remove('status-pendente','status-confirmado','status-preparando','status-enviado','status-entregue','status-cancelado');
-                const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG['pendente'];
-                const currentLabel = badge.textContent?.trim() || '';
-                const newHTML = `${cfg.icon} ${cfg.label}`;
-                // só altera se mudou
-                if (!badge.classList.contains(cfg.class)) {
-                    badge.classList.add(cfg.class);
-                }
-                if (badge.innerHTML !== newHTML) {
-                    badge.innerHTML = newHTML;
-                    markUpdated(badge);
-                }
-            }
-
-            // Atualiza seção de entrega
-            const deliverySection = card.querySelector('[data-delivery-section]');
-            const newSection = getDeliverySection(order);
-            if (deliverySection && deliverySection.outerHTML !== newSection) {
-                deliverySection.outerHTML = newSection;
-                markUpdated(card.querySelector('[data-delivery-section]'));
-            }
-
-            // Atualiza ações
-            const actions = card.querySelector('[data-actions-section]');
-            const newActions = getActionButtons(order);
-            if (actions && actions.innerHTML !== newActions) {
-                actions.innerHTML = newActions;
-                markUpdated(actions);
-            }
-        }
-
-        function markUpdated(el) {
-            if (!el) return;
-            el.classList.add('fade-update');
-            setTimeout(() => el && el.classList.remove('fade-update'), 420);
-        }
-
-        function updateTimeAgoOnly() {
-            const map = new Map(orders.map(o => [String(o.id), o]));
-            document.querySelectorAll('.order-card').forEach(card => {
-                const id = card.getAttribute('data-order-id');
-                const order = map.get(String(id));
-                if (!order) return;
-                const timeEl = card.querySelector('p.text-sm.text-gray-500');
-                if (!timeEl) return;
-                const newTime = getTimeAgo(order.createdAt);
-                if (timeEl.textContent !== newTime) {
-                    timeEl.textContent = newTime;
-                }
-            });
-        }
-        
-        // Update delivery status
-        async function updateDeliveryStatus(orderId, newStatus) {
-            console.log(`[DEBUG] Atualizando delivery_status do pedido ${orderId} para ${newStatus}`);
-            
-            try {
-                const response = await fetch(`/api/orders/${orderId}/delivery-status`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ delivery_status: newStatus })
-                });
-                
-                console.log(`[DEBUG] Response status: ${response.status}`);
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log(`[DEBUG] Resultado:`, result);
-                    
-                    // Update order locally
-                    const order = orders.find(o => o.id === orderId);
-                    if (order) {
-                        order.delivery_status = newStatus;
-                        applyOrderStatusFromDelivery(order);
-                        // Atualiza DOM do card imediatamente
-                        const card = document.querySelector(`.order-card[data-order-id="${orderId}"]`);
-                        if (card) {
-                            updateOrderCardDOM(card, order);
-                            setupActionButtons();
-                            markUpdated(card.querySelector('[data-actions-section]'));
-                        }
-                    }
-                    
-                    // Show notification
-                    showNotification(`Status de entrega atualizado para: ${getDeliveryStatusLabel(newStatus)}`);
-                    
-                    // Reload orders from API
-                    await fetchOrders();
-                } else {
-                    const errorText = await response.text();
-                    console.error(`[ERROR] Erro ao atualizar: ${errorText}`);
-                    showNotification(`Erro ao atualizar status de entrega`, 'error');
-                    
-                    // Reload to reset select
-                    await fetchOrders();
-                }
-            } catch (error) {
-                console.error(`[ERROR] Exceção ao atualizar:`, error);
-                showNotification(`Erro ao atualizar status de entrega: ${error.message}`, 'error');
-                
-                // Reload to reset select
-                await fetchOrders();
-            }
-        }
-
-        // Mapeia delivery_status -> status do pedido para sincronizar UI
-        function applyOrderStatusFromDelivery(order) {
-            const mapToOrderStatus = {
-                'pending': 'confirmado',
-                'preparing': 'preparando',
-                'ready_for_pickup': 'preparando',
-                'in_transit': 'enviado',
-                'out_for_delivery': 'enviado',
-                'delivered': 'entregue',
-                'failed': 'enviado',
-                'returned': 'cancelado'
-            };
-            const next = mapToOrderStatus[order.delivery_status];
-            if (next && order.status !== next) {
-                order.status = next;
-            }
-        }
-
-        // (Removido) setupMobileActionMenus — menus substituídos por botões diretos
-
-        // Toggle de estatísticas no mobile
-        function setupStatsToggle() {
-            const btn = document.getElementById('toggleStatsBtn');
-            const grid = document.getElementById('statsGrid');
-            if (!btn || !grid) return;
-
-            function updateLabel() {
-                const open = grid.classList.contains('mobile-open');
-                const span = btn.querySelector('span');
-                if (span) span.textContent = open ? 'Ocultar estatísticas' : 'Mostrar estatísticas';
-            }
-
-            btn.addEventListener('click', function() {
-                grid.classList.toggle('mobile-open');
-                updateLabel();
-            });
-
-            updateLabel();
-        }
-
-        // Handle actions
-        async function handleAction(action, orderId) {
-            console.log(`[DEBUG] handleAction: ${action} para pedido ${orderId}`);
-            
-            const order = orders.find(o => o.id === orderId);
-            if (!order) {
-                console.error(`[ERROR] Pedido ${orderId} não encontrado`);
-                return;
-            }
-            
-            // Apenas confirmar e cancelar são permitidos
-            const statusMap = {
-                confirmar: 'confirmado',
-                cancelar: 'cancelado'
-            };
-            
-            const newStatus = statusMap[action];
-            if (!newStatus) {
-                console.error(`[ERROR] Ação ${action} não mapeada`);
-                return;
-            }
-            
-            console.log(`[DEBUG] Novo status: ${newStatus}`);
-            
-            // Mapear status do frontend para o banco
-            const dbStatusMap = {
-                'confirmado': 'confirmed',
-                'cancelado': 'cancelled'
-            };
-            
-            const dbStatus = dbStatusMap[newStatus];
-            console.log(`[DEBUG] Status do banco: ${dbStatus}`);
-            
-            try {
-                // Enviar para API
-                console.log(`[DEBUG] Enviando para /api/orders/${orderId}/status`);
-                const response = await fetch(`/api/orders/${orderId}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: dbStatus })
-                });
-                
-                console.log(`[DEBUG] Response status: ${response.status}`);
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log(`[DEBUG] Resultado:`, result);
-                    
-                    // Update order status locally
-                    order.status = newStatus;
-                    
-                    // Show notification
-                    showNotification(`Pedido #${orderId} ${getStatusLabel(newStatus)}!`);
-                    
-                    // Reload orders from API
-                    await fetchOrders();
-                } else {
-                    const errorText = await response.text();
-                    console.error(`[ERROR] Erro ao atualizar: ${errorText}`);
-                    showNotification(`Erro ao atualizar pedido: ${response.status}`, 'error');
-                }
-            } catch (error) {
-                console.error(`[ERROR] Exceção ao atualizar:`, error);
-                showNotification(`Erro ao atualizar pedido: ${error.message}`, 'error');
-            }
-        }
-
-        // Get status label
-        function getStatusLabel(status) {
-            const labels = {
-                confirmado: 'confirmado',
-                preparando: 'em preparo',
-                enviado: 'enviado para entrega',
-                entregue: 'entregue',
-                cancelado: 'cancelado'
-            };
-            return labels[status] || status;
-        }
-
-        // Get payment method label (pt-BR)
-        function getPaymentLabel(method) {
-            const map = {
-                'cash': 'Dinheiro',
-                'pix': 'PIX',
-                'credit_card': 'Cartão de crédito',
-                'debit_card': 'Cartão de débito',
-                'bank_transfer': 'Transferência bancária'
-            };
-            return map[method] || (method || '').toUpperCase();
-        }
-        
-        // Get delivery status label (global scope for template)
-        function getDeliveryStatusLabel(status) {
-            const labels = {
-                'pending': 'Pendente',
-                'preparing': 'Preparando Pedido',
-                'ready_for_pickup': 'Pronto para Retirada',
-                'in_transit': 'Em Trânsito',
-                'out_for_delivery': 'Saiu para Entrega',
-                'delivered': 'Entregue',
-                'failed': 'Falha na Entrega',
-                'returned': 'Devolvido'
-            };
-            return labels[status] || status;
-        }
-
-        // Show notification
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            
-            notificationText.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Update stats
-        function updateStats() {
-            const stats = {
-                pendente: 0,
-                confirmado: 0,
-                enviado: 0,
-                entregue: 0
-            };
-            
-            orders.forEach(order => {
-                if (stats.hasOwnProperty(order.status)) {
-                    stats[order.status]++;
-                }
-            });
-            
-            document.getElementById('statPendente').textContent = stats.pendente;
-            document.getElementById('statConfirmado').textContent = stats.confirmado;
-            document.getElementById('statEnviado').textContent = stats.enviado;
-            document.getElementById('statEntregue').textContent = stats.entregue;
-        }
-
-        // Setup filters
-        function setupFilters() {
-            document.querySelectorAll('.filter-chip').forEach(chip => {
-                chip.addEventListener('click', function() {
-                    // Remove active from all
-                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-                    
-                    // Add active to clicked
-                    this.classList.add('active');
-                    
-                    // Update filter
-                    currentFilter = this.dataset.status;
-                    
-                    // Reload orders
-                    loadOrders();
+                    btn.classList.add('active');
+                    currentFilter = btn.getAttribute('data-status');
+                    renderOrders();
                 });
             });
-        }
+        });
 
-        // Get time ago
-        function getTimeAgo(date) {
-            // Converter string ISO para Date se necessário
-            const dateObj = typeof date === 'string' ? new Date(date) : date;
-            const seconds = Math.floor((new Date() - dateObj) / 1000);
-            
-            if (seconds < 60) return 'Agora mesmo';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)} min atrás`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h atrás`;
-            return `${Math.floor(seconds / 86400)}d atrás`;
-        }
-
-        // Auto-refresh every 30 seconds
-        setInterval(async () => {
-            console.log('Auto-refresh: buscando pedidos...');
-            await fetchOrders();
-        }, 30000);
     </script>
-
 </body>
+
 </html>
